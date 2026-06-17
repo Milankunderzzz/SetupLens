@@ -1,0 +1,21 @@
+name: SetupLens repository readiness
+description: Know why a repository will not run before contributors lose time.
+author: Milankunderzzz
+branding:
+  icon: search
+  color: green
+inputs:
+  path:
+    description: Repository path to scan
+    required: false
+    default: .
+  threshold:
+    description: Minimum accepted readiness score
+    required: false
+    default: '70'
+outputs:
+  score:
+    description: SetupLens readiness score
+runs:
+  using: node20
+  main: src/action.js

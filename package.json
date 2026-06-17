@@ -1,0 +1,51 @@
+{
+  "name": "setuplens",
+  "version": "0.1.0",
+  "description": "Know why a repository will not run, in one command and under 30 seconds.",
+  "type": "module",
+  "bin": {
+    "setuplens": "./bin/setuplens.js"
+  },
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "start": "node ./bin/setuplens.js",
+    "test": "node --test",
+    "check": "node ./scripts/check-syntax.js",
+    "demo": "node ./bin/setuplens.js scan . --format html --output ./docs/demo-report.html"
+  },
+  "engines": {
+    "node": ">=18.17"
+  },
+  "keywords": [
+    "cli",
+    "developer-tools",
+    "environment",
+    "repository",
+    "diagnostics",
+    "onboarding",
+    "devops",
+    "security"
+  ],
+  "author": "Milankunderzzz",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Milankunderzzz/SetupLens.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Milankunderzzz/SetupLens/issues"
+  },
+  "homepage": "https://github.com/Milankunderzzz/SetupLens#readme",
+  "devDependencies": {
+    "gifenc": "^1.0.3",
+    "pngjs": "^7.0.0"
+  }
+}

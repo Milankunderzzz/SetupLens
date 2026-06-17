@@ -1,0 +1,26 @@
+name: Rule or feature request
+description: Propose a deterministic check or focused product improvement
+title: "feature: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: setup_failure
+    attributes:
+      label: Setup failure or user problem
+      description: What real failure should SetupLens identify sooner?
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Deterministic evidence
+      description: Which local file or command can prove the problem without inference?
+    validations:
+      required: true
+  - type: textarea
+    id: action
+    attributes:
+      label: Recommended next action
+      description: What should the user do after this finding?
+    validations:
+      required: true

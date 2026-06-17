@@ -1,0 +1,12 @@
+node_modules/
+.npm-cache/
+coverage/
+dist/
+*.log
+.DS_Store
+.env
+.env.*
+!.env.example
+setuplens-report.html
+setuplens-report.json
+docs/assets/demo-frames/
