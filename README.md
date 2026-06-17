@@ -7,6 +7,7 @@
 [中文](README.zh-CN.md) | [Plugin API](docs/PLUGIN_API.md) | [Example report](docs/demo-report.html)
 
 [![CI](https://github.com/Milankunderzzz/SetupLens/actions/workflows/ci.yml/badge.svg)](https://github.com/Milankunderzzz/SetupLens/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/Milankunderzzz/SetupLens?sort=semver)](https://github.com/Milankunderzzz/SetupLens/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-1769aa.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18.17-147a45.svg)](package.json)
 [![Runtime dependencies](https://img.shields.io/badge/runtime_dependencies-0-147a45.svg)](package.json)
@@ -89,7 +90,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: Milankunderzzz/SetupLens@main
+      - uses: Milankunderzzz/SetupLens@v0.1.0
         with:
           path: .
           threshold: 75
