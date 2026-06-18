@@ -58,6 +58,24 @@ test('explains how to create a missing local environment file', async (t) => {
   assert.doesNotMatch(JSON.stringify(finding), /replace-me/);
 });
 
+test('names available npm scripts when a Makefile command is invalid', async (t) => {
+  const root = await fixture({
+    'apps/web/package.json': JSON.stringify({ scripts: { dev: 'vite', test: 'node --test' } }),
+    'Makefile': 'start:\n\tcd apps/web && npm run build\n',
+    'README.md': '# Missing npm script fixture\n'
+  });
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+
+  const report = await scan(root);
+  const finding = report.findings.find((item) => item.id === 'paths.makefile.Makefile');
+
+  assert.equal(finding.status, 'fail');
+  assert.equal(finding.message, '1 Makefile command is invalid.');
+  assert.match(finding.evidence, /line 2: npm run build/);
+  assert.match(finding.evidence, /apps\/web\/package\.json/);
+  assert.match(finding.evidence, /available scripts: dev, test/);
+});
+
 test('produces a self-contained escaped HTML report', async (t) => {
   const root = await fixture({
     'package.json': JSON.stringify({ name: '<unsafe>', scripts: { test: 'node --test' } }),

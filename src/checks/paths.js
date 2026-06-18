@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { findNamed, readText } from '../lib/files.js';
-import { finding, toPosix } from '../lib/utils.js';
+import { finding, lineNumberAt, toPosix } from '../lib/utils.js';
 
 function cleanYamlValue(value) {
   return value.trim().replace(/^['"]|['"]$/g, '').split(/\s+#/)[0];
@@ -112,12 +112,20 @@ async function makefileFindings(index, detection) {
     const commandPattern = /cd\s+([^\s;&]+)\s*&&\s*(npm|pnpm|yarn|bun)\s+run\s+([\w:-]+)/g;
     for (const match of text.matchAll(commandPattern)) {
       const relativeDirectory = toPosix(match[1].replace(/^['"]|['"]$/g, ''));
+      const packageManager = match[2];
       const script = match[3];
+      const line = lineNumberAt(text, match.index);
+      const command = `${packageManager} run ${script}`;
       const pkg = detection.packages.find((item) => item.relativeDirectory === relativeDirectory);
       if (!pkg) {
-        issues.push(`missing package directory ${relativeDirectory}`);
+        issues.push(`line ${line}: ${command} uses missing directory ${relativeDirectory}`);
       } else if (!pkg.manifest.scripts?.[script]) {
-        issues.push(`${relativeDirectory}/package.json has no "${script}" script`);
+        const manifest = relativeDirectory === '.' ? 'package.json' : `${relativeDirectory}/package.json`;
+        const available = Object.keys(pkg.manifest.scripts ?? {}).sort();
+        const suffix = available.length > 0
+          ? `; available scripts: ${available.join(', ')}`
+          : '; no scripts are currently defined';
+        issues.push(`line ${line}: ${command} is not defined in ${manifest}${suffix}`);
       }
     }
 
@@ -126,9 +134,11 @@ async function makefileFindings(index, detection) {
       category: 'Paths',
       status: issues.length === 0 ? 'pass' : 'fail',
       title: `Makefile commands: ${file.relative}`,
-      message: issues.length === 0 ? 'Referenced package scripts and directories are valid.' : `${issues.length} command references are invalid.`,
+      message: issues.length === 0
+        ? 'Referenced package scripts and directories are valid.'
+        : `${issues.length} Makefile command ${issues.length === 1 ? 'is' : 'are'} invalid.`,
       evidence: issues.slice(0, 5).join(', ') || null,
-      recommendation: issues.length === 0 ? null : 'Update the Makefile to match the current package directories and scripts.',
+      recommendation: issues.length === 0 ? null : 'Define the missing script or update the Makefile command to use an available script.',
       weight: issues.length === 0 ? 0 : 9
     }));
   }
