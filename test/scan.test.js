@@ -86,7 +86,7 @@ test('separates setup readiness from repository hygiene', async (t) => {
   const ids = new Map(report.findings.map((item) => [item.id, item]));
   const terminal = renderTerminal(report, { color: false });
 
-  assert.equal(report.schemaVersion, '1.1');
+  assert.equal(report.schemaVersion, '1.2');
   assert.equal(report.score, 100);
   assert.equal(report.scopes.setup.score, 100);
   assert.equal(report.scopes.hygiene.score, 81);
@@ -100,6 +100,57 @@ test('separates setup readiness from repository hygiene', async (t) => {
   assert.match(terminal, /Setup\s+0 failed\s+0 warnings/);
   assert.match(terminal, /Hygiene\s+1 failed\s+4 warnings/);
   assert.match(terminal, /README \[hygiene \/ Repository\]/);
+});
+
+test('does not score an unsupported C++ repository', async (t) => {
+  const root = await fixture({
+    'CMakeLists.txt': 'cmake_minimum_required(VERSION 3.20)\nproject(hello)\nadd_executable(hello main.cpp)\n',
+    'main.cpp': '#include <iostream>\nint main() { std::cout << "hello"; }\n'
+  });
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+
+  const report = await scan(root);
+  const terminal = renderTerminal(report, { color: false });
+  const html = renderHtml(report);
+
+  assert.equal(report.primaryStack, 'c++');
+  assert.equal(report.scorable, false);
+  assert.equal(report.scoreStatus, 'not_scored');
+  assert.equal(report.notScoredReason, 'unsupported_primary_stack');
+  assert.equal(report.score, null);
+  assert.equal(report.grade, null);
+  assert.equal(report.scopes.setup.score, null);
+  assert.match(terminal, /Unsupported \/ Not scored/);
+  assert.doesNotMatch(terminal, /98\/100 A/);
+  assert.match(html, /Not scored/);
+  assert.match(html, /Unsupported primary stack: c\+\+/);
+});
+
+test('does not score an empty repository', async (t) => {
+  const root = await fixture({});
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+
+  const report = await scan(root);
+
+  assert.equal(report.scorable, false);
+  assert.equal(report.notScoredReason, 'empty_repository');
+  assert.equal(report.score, null);
+  assert.match(report.scoreMessage, /repository is empty/i);
+});
+
+test('does not score a repository with an unknown primary stack', async (t) => {
+  const root = await fixture({
+    'main.swift': 'print("hello")\n',
+    'README.md': '# Swift fixture\n'
+  });
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+
+  const report = await scan(root);
+
+  assert.equal(report.primaryStack, null);
+  assert.equal(report.scorable, false);
+  assert.equal(report.notScoredReason, 'primary_stack_not_detected');
+  assert.equal(report.score, null);
 });
 
 test('produces a self-contained escaped HTML report', async (t) => {

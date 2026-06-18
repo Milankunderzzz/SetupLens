@@ -15,7 +15,9 @@ inputs:
     default: '70'
 outputs:
   score:
-    description: SetupLens readiness score
+    description: SetupLens readiness score, empty when the repository is not scorable
+  status:
+    description: Scoring status (`scored` or `not_scored`)
 runs:
   using: node20
   main: src/action.js

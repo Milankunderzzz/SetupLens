@@ -20,6 +20,12 @@ export function renderHtml(report) {
     .slice(0, 6);
   const stack = report.primaryStacks?.length > 0 ? report.primaryStacks.join(' / ') : 'Unknown';
   const hygieneActions = report.scopes.hygiene.summary.fail + report.scopes.hygiene.summary.warn;
+  const scoreValue = report.scorable ? report.score : 'Not scored';
+  const scoreCaption = report.scorable
+    ? `Readiness grade ${report.grade} / 100`
+    : report.notScoredReason === 'unsupported_primary_stack'
+      ? `Unsupported primary stack: ${stack}`
+      : report.scoreMessage;
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -76,7 +82,7 @@ export function renderHtml(report) {
     <div class="wrap">
       <div class="brand">
         <div><h1>SetupLens</h1><p>Know why a repository will not run, in one command and under 30 seconds.</p></div>
-        <div class="score"><strong>${report.score}</strong><span>Readiness grade ${escapeHtml(report.grade)} / 100</span></div>
+        <div class="score"><strong>${escapeHtml(scoreValue)}</strong><span>${escapeHtml(scoreCaption)}</span></div>
       </div>
       <div class="meta"><span><strong>Target:</strong> ${escapeHtml(report.target.name)}</span><span><strong>Stack:</strong> ${escapeHtml(stack)}</span><span><strong>Duration:</strong> ${report.durationMs} ms</span><span><strong>Files:</strong> ${report.target.filesIndexed}</span></div>
     </div>

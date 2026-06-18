@@ -115,3 +115,16 @@ test('treats an unnamed root package used for linting as supporting a Cargo proj
   assert.equal(detection.primaryStack, 'rust');
   assert.equal(detection.stackEvidence.find((item) => item.name === 'node').role, 'supporting');
 });
+
+test('recognizes a source-only C++ project as an unsupported primary stack', async (t) => {
+  const { index, detection } = await detectFixture(t, {
+    'helloworld.cpp': '#include <iostream>\nint main() { return 0; }\n'
+  });
+  const stackFinding = stackFindings(index, detection)[0];
+
+  assert.equal(detection.primaryStack, 'c++');
+  assert.deepEqual(detection.stacks, []);
+  assert.equal(detection.stackEvidence[0].supported, false);
+  assert.equal(stackFinding.title, 'Primary stack not supported');
+  assert.match(stackFinding.message, /c\+\+/);
+});
