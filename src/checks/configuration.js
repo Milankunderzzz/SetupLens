@@ -1,24 +1,6 @@
-import path from 'node:path';
 import { findNamed, readText } from '../lib/files.js';
+import { environmentCandidates, parseEnvKeys } from '../lib/environment.js';
 import { finding, toPosix } from '../lib/utils.js';
-
-function parseEnvKeys(text) {
-  const keys = new Set();
-  for (const line of text.split(/\r?\n/)) {
-    const match = line.match(/^\s*(?:export\s+)?([A-Z][A-Z0-9_]*)\s*=/);
-    if (match) keys.add(match[1]);
-  }
-  return keys;
-}
-
-function actualCandidates(example) {
-  const directory = path.posix.dirname(example.relative);
-  const prefix = directory === '.' ? '' : `${directory}/`;
-  const name = example.name;
-  if (name === '.env.example') return [`${prefix}.env`, `${prefix}.env.local`];
-  if (name.endsWith('.example')) return [`${prefix}${name.slice(0, -'.example'.length)}`];
-  return [];
-}
 
 export async function configurationFindings(index) {
   const examples = findNamed(index, ['.env.example', '.env.sample', '.env.template'])
@@ -39,7 +21,7 @@ export async function configurationFindings(index) {
   for (const example of unique) {
     const exampleText = await readText(example);
     const required = exampleText === null ? new Set() : parseEnvKeys(exampleText);
-    const candidates = actualCandidates(example).map(toPosix);
+    const candidates = environmentCandidates(example).map(toPosix);
     const actual = candidates.map((candidate) => index.byRelative.get(candidate)).find(Boolean);
     const label = example.relative;
 
