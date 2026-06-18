@@ -1,5 +1,6 @@
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { FINDING_SCOPES } from '../constants.js';
 
 export function toPosix(value) {
   return value.split(path.sep).join('/');
@@ -86,6 +87,7 @@ export function finding(input) {
   return {
     id: input.id,
     category: input.category,
+    scope: input.scope ?? FINDING_SCOPES.SETUP,
     status: input.status,
     title: input.title,
     message: input.message,

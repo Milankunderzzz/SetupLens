@@ -84,6 +84,14 @@ setuplens scan . --threshold 80
 setuplens scan . --plugin ./examples/custom-plugin.mjs
 ```
 
+## 评分方式
+
+主分数只回答一个问题：**这个仓库在当前电脑上是否已经准备好运行？** 它由 `setup` 范围的检查计算，包括运行时、依赖、配置、路径、安全、扫描覆盖率，以及默认的插件检查。
+
+README、许可证、`.gitignore`、CI 和测试覆盖属于独立的 `hygiene` 范围。它们仍会显示，并拥有单独的分数与摘要，但不会降低启动就绪分数。`--threshold` 和 GitHub Action 阈值均使用启动就绪分数。
+
+在 JSON 输出中，`summary` 表示启动就绪统计，`allSummary` 表示全部检查统计，`scopes` 则包含 setup 与 hygiene 各自的分数。
+
 ## 我正在做什么
 
 - **现在：** 减少 Node.js、Python、Docker、环境变量和路径检查的误报，并补充测试。

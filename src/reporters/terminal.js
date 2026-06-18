@@ -19,6 +19,18 @@ function scoreBar(score, width = 24) {
   return `[${'#'.repeat(filled)}${'.'.repeat(width - filled)}]`;
 }
 
+function summaryText(group, paint) {
+  const warningLabel = group.summary.warn === 1 ? 'warning' : 'warnings';
+  return `${paint.fail(`${group.summary.fail} failed`)}  ${paint.warn(`${group.summary.warn} ${warningLabel}`)}  ${paint.pass(`${group.summary.pass} passed`)}`;
+}
+
+function recommendedActions(report, limit) {
+  return report.findings
+    .filter((item) => item.recommendation && ['fail', 'warn'].includes(item.status))
+    .sort((left, right) => Number(left.scope === 'hygiene') - Number(right.scope === 'hygiene'))
+    .slice(0, limit);
+}
+
 export function renderTerminal(report, options = {}) {
   const useColor = options.color !== false && Boolean(process.stdout.isTTY);
   const paint = painter(useColor);
@@ -31,18 +43,19 @@ export function renderTerminal(report, options = {}) {
   lines.push('');
   lines.push(`Target  ${paint.bold(report.target.name)}  ${paint.dim(`(${report.target.filesIndexed} files, ${report.durationMs} ms)`)}`);
   lines.push(`Stack   ${report.stacks.length > 0 ? report.stacks.join(', ') : 'unknown'}`);
-  lines.push(`Score   ${paint[scoreColor](`${report.score}/100 ${report.grade}`)}  ${scoreBar(report.score)}`);
-  lines.push(`Checks  ${paint.fail(`${report.summary.fail} failed`)}  ${paint.warn(`${report.summary.warn} warnings`)}  ${paint.pass(`${report.summary.pass} passed`)}`);
+  lines.push(`Score   ${paint[scoreColor](`${report.score}/100 ${report.grade}`)}  ${scoreBar(report.score)}  ${paint.dim('(setup readiness)')}`);
+  lines.push(`Setup   ${summaryText(report.scopes.setup, paint)}`);
+  lines.push(`Hygiene ${summaryText(report.scopes.hygiene, paint)}`);
   lines.push('');
 
   for (const item of report.findings) {
     const label = paint[item.status](STATUS_LABELS[item.status].padEnd(4));
-    lines.push(`${label}  ${paint.bold(item.title)} ${paint.dim(`[${item.category}]`)}`);
+    lines.push(`${label}  ${paint.bold(item.title)} ${paint.dim(`[${item.scope} / ${item.category}]`)}`);
     lines.push(`      ${item.message}`);
     if (item.evidence) lines.push(paint.dim(`      Evidence: ${item.evidence}`));
   }
 
-  const actions = report.findings.filter((item) => item.recommendation && ['fail', 'warn'].includes(item.status)).slice(0, 5);
+  const actions = recommendedActions(report, 5);
   if (actions.length > 0) {
     lines.push('');
     lines.push(paint.bold('Next actions'));
