@@ -40,6 +40,24 @@ test('detects missing dependencies, paths, configuration, and credentials', asyn
   assert.ok(report.score < 90);
 });
 
+test('explains how to create a missing local environment file', async (t) => {
+  const root = await fixture({
+    '.env.example': 'DATABASE_URL=postgresql://localhost/app\nAPI_TOKEN=replace-me\n',
+    '.gitignore': '.env\n.env.local\n',
+    'README.md': '# Missing env fixture\n'
+  });
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+
+  const report = await scan(root);
+  const finding = report.findings.find((item) => item.id === 'configuration.env.missing..env.example');
+
+  assert.equal(finding.status, 'warn');
+  assert.equal(finding.message, 'No local environment file was found for 2 documented variables.');
+  assert.equal(finding.evidence, 'Expected .env or .env.local');
+  assert.match(finding.recommendation, /Copy \.env\.example/);
+  assert.doesNotMatch(JSON.stringify(finding), /replace-me/);
+});
+
 test('produces a self-contained escaped HTML report', async (t) => {
   const root = await fixture({
     'package.json': JSON.stringify({ name: '<unsafe>', scripts: { test: 'node --test' } }),
