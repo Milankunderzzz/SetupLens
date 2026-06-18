@@ -18,7 +18,7 @@ export function renderHtml(report) {
     .filter((item) => item.recommendation && ['fail', 'warn'].includes(item.status))
     .sort((left, right) => Number(left.scope === 'hygiene') - Number(right.scope === 'hygiene'))
     .slice(0, 6);
-  const stack = report.stacks.length > 0 ? report.stacks.join(' / ') : 'Unknown';
+  const stack = report.primaryStacks?.length > 0 ? report.primaryStacks.join(' / ') : 'Unknown';
   const hygieneActions = report.scopes.hygiene.summary.fail + report.scopes.hygiene.summary.warn;
   return `<!doctype html>
 <html lang="en">

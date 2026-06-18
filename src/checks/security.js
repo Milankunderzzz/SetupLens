@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { readText } from '../lib/files.js';
+import { isIncidentalPathRole } from '../lib/context.js';
 import { finding, isPlaceholder, lineNumberAt } from '../lib/utils.js';
 
 const SECRET_PATTERNS = [
@@ -27,7 +28,17 @@ function trackedFiles(root) {
 
 function ignoreSecretMatch(id, match) {
   if (id === 'database-url') return isPlaceholder(match[1]);
+  if (id === 'openai-key') {
+    const token = match[0].slice(3);
+    const structuredPrefix = /^(?:proj|svcacct)-/.test(token);
+    const mixedRandomness = /[A-Z]/.test(token) && /\d/.test(token);
+    return !structuredPrefix && !mixedRandomness;
+  }
   return isPlaceholder(match[0]);
+}
+
+function isContextSensitivePattern(id) {
+  return id === 'openai-key' || id === 'hardcoded-secret';
 }
 
 function isSuppressed(text, index) {
@@ -37,11 +48,19 @@ function isSuppressed(text, index) {
   return line.includes('setuplens: allow-secret');
 }
 
+function isInsidePythonDocstring(file, text, index) {
+  if (file.extension !== '.py') return false;
+  const before = text.slice(0, index);
+  const doubleQuoted = (before.match(/"""/g) ?? []).length % 2 === 1;
+  const singleQuoted = (before.match(/'''/g) ?? []).length % 2 === 1;
+  return doubleQuoted || singleQuoted;
+}
+
 export async function securityFindings(index) {
   const findings = [];
   const tracked = trackedFiles(index.root);
   const actualEnvFiles = index.files.filter((file) => /^\.env(?:\.|$)/.test(file.name) && !/\.(?:example|sample|template)$/.test(file.name));
-  const trackedEnv = actualEnvFiles.filter((file) => tracked.has(file.relative));
+  const trackedEnv = actualEnvFiles.filter((file) => !isIncidentalPathRole(file.role) && tracked.has(file.relative));
 
   findings.push(finding({
     id: 'security.tracked-env',
@@ -63,7 +82,9 @@ export async function securityFindings(index) {
     for (const [id, pattern, label] of SECRET_PATTERNS) {
       pattern.lastIndex = 0;
       for (const match of text.matchAll(pattern)) {
-        if (ignoreSecretMatch(id, match) || isSuppressed(text, match.index)) continue;
+        if (ignoreSecretMatch(id, match)
+            || isSuppressed(text, match.index)
+            || (isIncidentalPathRole(file.role) && isContextSensitivePattern(id))) continue;
         matches.push({ id, label, file: file.relative, line: lineNumberAt(text, match.index) });
         if (matches.length >= 20) break;
       }
@@ -71,7 +92,8 @@ export async function securityFindings(index) {
 
     ASSIGNMENT_PATTERN.lastIndex = 0;
     for (const match of text.matchAll(ASSIGNMENT_PATTERN)) {
-      if (isPlaceholder(match[2]) || match[2].length < 12 || isSuppressed(text, match.index)) continue;
+      if (isPlaceholder(match[2]) || match[2].length < 12 || isSuppressed(text, match.index)
+          || isIncidentalPathRole(file.role) || isInsidePythonDocstring(file, text, match.index)) continue;
       matches.push({ id: 'hardcoded-secret', label: `Hardcoded ${match[1]}`, file: file.relative, line: lineNumberAt(text, match.index) });
       if (matches.length >= 20) break;
     }

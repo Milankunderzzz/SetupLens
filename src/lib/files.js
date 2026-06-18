@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { SKIPPED_DIRECTORIES, TEXT_EXTENSIONS } from '../constants.js';
+import { classifyPathRole } from './context.js';
 import { toPosix } from './utils.js';
 
 const MAX_FILES = 20000;
@@ -45,7 +46,8 @@ export async function indexRepository(root) {
           relative,
           name: entry.name,
           extension: path.extname(entry.name).toLowerCase(),
-          size: stat.size
+          size: stat.size,
+          role: classifyPathRole(relative)
         });
       } catch {
         // Files can disappear during a scan; the remaining repository is still useful.

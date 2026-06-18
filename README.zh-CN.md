@@ -32,6 +32,8 @@ npx --yes github:Milankunderzzz/SetupLens scan . --format html --output setuplen
 
 SetupLens 只读取本地文件和命令，不上传仓库内容、环境变量值或扫描结果。
 
+扫描器会区分主技术栈、支持技术栈和偶然出现的测试/示例文件；monorepo 依赖按 workspace 根目录汇总，文档与测试夹具也不会再被当作主流程中的环境文件或普通硬编码密钥。
+
 ## 真实量化结果
 
 在 Windows 11、Intel i5-12500H、Node.js 24 环境下，对一个包含 Node.js、Python、Docker 和 261 个文件的真实 CMMS 项目执行 10 次扫描：
@@ -90,15 +92,15 @@ setuplens scan . --plugin ./examples/custom-plugin.mjs
 
 README、许可证、`.gitignore`、CI 和测试覆盖属于独立的 `hygiene` 范围。它们仍会显示，并拥有单独的分数与摘要，但不会降低启动就绪分数。`--threshold` 和 GitHub Action 阈值均使用启动就绪分数。
 
-在 JSON 输出中，`summary` 表示启动就绪统计，`allSummary` 表示全部检查统计，`scopes` 则包含 setup 与 hygiene 各自的分数。
+在 JSON 输出中，`summary` 表示启动就绪统计，`allSummary` 表示全部检查统计，`scopes` 则包含 setup 与 hygiene 各自的分数。`primaryStack`、`primaryStacks` 和 `stackEvidence` 会说明主技术栈、支持技术栈及其清单证据。
 
 ## 我正在做什么
 
-- **现在：** 减少 Node.js、Python、Docker、环境变量和路径检查的误报，并补充测试。
-- **下一步：** 深化 Java、Go、Rust 检查，增加 SARIF 和可配置规则。
-- **以后：** 探索可审阅的修复计划、独立二进制和小型插件注册表。
+- **现在：** 将研究范围锁定为 Node.js、Python 和 Docker，减少误报并扩充基于夹具的测试。
+- **下一步：** 使用独立人工标注的仓库启动基准验证结果，重点处理 monorepo 和文件上下文。
+- **以后：** 只有核心基准达到明确的精确率和召回率目标后，才重新评估 Java、Go、Rust 的深度支持。
 
-实际顺序会根据更多仓库的测试结果调整。带有最小复现的 issue 对我最有帮助。
+现有 Java、Go、Rust 清单检测会保留为实验性边界行为，但暂停新增这些生态的规则。带有最小复现的 issue 对我最有帮助。
 
 ## 开发
 
