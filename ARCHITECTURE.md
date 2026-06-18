@@ -28,8 +28,10 @@ Team policy and framework-specific rules can use the plugin API instead.
 
 The scan currently has four stages:
 
-1. `src/lib/files.js` builds a bounded index of repository files.
-2. `src/checks/` detects stacks and produces independent findings.
+1. `src/lib/files.js` builds a bounded index and classifies files as primary,
+   documentation, test fixtures, examples, or generated content.
+2. `src/checks/` ranks primary and supporting stacks, detects workspaces, and
+   produces independent findings.
 3. `src/scan.js` combines findings and calculates a readiness score.
 4. `src/reporters/` renders the same result for terminal, JSON, or HTML use.
 
@@ -44,6 +46,15 @@ someone's project. SetupLens reports a fix but does not apply it.
 **Evidence before explanation.** Checks should point to a missing file, command,
 or manifest entry. An optional AI explanation may be useful later, but it
 should explain a finding rather than create one.
+
+**Context is evidence.** A manifest under a test fixture is not equivalent to a
+root manifest, and a documented secret-shaped example is not equivalent to an
+application credential. High-confidence credential types remain visible, while
+context-sensitive patterns require primary-workflow evidence.
+
+**One root cause, one deduction.** Explicit Node workspaces share their root
+installation and lockfile state. SetupLens reports that state once instead of
+multiplying identical warnings across every member package.
 
 **No runtime dependencies.** The scanner uses Node.js built-ins so that the
 tool itself adds as little setup work as possible. The two development

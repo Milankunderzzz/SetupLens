@@ -42,12 +42,12 @@ SetupLens reads local files and commands only. It does not upload repository con
 
 - Runtime availability and declared Node.js version compatibility
 - npm, pnpm, Yarn, Bun, Python, Git, Docker, and Docker Compose readiness
-- Missing `node_modules`, Python virtual environments, and dependency lockfiles
+- Missing `node_modules`, Python virtual environments, and dependency lockfiles, with root-level workspace aggregation
 - Missing `.env` files and undocumented configuration gaps without printing values
 - Broken Dockerfile, Compose volume, directory, and Makefile script references
-- Tracked environment files, private keys, tokens, credentialed URLs, and hardcoded secrets
+- Context-aware checks for tracked environment files and secrets without treating tests or documentation as the primary workflow
 - README, license, CI, tests, `.gitignore`, and repository scan coverage
-- VS Code extension recommendations based on the detected stack
+- Ranked primary and supporting stacks with manifest evidence, plus matching VS Code extension recommendations
 - Explicitly loaded, repository-specific plugins
 
 ## Real Benchmark
@@ -89,7 +89,7 @@ The main score answers one question: **how ready is this repository to run on th
 
 README, license, `.gitignore`, CI, and test coverage findings use the separate `hygiene` scope. They remain visible and receive their own score and summary, but they do not lower setup readiness. `--threshold` and the GitHub Action threshold use the setup readiness score.
 
-In JSON output, `summary` describes setup readiness, `allSummary` covers every finding, and `scopes` contains the separate setup and hygiene scores.
+In JSON output, `summary` describes setup readiness, `allSummary` covers every finding, and `scopes` contains the separate setup and hygiene scores. `primaryStack`, `primaryStacks`, and `stackEvidence` explain which technology leads the repository and which manifests are only supporting or incidental evidence.
 
 ## GitHub Action
 
@@ -163,11 +163,11 @@ The project currently favors checks that can point to a file, command, or manife
 
 ## What I Am Working On
 
-- **Now:** Improve false-positive coverage and tests for Node.js, Python, Docker, environment, and path checks.
-- **Next:** Add deeper Java, Go, and Rust checks, SARIF output, and configurable rule policies.
-- **Later:** Explore reviewable repair plans, standalone binaries, and a small plugin registry.
+- **Now:** Freeze the research scope to Node.js, Python, and Docker; reduce false positives and expand the fixture-based test suite.
+- **Next:** Validate findings against an independently annotated repository-setup benchmark, with special attention to monorepos and file context.
+- **Later:** Reconsider deeper Java, Go, and Rust support only after the core benchmark meets explicit precision and recall targets.
 
-The order can change as I test SetupLens on more repositories. Issues that include a minimal reproduction are the most useful input.
+Existing Java, Go, and Rust manifest detection remains available as experimental boundary behavior, but new rules for those ecosystems are paused. Issues that include a minimal reproduction are the most useful input.
 
 ## Development
 

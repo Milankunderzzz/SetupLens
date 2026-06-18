@@ -38,6 +38,7 @@ function runtimeFinding({ id, title, available, version, required, recommendatio
 }
 
 function packageManager(detection) {
+  if (detection.workspace?.manager) return detection.workspace.manager;
   for (const pkg of detection.packages) {
     const manager = String(pkg.manifest.packageManager ?? '').split('@')[0];
     if (manager) return manager;

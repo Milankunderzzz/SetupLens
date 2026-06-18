@@ -19,6 +19,7 @@ export async function runPlugins(pluginPaths, context) {
     const pluginContext = Object.freeze({
       root: context.root,
       stacks: Object.freeze([...context.stacks]),
+      primaryStack: context.primaryStack,
       files: Object.freeze(context.files.map((file) => file.relative)),
       readText: async (relative) => fs.readFile(path.resolve(context.root, relative), 'utf8')
     });

@@ -42,7 +42,12 @@ export function renderTerminal(report, options = {}) {
   lines.push(paint.dim('Know why a repository will not run, in one command and under 30 seconds.'));
   lines.push('');
   lines.push(`Target  ${paint.bold(report.target.name)}  ${paint.dim(`(${report.target.filesIndexed} files, ${report.durationMs} ms)`)}`);
-  lines.push(`Stack   ${report.stacks.length > 0 ? report.stacks.join(', ') : 'unknown'}`);
+  const supportingStacks = report.stackEvidence
+    ?.filter((item) => item.role === 'supporting')
+    .map((item) => item.name) ?? [];
+  const primaryLabel = report.primaryStacks?.length > 0 ? report.primaryStacks.join(', ') : 'unknown';
+  const supportingLabel = supportingStacks.length > 0 ? `  (supporting: ${supportingStacks.join(', ')})` : '';
+  lines.push(`Stack   ${primaryLabel}${supportingLabel}`);
   lines.push(`Score   ${paint[scoreColor](`${report.score}/100 ${report.grade}`)}  ${scoreBar(report.score)}  ${paint.dim('(setup readiness)')}`);
   lines.push(`Setup   ${summaryText(report.scopes.setup, paint)}`);
   lines.push(`Hygiene ${summaryText(report.scopes.hygiene, paint)}`);

@@ -51,6 +51,7 @@ export async function scan(target = '.', options = {}) {
   const pluginResult = await runPlugins(options.plugins ?? [], {
     root,
     stacks: detection.stacks,
+    primaryStack: detection.primaryStack,
     files: index.files
   });
 
@@ -81,6 +82,9 @@ export async function scan(target = '.', options = {}) {
     durationMs: Math.max(1, Math.round(performance.now() - started)),
     target: { name: path.basename(root), path: root, filesIndexed: index.files.length, truncated: index.truncated },
     stacks: detection.stacks,
+    primaryStack: detection.primaryStack,
+    primaryStacks: detection.primaryStacks,
+    stackEvidence: detection.stackEvidence,
     score,
     grade: gradeForScore(score),
     summary: scopes.setup.summary,
