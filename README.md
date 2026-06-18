@@ -174,6 +174,8 @@ node ./bin/setuplens.js scan .
 
 The scanning runtime uses only Node.js built-ins. Development dependencies are used solely to generate the README demo GIF.
 
+I keep short notes from real-project testing in the [development log](docs/devlog/2026-06-18-cmms-validation.md).
+
 ## Contributing
 
 I especially welcome focused rules, cross-platform fixtures, and false-positive reports. Read [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md) before submitting changes.
