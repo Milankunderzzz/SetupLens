@@ -83,6 +83,14 @@ setuplens scan . --format html --output setuplens-report.html
 setuplens scan . --threshold 80
 ```
 
+## Scoring
+
+The main score answers one question: **how ready is this repository to run on the current machine?** It uses findings in the `setup` scope, including runtimes, dependencies, configuration, paths, security, scan coverage, and setup-focused plugins.
+
+README, license, `.gitignore`, CI, and test coverage findings use the separate `hygiene` scope. They remain visible and receive their own score and summary, but they do not lower setup readiness. `--threshold` and the GitHub Action threshold use the setup readiness score.
+
+In JSON output, `summary` describes setup readiness, `allSummary` covers every finding, and `scopes` contains the separate setup and hygiene scores.
+
 ## GitHub Action
 
 ```yaml

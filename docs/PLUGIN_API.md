@@ -17,6 +17,7 @@ export default {
     return [{
       id: 'codeowners',
       category: 'Team policy',
+      scope: 'hygiene',
       status: 'warn',
       title: 'Code ownership',
       message: 'No CODEOWNERS file was found.',
@@ -41,5 +42,7 @@ export default {
 Required fields are `id`, `status`, `title`, and `message`.
 
 `status` must be `pass`, `warn`, `fail`, or `info`. Optional `weight` values contribute to the readiness score for warnings and failures. Keep weights small and proportional; core rules use values from 2 to 20.
+
+`scope` is optional and must be `setup` or `hygiene`. It defaults to `setup` so existing plugins remain compatible. Only `setup` findings contribute to the main readiness score; hygiene findings receive a separate score and summary.
 
 Plugins should never print secret values or send repository content over the network without explicit user consent.

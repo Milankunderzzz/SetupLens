@@ -8,14 +8,18 @@ function findingRow(item) {
         <h3>${escapeHtml(item.title)}</h3>
         <p>${escapeHtml(item.message)}</p>
 ${item.evidence ? `        <p class="evidence">Evidence: ${escapeHtml(item.evidence)}</p>\n` : ''}      </div>
-      <span class="category">${escapeHtml(item.category)}</span>
+      <span class="category">${escapeHtml(item.scope)} / ${escapeHtml(item.category)}</span>
     </div>
 ${item.recommendation ? `    <p class="recommendation"><strong>Fix:</strong> ${escapeHtml(item.recommendation)}</p>\n` : ''}  </article>`;
 }
 
 export function renderHtml(report) {
-  const actions = report.findings.filter((item) => item.recommendation && ['fail', 'warn'].includes(item.status)).slice(0, 6);
+  const actions = report.findings
+    .filter((item) => item.recommendation && ['fail', 'warn'].includes(item.status))
+    .sort((left, right) => Number(left.scope === 'hygiene') - Number(right.scope === 'hygiene'))
+    .slice(0, 6);
   const stack = report.stacks.length > 0 ? report.stacks.join(' / ') : 'Unknown';
+  const hygieneActions = report.scopes.hygiene.summary.fail + report.scopes.hygiene.summary.warn;
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -72,19 +76,19 @@ export function renderHtml(report) {
     <div class="wrap">
       <div class="brand">
         <div><h1>SetupLens</h1><p>Know why a repository will not run, in one command and under 30 seconds.</p></div>
-        <div class="score"><strong>${report.score}</strong><span>Grade ${escapeHtml(report.grade)} / 100</span></div>
+        <div class="score"><strong>${report.score}</strong><span>Readiness grade ${escapeHtml(report.grade)} / 100</span></div>
       </div>
       <div class="meta"><span><strong>Target:</strong> ${escapeHtml(report.target.name)}</span><span><strong>Stack:</strong> ${escapeHtml(stack)}</span><span><strong>Duration:</strong> ${report.durationMs} ms</span><span><strong>Files:</strong> ${report.target.filesIndexed}</span></div>
     </div>
   </header>
   <main class="wrap">
     <div class="metrics">
-      <div class="metric"><span>Failed</span><strong>${report.summary.fail}</strong></div>
-      <div class="metric"><span>Warnings</span><strong>${report.summary.warn}</strong></div>
-      <div class="metric"><span>Passed</span><strong>${report.summary.pass}</strong></div>
-      <div class="metric"><span>Total checks</span><strong>${report.summary.total}</strong></div>
+      <div class="metric"><span>Setup failures</span><strong>${report.scopes.setup.summary.fail}</strong></div>
+      <div class="metric"><span>Setup warnings</span><strong>${report.scopes.setup.summary.warn}</strong></div>
+      <div class="metric"><span>Hygiene findings</span><strong>${hygieneActions}</strong></div>
+      <div class="metric"><span>Total checks</span><strong>${report.allSummary.total}</strong></div>
     </div>
-    ${actions.length > 0 ? `<section class="actions"><h2>Highest-impact next actions</h2><ol>${actions.map((item) => `<li>${escapeHtml(item.recommendation)}</li>`).join('')}</ol></section>` : ''}
+${actions.length > 0 ? `    <section class="actions"><h2>Highest-impact next actions</h2><ol>${actions.map((item) => `<li>${escapeHtml(item.recommendation)}</li>`).join('')}</ol></section>\n` : ''}
     <section><h2>Findings</h2><div class="findings">${report.findings.map(findingRow).join('')}</div></section>
   </main>
   <footer><div class="wrap">Generated locally by SetupLens ${escapeHtml(report.tool.version)} at ${escapeHtml(report.generatedAt)}. No repository data was uploaded.</div></footer>

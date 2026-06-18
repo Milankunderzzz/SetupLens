@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { FINDING_SCOPES } from './constants.js';
 import { finding } from './lib/utils.js';
 
 export async function runPlugins(pluginPaths, context) {
@@ -27,6 +28,9 @@ export async function runPlugins(pluginPaths, context) {
     for (const item of output) {
       if (!item?.id || !item?.title || !['pass', 'warn', 'fail', 'info'].includes(item?.status)) {
         throw new Error(`Plugin ${plugin.name} returned an invalid finding.`);
+      }
+      if (item.scope && !Object.values(FINDING_SCOPES).includes(item.scope)) {
+        throw new Error(`Plugin ${plugin.name} returned an invalid finding scope.`);
       }
       findings.push(finding({ ...item, id: `plugin.${plugin.name}.${item.id}`, category: item.category ?? plugin.name }));
     }

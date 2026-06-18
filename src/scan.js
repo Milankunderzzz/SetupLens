@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { performance } from 'node:perf_hooks';
-import { STATUS_ORDER, VERSION } from './constants.js';
+import { FINDING_SCOPES, STATUS_ORDER, VERSION } from './constants.js';
 import { indexRepository } from './lib/files.js';
 import { clamp, gradeForScore } from './lib/utils.js';
 import { detectStacks, stackFindings } from './checks/stacks.js';
@@ -27,6 +27,16 @@ function summary(findings) {
   const result = { total: findings.length, pass: 0, warn: 0, fail: 0, info: 0 };
   for (const item of findings) result[item.status] += 1;
   return result;
+}
+
+function scopeResult(findings, scope) {
+  const scopedFindings = findings.filter((item) => item.scope === scope);
+  const score = calculateScore(scopedFindings);
+  return {
+    score,
+    grade: gradeForScore(score),
+    summary: summary(scopedFindings)
+  };
 }
 
 export async function scan(target = '.', options = {}) {
@@ -59,9 +69,13 @@ export async function scan(target = '.', options = {}) {
     return status || left.category.localeCompare(right.category) || left.title.localeCompare(right.title);
   });
 
-  const score = calculateScore(findings);
+  const scopes = {
+    setup: scopeResult(findings, FINDING_SCOPES.SETUP),
+    hygiene: scopeResult(findings, FINDING_SCOPES.HYGIENE)
+  };
+  const score = scopes.setup.score;
   return {
-    schemaVersion: '1.0',
+    schemaVersion: '1.1',
     tool: { name: 'SetupLens', version: VERSION },
     generatedAt: new Date().toISOString(),
     durationMs: Math.max(1, Math.round(performance.now() - started)),
@@ -69,7 +83,9 @@ export async function scan(target = '.', options = {}) {
     stacks: detection.stacks,
     score,
     grade: gradeForScore(score),
-    summary: summary(findings),
+    summary: scopes.setup.summary,
+    allSummary: summary(findings),
+    scopes,
     findings,
     vscodeExtensions: editor.extensions,
     plugins: pluginResult.loaded

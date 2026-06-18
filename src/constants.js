@@ -29,6 +29,11 @@ export const TEXT_EXTENSIONS = new Set([
 
 export const STATUS_ORDER = Object.freeze({ fail: 0, warn: 1, info: 2, pass: 3 });
 
+export const FINDING_SCOPES = Object.freeze({
+  SETUP: 'setup',
+  HYGIENE: 'hygiene'
+});
+
 export const STATUS_LABELS = Object.freeze({
   fail: 'FAIL',
   warn: 'WARN',

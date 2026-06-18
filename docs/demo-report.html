@@ -54,19 +54,20 @@
     <div class="wrap">
       <div class="brand">
         <div><h1>SetupLens</h1><p>Know why a repository will not run, in one command and under 30 seconds.</p></div>
-        <div class="score"><strong>60</strong><span>Grade D / 100</span></div>
+        <div class="score"><strong>62</strong><span>Readiness grade D / 100</span></div>
       </div>
-      <div class="meta"><span><strong>Target:</strong> CMMS-Milankunderzzz</span><span><strong>Stack:</strong> node / python / docker</span><span><strong>Duration:</strong> 878 ms</span><span><strong>Files:</strong> 261</span></div>
+      <div class="meta"><span><strong>Target:</strong> CMMS-Milankunderzzz</span><span><strong>Stack:</strong> node / python / docker</span><span><strong>Duration:</strong> 915 ms</span><span><strong>Files:</strong> 261</span></div>
     </div>
   </header>
   <main class="wrap">
     <div class="metrics">
-      <div class="metric"><span>Failed</span><strong>2</strong></div>
-      <div class="metric"><span>Warnings</span><strong>9</strong></div>
-      <div class="metric"><span>Passed</span><strong>15</strong></div>
+      <div class="metric"><span>Setup failures</span><strong>2</strong></div>
+      <div class="metric"><span>Setup warnings</span><strong>8</strong></div>
+      <div class="metric"><span>Hygiene findings</span><strong>1</strong></div>
       <div class="metric"><span>Total checks</span><strong>27</strong></div>
     </div>
-    <section class="actions"><h2>Highest-impact next actions</h2><ol><li>Correct the paths or restore the referenced files before running Docker Compose.</li><li>Update the Makefile to match the current package directories and scripts.</li><li>Copy .env.example to a local environment file and fill in your own values.</li><li>Copy .mcp.env.example to a local environment file and fill in your own values.</li><li>Copy backend/.env.example to a local environment file and fill in your own values.</li><li>Copy frontend/.env.example to a local environment file and fill in your own values.</li></ol></section>
+    <section class="actions"><h2>Highest-impact next actions</h2><ol><li>Correct the paths or restore the referenced files before running Docker Compose.</li><li>Define the missing script or update the Makefile command to use an available script.</li><li>Copy .env.example to a local environment file and fill in your own values.</li><li>Copy .mcp.env.example to a local environment file and fill in your own values.</li><li>Copy backend/.env.example to a local environment file and fill in your own values.</li><li>Copy frontend/.env.example to a local environment file and fill in your own values.</li></ol></section>
+
     <section><h2>Findings</h2><div class="findings"><article class="finding finding-fail">
     <div class="finding-main">
       <span class="status">FAIL</span>
@@ -75,7 +76,7 @@
         <p>4 of 6 local path references do not exist.</p>
         <p class="evidence">Evidence: infra/docker/Dockerfile.api (line 23), infra/docker/Dockerfile.web (line 74), ./infra/nginx/nginx.conf (line 98), ./infra/nginx/conf.d (line 99)</p>
       </div>
-      <span class="category">Paths</span>
+      <span class="category">setup / Paths</span>
     </div>
     <p class="recommendation"><strong>Fix:</strong> Correct the paths or restore the referenced files before running Docker Compose.</p>
   </article><article class="finding finding-fail">
@@ -83,12 +84,12 @@
       <span class="status">FAIL</span>
       <div>
         <h3>Makefile commands: Makefile</h3>
-        <p>1 command references are invalid.</p>
-        <p class="evidence">Evidence: frontend/package.json has no &quot;format&quot; script</p>
+        <p>1 Makefile command is invalid.</p>
+        <p class="evidence">Evidence: line 46: npm run format is not defined in frontend/package.json; available scripts: build, dev, e2e, lint, start, test</p>
       </div>
-      <span class="category">Paths</span>
+      <span class="category">setup / Paths</span>
     </div>
-    <p class="recommendation"><strong>Fix:</strong> Update the Makefile to match the current package directories and scripts.</p>
+    <p class="recommendation"><strong>Fix:</strong> Define the missing script or update the Makefile command to use an available script.</p>
   </article><article class="finding finding-warn">
     <div class="finding-main">
       <span class="status">WARN</span>
@@ -97,7 +98,7 @@
         <p>No local environment file was found for 17 documented variables.</p>
         <p class="evidence">Evidence: Expected .env or .env.local</p>
       </div>
-      <span class="category">Configuration</span>
+      <span class="category">setup / Configuration</span>
     </div>
     <p class="recommendation"><strong>Fix:</strong> Copy .env.example to a local environment file and fill in your own values.</p>
   </article><article class="finding finding-warn">
@@ -108,7 +109,7 @@
         <p>No local environment file was found for 9 documented variables.</p>
         <p class="evidence">Evidence: Expected .mcp.env</p>
       </div>
-      <span class="category">Configuration</span>
+      <span class="category">setup / Configuration</span>
     </div>
     <p class="recommendation"><strong>Fix:</strong> Copy .mcp.env.example to a local environment file and fill in your own values.</p>
   </article><article class="finding finding-warn">
@@ -119,7 +120,7 @@
         <p>No local environment file was found for 10 documented variables.</p>
         <p class="evidence">Evidence: Expected backend/.env or backend/.env.local</p>
       </div>
-      <span class="category">Configuration</span>
+      <span class="category">setup / Configuration</span>
     </div>
     <p class="recommendation"><strong>Fix:</strong> Copy backend/.env.example to a local environment file and fill in your own values.</p>
   </article><article class="finding finding-warn">
@@ -130,7 +131,7 @@
         <p>No local environment file was found for 6 documented variables.</p>
         <p class="evidence">Evidence: Expected frontend/.env or frontend/.env.local</p>
       </div>
-      <span class="category">Configuration</span>
+      <span class="category">setup / Configuration</span>
     </div>
     <p class="recommendation"><strong>Fix:</strong> Copy frontend/.env.example to a local environment file and fill in your own values.</p>
   </article><article class="finding finding-warn">
@@ -140,7 +141,7 @@
         <h3>Dependency lockfile: frontend</h3>
         <p>No supported lockfile was found.</p>
       </div>
-      <span class="category">Dependencies</span>
+      <span class="category">setup / Dependencies</span>
     </div>
     <p class="recommendation"><strong>Fix:</strong> Commit a lockfile for reproducible installs.</p>
   </article><article class="finding finding-warn">
@@ -150,7 +151,7 @@
         <h3>Node dependencies: frontend</h3>
         <p>node_modules is missing for 20 declared dependencies.</p>
       </div>
-      <span class="category">Dependencies</span>
+      <span class="category">setup / Dependencies</span>
     </div>
     <p class="recommendation"><strong>Fix:</strong> Run the package manager install command in frontend.</p>
   </article><article class="finding finding-warn">
@@ -160,7 +161,7 @@
         <h3>Python virtual environment</h3>
         <p>No local Python virtual environment was found.</p>
       </div>
-      <span class="category">Dependencies</span>
+      <span class="category">setup / Dependencies</span>
     </div>
     <p class="recommendation"><strong>Fix:</strong> Create a project-local virtual environment before installing packages.</p>
   </article><article class="finding finding-warn">
@@ -170,7 +171,7 @@
         <h3>Compose schema: docker-compose.yml</h3>
         <p>The top-level version key is obsolete in modern Docker Compose.</p>
       </div>
-      <span class="category">Paths</span>
+      <span class="category">setup / Paths</span>
     </div>
     <p class="recommendation"><strong>Fix:</strong> Remove the version key after confirming compatibility.</p>
   </article><article class="finding finding-warn">
@@ -180,7 +181,7 @@
         <h3>License</h3>
         <p>No license file was found.</p>
       </div>
-      <span class="category">Repository</span>
+      <span class="category">hygiene / Repository</span>
     </div>
     <p class="recommendation"><strong>Fix:</strong> Choose and add an explicit open-source license.</p>
   </article><article class="finding finding-info">
@@ -191,7 +192,7 @@
         <p>6 extensions match the detected stack.</p>
         <p class="evidence">Evidence: dbaeumer.vscode-eslint, esbenp.prettier-vscode, ms-python.python, charliermarsh.ruff, ms-azuretools.vscode-containers, redhat.vscode-yaml</p>
       </div>
-      <span class="category">Editor</span>
+      <span class="category">setup / Editor</span>
     </div>
   </article><article class="finding finding-pass">
     <div class="finding-main">
@@ -200,7 +201,7 @@
         <h3>.gitignore</h3>
         <p>.gitignore is present.</p>
       </div>
-      <span class="category">Repository</span>
+      <span class="category">hygiene / Repository</span>
     </div>
   </article><article class="finding finding-pass">
     <div class="finding-main">
@@ -209,7 +210,7 @@
         <h3>Automated tests</h3>
         <p>Test files or test directories are present.</p>
       </div>
-      <span class="category">Repository</span>
+      <span class="category">hygiene / Repository</span>
     </div>
   </article><article class="finding finding-pass">
     <div class="finding-main">
@@ -218,7 +219,7 @@
         <h3>Continuous integration</h3>
         <p>A GitHub Actions workflow is present.</p>
       </div>
-      <span class="category">Repository</span>
+      <span class="category">hygiene / Repository</span>
     </div>
   </article><article class="finding finding-pass">
     <div class="finding-main">
@@ -227,7 +228,7 @@
         <h3>README</h3>
         <p>A README is present.</p>
       </div>
-      <span class="category">Repository</span>
+      <span class="category">hygiene / Repository</span>
     </div>
   </article><article class="finding finding-pass">
     <div class="finding-main">
@@ -236,7 +237,7 @@
         <h3>Repository scan coverage</h3>
         <p>Indexed 261 files without hitting safety limits.</p>
       </div>
-      <span class="category">Repository</span>
+      <span class="category">setup / Repository</span>
     </div>
   </article><article class="finding finding-pass">
     <div class="finding-main">
@@ -245,7 +246,7 @@
         <h3>Docker CLI</h3>
         <p>Docker version 29.4.0, build 9d7ad9f.</p>
       </div>
-      <span class="category">Runtime</span>
+      <span class="category">setup / Runtime</span>
     </div>
   </article><article class="finding finding-pass">
     <div class="finding-main">
@@ -254,7 +255,7 @@
         <h3>Docker Compose</h3>
         <p>Docker Compose version v5.1.2.</p>
       </div>
-      <span class="category">Runtime</span>
+      <span class="category">setup / Runtime</span>
     </div>
   </article><article class="finding finding-pass">
     <div class="finding-main">
@@ -263,7 +264,7 @@
         <h3>Git runtime</h3>
         <p>git version 2.54.0.windows.1.</p>
       </div>
-      <span class="category">Runtime</span>
+      <span class="category">setup / Runtime</span>
     </div>
   </article><article class="finding finding-pass">
     <div class="finding-main">
@@ -272,7 +273,7 @@
         <h3>Node.js runtime</h3>
         <p>v24.14.1.</p>
       </div>
-      <span class="category">Runtime</span>
+      <span class="category">setup / Runtime</span>
     </div>
   </article><article class="finding finding-pass">
     <div class="finding-main">
@@ -281,7 +282,7 @@
         <h3>npm package manager</h3>
         <p>11.11.0.</p>
       </div>
-      <span class="category">Runtime</span>
+      <span class="category">setup / Runtime</span>
     </div>
   </article><article class="finding finding-pass">
     <div class="finding-main">
@@ -290,7 +291,7 @@
         <h3>Python runtime</h3>
         <p>Python 3.14.3.</p>
       </div>
-      <span class="category">Runtime</span>
+      <span class="category">setup / Runtime</span>
     </div>
   </article><article class="finding finding-pass">
     <div class="finding-main">
@@ -299,7 +300,7 @@
         <h3>Credential patterns</h3>
         <p>No high-confidence credential patterns were found.</p>
       </div>
-      <span class="category">Security</span>
+      <span class="category">setup / Security</span>
     </div>
   </article><article class="finding finding-pass">
     <div class="finding-main">
@@ -308,7 +309,7 @@
         <h3>Environment ignore rule</h3>
         <p>.gitignore protects local environment files.</p>
       </div>
-      <span class="category">Security</span>
+      <span class="category">setup / Security</span>
     </div>
   </article><article class="finding finding-pass">
     <div class="finding-main">
@@ -317,7 +318,7 @@
         <h3>Tracked environment files</h3>
         <p>No local environment files are tracked by Git.</p>
       </div>
-      <span class="category">Security</span>
+      <span class="category">setup / Security</span>
     </div>
   </article><article class="finding finding-pass">
     <div class="finding-main">
@@ -326,10 +327,10 @@
         <h3>Project stack detected</h3>
         <p>Detected node, python, docker across 261 indexed files.</p>
       </div>
-      <span class="category">Stack</span>
+      <span class="category">setup / Stack</span>
     </div>
   </article></div></section>
   </main>
-  <footer><div class="wrap">Generated locally by SetupLens 0.1.0 at 2026-06-17T23:09:29.021Z. No repository data was uploaded.</div></footer>
+  <footer><div class="wrap">Generated locally by SetupLens 0.1.0 at 2026-06-18T04:00:12.357Z. No repository data was uploaded.</div></footer>
 </body>
 </html>

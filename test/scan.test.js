@@ -76,6 +76,32 @@ test('names available npm scripts when a Makefile command is invalid', async (t)
   assert.match(finding.evidence, /available scripts: dev, test/);
 });
 
+test('separates setup readiness from repository hygiene', async (t) => {
+  const root = await fixture({
+    'package.json': JSON.stringify({ name: 'scope-fixture' })
+  });
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+
+  const report = await scan(root);
+  const ids = new Map(report.findings.map((item) => [item.id, item]));
+  const terminal = renderTerminal(report, { color: false });
+
+  assert.equal(report.schemaVersion, '1.1');
+  assert.equal(report.score, 100);
+  assert.equal(report.scopes.setup.score, 100);
+  assert.equal(report.scopes.hygiene.score, 81);
+  assert.equal(report.scopes.hygiene.summary.fail, 1);
+  assert.equal(report.scopes.hygiene.summary.warn, 4);
+  assert.equal(report.summary.fail, 0);
+  assert.equal(report.allSummary.fail, 1);
+  assert.equal(ids.get('repository.readme').scope, 'hygiene');
+  assert.equal(ids.get('repository.index-limit').scope, 'setup');
+  assert.match(terminal, /Score\s+100\/100 A.*setup readiness/);
+  assert.match(terminal, /Setup\s+0 failed\s+0 warnings/);
+  assert.match(terminal, /Hygiene\s+1 failed\s+4 warnings/);
+  assert.match(terminal, /README \[hygiene \/ Repository\]/);
+});
+
 test('produces a self-contained escaped HTML report', async (t) => {
   const root = await fixture({
     'package.json': JSON.stringify({ name: '<unsafe>', scripts: { test: 'node --test' } }),
@@ -91,6 +117,8 @@ test('produces a self-contained escaped HTML report', async (t) => {
   const report = await scan(root);
   const html = renderHtml(report);
   assert.match(html, /<!doctype html>/);
+  assert.match(html, /Setup failures/);
+  assert.match(html, /Hygiene findings/);
   assert.match(html, /No repository data was uploaded/);
   assert.doesNotMatch(html, /<script/i);
 });
@@ -106,5 +134,6 @@ test('loads only explicitly requested plugins', async (t) => {
   const withPlugin = await scan(root, { plugins: [path.join(root, 'plugin.mjs')] });
   assert.equal(withoutPlugin.plugins.length, 0);
   assert.deepEqual(withPlugin.plugins, ['demo']);
-  assert.ok(withPlugin.findings.some((item) => item.id === 'plugin.demo.rule'));
+  const pluginFinding = withPlugin.findings.find((item) => item.id === 'plugin.demo.rule');
+  assert.equal(pluginFinding.scope, 'setup');
 });
