@@ -188,9 +188,11 @@ I keep short notes from real-project testing in the [development log](docs/devlo
 
 I especially welcome focused rules, cross-platform fixtures, and false-positive reports. Read [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md) before submitting changes.
 
+<!--
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=Milankunderzzz/SetupLens&type=Date)](https://star-history.com/#Milankunderzzz/SetupLens&Date)
+-->
 
 ## License
 
