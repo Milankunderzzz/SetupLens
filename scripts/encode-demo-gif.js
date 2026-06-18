@@ -14,13 +14,14 @@ const files = fs.readdirSync(frameDirectory)
 if (files.length === 0) throw new Error(`No PNG frames found in ${frameDirectory}`);
 
 const gif = GIFEncoder();
+const frameDelays = [1800, 1800, 800, 800, 800, 800, 2500];
 for (let index = 0; index < files.length; index += 1) {
   const png = PNG.sync.read(fs.readFileSync(path.join(frameDirectory, files[index])));
   const palette = quantize(png.data, 128, { format: 'rgb444' });
   const pixels = applyPalette(png.data, palette, 'rgb444');
   gif.writeFrame(pixels, png.width, png.height, {
     palette,
-    delay: index === files.length - 1 ? 1800 : 550,
+    delay: frameDelays[index] ?? 800,
     repeat: 0
   });
 }

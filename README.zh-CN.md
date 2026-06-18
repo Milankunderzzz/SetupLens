@@ -8,7 +8,9 @@
 
 </div>
 
-![SetupLens 真实扫描演示](docs/assets/demo.gif)
+**一次真实启动失败的定位过程：** Docker Compose 找不到构建路径后，SetupLens 在 810 ms 内定位到 4 个错误 Compose 路径和 1 个缺失 npm 脚本。
+
+![Docker Compose 启动失败后，SetupLens 在 810 ms 内找到 5 个已确认的启动阻塞项](docs/assets/demo.gif)
 
 SetupLens 是我正在持续维护的个人开源项目，起因是一个反复遇到的问题：仓库看起来很完整，克隆下来却跑不起来。它会检查当前电脑和仓库，找出缺失的运行时、依赖、环境文件、错误路径和其他常见的启动问题。
 

@@ -14,7 +14,9 @@
 
 </div>
 
-![SetupLens scans a real Node, Python, and Docker repository in 810 milliseconds](docs/assets/demo.gif)
+**A real setup failure, explained:** after Docker Compose could not find its build path, SetupLens identified four broken Compose paths and one missing npm script in 810 ms.
+
+![A failed Docker Compose run followed by SetupLens finding five confirmed setup blockers in 810 milliseconds](docs/assets/demo.gif)
 
 SetupLens is an early personal open-source project for a problem I keep meeting: a repository looks complete, but it does not run after cloning. It checks the local machine and repository for missing runtimes, dependencies, environment files, broken paths, and a few other common setup failures.
 

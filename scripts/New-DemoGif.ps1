@@ -43,35 +43,34 @@ function New-Frame($stage) {
     New-Text $drawing "SetupLens terminal" 140 40 "#AFC0CC" 19
 
     New-Text $drawing "PS>" 58 112 "#43C78A" 24
-    New-Text $drawing "npx setuplens scan ." 112 112 "#F4F7F9" 24
+    New-Text $drawing "docker compose up --build" 112 112 "#F4F7F9" 24
+    New-Text $drawing "ERROR" 58 158 "#FF7D73" 22
+    New-Text $drawing 'unable to prepare context: path "./backend" not found' 145 158 "#F4F7F9" 22
 
     if ($stage -ge 1) {
-        New-Text $drawing "Indexing repository..." 58 170 "#AFC0CC" 22
-        New-Text $drawing "261 files" 840 170 "#F4F7F9" 22
+        New-Text $drawing "PS>" 58 222 "#43C78A" 24
+        New-Text $drawing "npx --yes github:Milankunderzzz/SetupLens scan ." 112 222 "#F4F7F9" 22
     }
     if ($stage -ge 2) {
-        New-Text $drawing "Detected stack" 58 214 "#AFC0CC" 22
-        New-Text $drawing "node / python / docker" 320 214 "#57B7F2" 22
+        New-Text $drawing "Indexed 261 files" 58 278 "#AFC0CC" 22
+        New-Text $drawing "node / python / docker" 320 278 "#57B7F2" 22
     }
     if ($stage -ge 3) {
-        New-Text $drawing "FAIL" 58 276 "#FF7D73" 22
-        New-Text $drawing "4 broken Docker Compose paths" 145 276 "#F4F7F9" 22
+        New-Text $drawing "FAIL" 58 334 "#FF7D73" 22
+        New-Text $drawing "4 broken Docker Compose paths" 145 334 "#F4F7F9" 22
     }
     if ($stage -ge 4) {
-        New-Text $drawing "FAIL" 58 320 "#FF7D73" 22
-        New-Text $drawing "Makefile calls a missing npm script" 145 320 "#F4F7F9" 22
+        New-Text $drawing "FAIL" 58 378 "#FF7D73" 22
+        New-Text $drawing "Makefile calls a missing npm script" 145 378 "#F4F7F9" 22
     }
     if ($stage -ge 5) {
-        New-Text $drawing "WARN" 58 364 "#FFD166" 22
-        New-Text $drawing "9 setup and dependency gaps" 145 364 "#F4F7F9" 22
+        New-Text $drawing "PASS" 58 422 "#43C78A" 22
+        New-Text $drawing "No high-confidence credentials exposed" 145 422 "#F4F7F9" 22
     }
     if ($stage -ge 6) {
-        New-Text $drawing "PASS" 58 408 "#43C78A" 22
-        New-Text $drawing "No high-confidence credentials exposed" 145 408 "#F4F7F9" 22
-        New-Text $drawing "Score" 58 482 "#AFC0CC" 22
-        New-Text $drawing "60 / 100" 145 476 "#F4F7F9" 31
-        New-Text $drawing "2 failed  |  9 warnings  |  15 passed" 320 482 "#AFC0CC" 22
-        New-Text $drawing "Done in 810 ms. No repository data uploaded." 58 548 "#43C78A" 21
+        New-Text $drawing "5 confirmed blockers" 58 474 "#FF7D73" 28
+        New-Text $drawing "2 failed checks  |  9 warnings  |  15 passed" 58 516 "#AFC0CC" 20
+        New-Text $drawing "Explained in 810 ms. Uploaded 0 bytes." 58 558 "#43C78A" 22
     }
 
     $drawing.Close()
