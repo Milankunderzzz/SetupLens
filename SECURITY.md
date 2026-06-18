@@ -2,7 +2,7 @@
 
 ## Reporting a Vulnerability
 
-Do not open a public issue for a vulnerability that could expose repository data or credentials. Use GitHub private vulnerability reporting for this repository.
+Do not open a public issue for a vulnerability that could expose repository data or credentials. Use GitHub private vulnerability reporting for this repository. I am the current maintainer and will acknowledge a report when I have reproduced or triaged it; I do not promise a fixed response window yet.
 
 Include the affected version, reproduction steps, impact, and any suggested mitigation. Please avoid including real secrets or private repository contents in the report.
 

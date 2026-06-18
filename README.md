@@ -4,7 +4,7 @@
 
 **Know why a repository will not run, in one command and under 30 seconds.**
 
-[中文](README.zh-CN.md) | [Plugin API](docs/PLUGIN_API.md) | [Example report](docs/demo-report.html)
+[中文](README.zh-CN.md) | [Why I built it](ARCHITECTURE.md) | [Plugin API](docs/PLUGIN_API.md) | [Example report](docs/demo-report.html)
 
 [![CI](https://github.com/Milankunderzzz/SetupLens/actions/workflows/ci.yml/badge.svg)](https://github.com/Milankunderzzz/SetupLens/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/Milankunderzzz/SetupLens?sort=semver)](https://github.com/Milankunderzzz/SetupLens/releases)
@@ -16,7 +16,9 @@
 
 ![SetupLens scans a real Node, Python, and Docker repository in 810 milliseconds](docs/assets/demo.gif)
 
-SetupLens is a local-first repository readiness scanner. It detects missing runtimes, uninstalled dependencies, incomplete environment files, broken Docker Compose paths, invalid Makefile commands, credential risks, and editor setup gaps before a contributor loses an afternoon to setup.
+SetupLens is an early personal open-source project for a problem I keep meeting: a repository looks complete, but it does not run after cloning. It checks the local machine and repository for missing runtimes, dependencies, environment files, broken paths, and a few other common setup failures.
+
+I am building it in public and keeping the first versions deliberately small. The current rules work best for Node.js, Python, and Docker repositories. The reasoning behind the scope and code structure is in [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## Try It
 
@@ -122,9 +124,9 @@ export default {
 
 See the [Plugin API](docs/PLUGIN_API.md) for the complete contract.
 
-## How We Differ
+## Scope and Alternatives
 
-SetupLens is not trying to replace every repository or web auditing tool. It focuses on one moment: **a developer has the code, but it will not run on their machine.**
+I am not trying to replace every repository or web auditing tool. SetupLens focuses on one moment: **a developer has the code, but it will not run on their machine.**
 
 | Product | Primary question | Local runtime and environment | Repository hygiene | Maintainer analytics | Web performance | Offline |
 |---|---|:---:|:---:|:---:|:---:|:---:|
@@ -133,29 +135,29 @@ SetupLens is not trying to replace every repository or web auditing tool. It foc
 | [GitVital](https://github.com/bugsNburgers/GitVital) | Is this GitHub project actively maintained? | No | Metadata-based | **Deep** | No | No |
 | [Lighthouse](https://github.com/GoogleChrome/lighthouse) | Is this deployed web page fast and accessible? | Browser only | No | No | **Deep** | Yes |
 
-### SetupLens strengths
+### What works well today
 
 - Finds machine-specific setup failures that repository metadata cannot see.
 - Runs locally with zero runtime dependencies, no account, and no telemetry.
 - Produces terminal, JSON, HTML, and GitHub Action results from one scan model.
 - Keeps the core focused while allowing explicit project and organization plugins.
 
-### Current trade-offs
+### What still needs work
 
 - Early-stage rule coverage is smaller than mature specialist tools.
 - Node.js 18.17 or newer is currently required to launch the scanner.
 - It reports fixes but intentionally does not mutate project files yet.
 - It does not replace dependency vulnerability scanners, web performance audits, or long-term maintainer analytics.
 
-The direction is deterministic evidence first, optional AI explanations later. A model should explain a confirmed broken path, not invent one.
+The project currently favors checks that can point to a file, command, or manifest entry. I may add optional AI explanations later, but the underlying finding should remain reproducible without a model.
 
-## Roadmap
+## What I Am Working On
 
-- **0.1:** Node.js, Python, Docker, environment, path, security, and repository checks
-- **0.2:** Deeper Java, Go, and Rust checks; SARIF output; configurable rule policies
-- **0.3:** Dry-run repair plans and safe, reviewable fixes
-- **0.4:** Signed standalone binaries and a curated plugin registry
-- **Later:** Optional local or bring-your-own-model explanations built on deterministic findings
+- **Now:** Improve false-positive coverage and tests for Node.js, Python, Docker, environment, and path checks.
+- **Next:** Add deeper Java, Go, and Rust checks, SARIF output, and configurable rule policies.
+- **Later:** Explore reviewable repair plans, standalone binaries, and a small plugin registry.
+
+The order can change as I test SetupLens on more repositories. Issues that include a minimal reproduction are the most useful input.
 
 ## Development
 
@@ -172,7 +174,7 @@ The scanning runtime uses only Node.js built-ins. Development dependencies are u
 
 ## Contributing
 
-Focused rules, cross-platform fixtures, and false-positive reductions are especially welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md) before submitting changes.
+I especially welcome focused rules, cross-platform fixtures, and false-positive reports. Read [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md) before submitting changes.
 
 ## License
 

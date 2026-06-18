@@ -1,8 +1,10 @@
 # Contributing
 
-Thank you for helping SetupLens make repository setup less mysterious.
+SetupLens is currently maintained by one person. Small issues and pull requests
+are easier for me to review, and a concrete failing repository fixture is more
+helpful than a broad feature proposal.
 
-## Good Contributions
+## Changes That Fit the Project
 
 - A deterministic check for a common setup failure
 - A cross-platform test fixture
@@ -36,4 +38,10 @@ Requirements:
 5. Use `warn` for missing setup, reproducibility, or maintainability work.
 6. Keep scans read-only unless the user explicitly invokes a future fix command.
 
-Open an issue before a large architectural change. Small fixes can go directly to a pull request.
+For a new check, include the smallest repository fixture that demonstrates the
+failure and assert the finding ID, status, and useful part of the message. Please
+avoid tests that depend on software installed on the contributor's machine.
+
+Open an issue before a large architectural change so I can explain the current
+constraints. Small fixes can go directly to a pull request. I may ask to move a
+product-specific rule to a plugin to keep the scanner focused.
