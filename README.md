@@ -178,6 +178,10 @@ The scanning runtime uses only Node.js built-ins. Development dependencies are u
 
 I especially welcome focused rules, cross-platform fixtures, and false-positive reports. Read [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md) before submitting changes.
 
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=Milankunderzzz/SetupLens&type=Date)](https://star-history.com/#Milankunderzzz/SetupLens&Date)
+
 ## License
 
 [MIT](LICENSE)
