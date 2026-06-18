@@ -21,8 +21,8 @@ export const SKIPPED_DIRECTORIES = new Set([
 ]);
 
 export const TEXT_EXTENSIONS = new Set([
-  '', '.bat', '.cjs', '.conf', '.config', '.css', '.env', '.go', '.gradle',
-  '.html', '.ini', '.java', '.js', '.json', '.jsx', '.md', '.mjs', '.php',
+  '', '.bat', '.c', '.cc', '.cjs', '.conf', '.config', '.cpp', '.css', '.cxx', '.env', '.go', '.gradle',
+  '.h', '.hpp', '.html', '.ini', '.java', '.js', '.json', '.jsx', '.md', '.mjs', '.php',
   '.properties', '.ps1', '.py', '.rb', '.rs', '.sh', '.sql', '.toml', '.ts',
   '.tsx', '.txt', '.vue', '.xml', '.yaml', '.yml'
 ]);

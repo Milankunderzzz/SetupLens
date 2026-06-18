@@ -92,7 +92,9 @@ setuplens scan . --plugin ./examples/custom-plugin.mjs
 
 README、许可证、`.gitignore`、CI 和测试覆盖属于独立的 `hygiene` 范围。它们仍会显示，并拥有单独的分数与摘要，但不会降低启动就绪分数。`--threshold` 和 GitHub Action 阈值均使用启动就绪分数。
 
-在 JSON 输出中，`summary` 表示启动就绪统计，`allSummary` 表示全部检查统计，`scopes` 则包含 setup 与 hygiene 各自的分数。`primaryStack`、`primaryStacks` 和 `stackEvidence` 会说明主技术栈、支持技术栈及其清单证据。
+当仓库为空、无法识别主技术栈，或主技术栈不在支持范围内时，SetupLens 会显示 `Unsupported / Not scored`，而不是给出可能误导用户的数字等级。通用的仓库规范和安全观察仍然显示，但不能据此证明该项目能够运行。无法计算就绪分数时，阈值检查会按未通过处理。
+
+在 JSON 输出中，`summary` 表示启动就绪统计，`allSummary` 表示全部检查统计，`scopes` 则包含 setup 与 hygiene 各自的分数。`scorable`、`scoreStatus`、`notScoredReason` 和 `scoreMessage` 用于说明数字分数是否有效。`primaryStack`、`primaryStacks` 和 `stackEvidence` 会说明主技术栈、支持技术栈及其清单证据。
 
 ## 我正在做什么
 

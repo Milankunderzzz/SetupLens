@@ -16,7 +16,7 @@ Usage:
 Options:
   --format <terminal|json|html>  Output format (default: terminal)
   -o, --output <file>           Write the report to a file
-  --threshold <0-100>           Exit with code 1 when the score is lower
+  --threshold <0-100>           Exit nonzero when lower or not scorable
   --plugin <file>               Load a trusted local plugin (repeatable)
   --no-color                    Disable terminal colors
   -h, --help                    Show help
@@ -84,5 +84,8 @@ export async function main(argv) {
     process.stdout.write(rendered);
   }
 
-  if (options.threshold !== null && report.score < options.threshold) process.exitCode = 1;
+  if (options.threshold !== null) {
+    if (!report.scorable) process.exitCode = 2;
+    else if (report.score < options.threshold) process.exitCode = 1;
+  }
 }

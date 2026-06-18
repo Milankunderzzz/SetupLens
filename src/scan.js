@@ -29,14 +29,44 @@ function summary(findings) {
   return result;
 }
 
-function scopeResult(findings, scope) {
+function scopeResult(findings, scope, scorable = true) {
   const scopedFindings = findings.filter((item) => item.scope === scope);
-  const score = calculateScore(scopedFindings);
+  const score = scorable ? calculateScore(scopedFindings) : null;
   return {
     score,
-    grade: gradeForScore(score),
+    grade: scorable ? gradeForScore(score) : null,
     summary: summary(scopedFindings)
   };
+}
+
+function scoreEligibility(index, detection) {
+  if (index.files.length === 0) {
+    return {
+      scorable: false,
+      reason: 'empty_repository',
+      message: 'The repository is empty, so setup readiness cannot be assessed.'
+    };
+  }
+
+  const primary = detection.stackEvidence.filter((item) => item.role === 'primary');
+  if (primary.length === 0) {
+    return {
+      scorable: false,
+      reason: 'primary_stack_not_detected',
+      message: 'No supported primary stack was detected, so setup readiness was not scored.'
+    };
+  }
+
+  if (!primary.some((item) => item.supported)) {
+    const names = primary.map((item) => item.name).join(', ');
+    return {
+      scorable: false,
+      reason: 'unsupported_primary_stack',
+      message: `The primary stack (${names}) is outside SetupLens support, so setup readiness was not scored.`
+    };
+  }
+
+  return { scorable: true, reason: null, message: null };
 }
 
 export async function scan(target = '.', options = {}) {
@@ -70,13 +100,14 @@ export async function scan(target = '.', options = {}) {
     return status || left.category.localeCompare(right.category) || left.title.localeCompare(right.title);
   });
 
+  const eligibility = scoreEligibility(index, detection);
   const scopes = {
-    setup: scopeResult(findings, FINDING_SCOPES.SETUP),
+    setup: scopeResult(findings, FINDING_SCOPES.SETUP, eligibility.scorable),
     hygiene: scopeResult(findings, FINDING_SCOPES.HYGIENE)
   };
   const score = scopes.setup.score;
   return {
-    schemaVersion: '1.1',
+    schemaVersion: '1.2',
     tool: { name: 'SetupLens', version: VERSION },
     generatedAt: new Date().toISOString(),
     durationMs: Math.max(1, Math.round(performance.now() - started)),
@@ -85,8 +116,12 @@ export async function scan(target = '.', options = {}) {
     primaryStack: detection.primaryStack,
     primaryStacks: detection.primaryStacks,
     stackEvidence: detection.stackEvidence,
+    scorable: eligibility.scorable,
+    scoreStatus: eligibility.scorable ? 'scored' : 'not_scored',
+    notScoredReason: eligibility.reason,
+    scoreMessage: eligibility.message,
     score,
-    grade: gradeForScore(score),
+    grade: eligibility.scorable ? gradeForScore(score) : null,
     summary: scopes.setup.summary,
     allSummary: summary(findings),
     scopes,

@@ -142,6 +142,13 @@ export async function detectStacks(index) {
   addNamed('java', ['pom.xml', 'build.gradle', 'build.gradle.kts'], 100, 70);
   addNamed('rust', ['Cargo.toml'], 100, 70);
   addNamed('go', ['go.mod'], 100, 70);
+  addNamed('c++', ['CMakeLists.txt'], 110, 75);
+  for (const file of index.files.filter((item) => /\.(?:c|cc|cpp|cxx)$/i.test(item.name))) {
+    evidence.push({ stack: 'c++', file, score: evidenceScore(file, 65, 55) });
+  }
+  for (const file of index.files.filter((item) => /\.vcxproj$/i.test(item.name))) {
+    evidence.push({ stack: 'c++', file, score: evidenceScore(file, 110, 70) });
+  }
   addNamed('php', ['composer.json'], 110, 70);
   addNamed('ruby', ['Gemfile'], 110, 70);
   addNamed('dart', ['pubspec.yaml'], 110, 70);

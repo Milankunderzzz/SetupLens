@@ -35,7 +35,7 @@ export function renderTerminal(report, options = {}) {
   const useColor = options.color !== false && Boolean(process.stdout.isTTY);
   const paint = painter(useColor);
   const lines = [];
-  const scoreColor = report.score >= 80 ? 'pass' : report.score >= 60 ? 'warn' : 'fail';
+  const scoreColor = report.scorable && report.score >= 80 ? 'pass' : report.scorable && report.score >= 60 ? 'warn' : 'fail';
 
   lines.push('');
   lines.push(paint.bold(`SetupLens ${report.tool.version}`));
@@ -48,7 +48,12 @@ export function renderTerminal(report, options = {}) {
   const primaryLabel = report.primaryStacks?.length > 0 ? report.primaryStacks.join(', ') : 'unknown';
   const supportingLabel = supportingStacks.length > 0 ? `  (supporting: ${supportingStacks.join(', ')})` : '';
   lines.push(`Stack   ${primaryLabel}${supportingLabel}`);
-  lines.push(`Score   ${paint[scoreColor](`${report.score}/100 ${report.grade}`)}  ${scoreBar(report.score)}  ${paint.dim('(setup readiness)')}`);
+  if (report.scorable) {
+    lines.push(`Score   ${paint[scoreColor](`${report.score}/100 ${report.grade}`)}  ${scoreBar(report.score)}  ${paint.dim('(setup readiness)')}`);
+  } else {
+    const label = report.notScoredReason === 'unsupported_primary_stack' ? 'Unsupported / Not scored' : 'Not scored';
+    lines.push(`Score   ${paint.warn(label)}  ${paint.dim(`(${report.scoreMessage})`)}`);
+  }
   lines.push(`Setup   ${summaryText(report.scopes.setup, paint)}`);
   lines.push(`Hygiene ${summaryText(report.scopes.hygiene, paint)}`);
   lines.push('');

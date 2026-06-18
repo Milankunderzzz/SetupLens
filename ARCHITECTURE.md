@@ -63,6 +63,14 @@ dependencies only generate the demo GIF.
 **Explicit plugins.** Plugins execute local JavaScript, so SetupLens loads only
 the paths named by the user. There is no automatic plugin discovery yet.
 
+**Scores require a supported primary stack.** A numeric readiness grade is
+only valid when repository evidence identifies a primary stack covered by the
+active SetupLens rules. Empty repositories, unknown stacks, and unsupported
+primary stacks return schema 1.2 with `scorable: false`, a null score and grade,
+and an auditable `notScoredReason`. Hygiene findings remain available, while
+threshold-based CLI and Action runs fail closed instead of treating missing
+coverage as high readiness.
+
 ## What Is Still Rough
 
 - The rule set is small and strongest for Node.js, Python, and Docker projects.
