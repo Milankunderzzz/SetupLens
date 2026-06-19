@@ -16,7 +16,7 @@ Usage:
 Options:
   --format <terminal|json|html>  Output format (default: terminal)
   -o, --output <file>           Write the report to a file
-  --threshold <0-100>           Exit nonzero when lower or not scorable
+  --threshold <0-100>           Exit 1 when lower, 2 when not scorable
   --plugin <file>               Load a trusted local plugin (repeatable)
   --no-color                    Disable terminal colors
   -h, --help                    Show help

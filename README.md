@@ -100,7 +100,7 @@ The main score answers one question: **how ready is this repository to run on th
 
 README, license, `.gitignore`, CI, and test coverage findings use the separate `hygiene` scope. They remain visible and receive their own score and summary, but they do not lower setup readiness. `--threshold` and the GitHub Action threshold use the setup readiness score.
 
-SetupLens reports `Unsupported / Not scored` instead of a numeric grade when the repository is empty, has no detectable primary stack, or uses a primary stack outside the supported rule set. Generic hygiene and security observations remain visible, but they do not prove that an unsupported project can run. A threshold check fails closed when no readiness score can be calculated.
+SetupLens reports `Unsupported / Not scored` instead of a numeric grade when the repository is empty, has no detectable primary stack, or uses a primary stack outside the supported rule set. Generic hygiene and security observations remain visible, but they do not prove that an unsupported project can run. A threshold check fails closed with exit code `2` when no readiness score can be calculated; exit code `1` remains reserved for a valid score below the requested threshold.
 
 In JSON output, `summary` describes setup readiness, `allSummary` covers every finding, and `scopes` contains the separate setup and hygiene scores. `scorable`, `scoreStatus`, `notScoredReason`, and `scoreMessage` explain whether the numeric score is valid. `primaryStack`, `primaryStacks`, and `stackEvidence` explain which technology leads the repository and which manifests are only supporting or incidental evidence.
 

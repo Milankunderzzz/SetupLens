@@ -1,11 +1,16 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { scan } from '../src/scan.js';
 import { renderHtml } from '../src/reporters/html.js';
+import { renderJson } from '../src/reporters/json.js';
 import { renderTerminal } from '../src/reporters/terminal.js';
+
+const cliPath = fileURLToPath(new URL('../bin/setuplens.js', import.meta.url));
 
 async function fixture(files) {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'setuplens-'));
@@ -112,6 +117,11 @@ test('does not score an unsupported C++ repository', async (t) => {
   const report = await scan(root);
   const terminal = renderTerminal(report, { color: false });
   const html = renderHtml(report);
+  const json = JSON.parse(renderJson(report));
+  const cli = spawnSync(process.execPath, [cliPath, 'scan', root, '--threshold', '80', '--no-color'], {
+    encoding: 'utf8',
+    windowsHide: true
+  });
 
   assert.equal(report.primaryStack, 'c++');
   assert.equal(report.scorable, false);
@@ -120,10 +130,15 @@ test('does not score an unsupported C++ repository', async (t) => {
   assert.equal(report.score, null);
   assert.equal(report.grade, null);
   assert.equal(report.scopes.setup.score, null);
+  assert.equal(json.score, null);
+  assert.equal(json.scoreStatus, 'not_scored');
   assert.match(terminal, /Unsupported \/ Not scored/);
   assert.doesNotMatch(terminal, /98\/100 A/);
   assert.match(html, /Not scored/);
   assert.match(html, /Unsupported primary stack: c\+\+/);
+  assert.equal(cli.status, 2, cli.stderr);
+  assert.match(cli.stdout, /Unsupported \/ Not scored/);
+  assert.doesNotMatch(cli.stdout, /98\/100 A/);
 });
 
 test('does not score an empty repository', async (t) => {
