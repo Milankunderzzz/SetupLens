@@ -22,6 +22,17 @@ SetupLens is an early personal open-source project for a problem I keep meeting:
 
 I am building it in public and keeping the first versions deliberately small. The current rules work best for Node.js, Python, and Docker repositories. The reasoning behind the scope and code structure is in [ARCHITECTURE.md](ARCHITECTURE.md).
 
+## Current Development Status
+
+SetupLens is an early research prototype and usable MVP, not yet a product whose effectiveness has been established. The current `main` branch includes:
+
+- 44 automated tests, executed in CI on Windows, Linux, and macOS with Node.js 18 and 22;
+- context-aware file classification, workspace-level dependency reporting, and primary-stack ranking;
+- `Unsupported / Not scored` results for empty repositories, unknown stacks, and unsupported primary stacks instead of misleading numeric grades;
+- one documented CMMS validation case and one external C++ boundary pilot.
+
+Precision, recall, F1, developer time savings, and low false-positive rates have not yet been established. Those claims remain gated on the independent pilot and holdout study in [SetupBench-Lens](https://github.com/Milankunderzzz/SetupBench-Lens).
+
 ## Try It
 
 Run directly from GitHub without cloning or registering:
@@ -165,9 +176,10 @@ The project currently favors checks that can point to a file, command, or manife
 
 ## What I Am Working On
 
-- **Now:** Freeze the research scope to Node.js, Python, and Docker; reduce false positives and expand the fixture-based test suite.
-- **Next:** Validate findings against an independently annotated repository-setup benchmark, with special attention to monorepos and file context.
-- **Later:** Reconsider deeper Java, Go, and Rust support only after the core benchmark meets explicit precision and recall targets.
+- **Now:** Complete full Pass A, Pass B, and Pass C review for 10 pilot repositories, while keeping the research scope fixed to Node.js, Python, and Docker.
+- **Next:** Find five external users, record three confirmed setup problems, obtain at least one external issue or feedback report, and produce a 30-second before/after demonstration.
+- **After the pilot:** Freeze the confirmatory commit, rerun eligible holdout repositories, and calculate precision, recall, F1, confidence intervals, and diagnosis-time comparisons.
+- **Later:** Evaluate npm and GitHub Marketplace distribution, then reconsider deeper Java, Go, and Rust support only if the evidence justifies expansion.
 
 Existing Java, Go, and Rust manifest detection remains available as experimental boundary behavior, but new rules for those ecosystems are paused. Issues that include a minimal reproduction are the most useful input.
 
