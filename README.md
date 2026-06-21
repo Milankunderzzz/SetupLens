@@ -115,7 +115,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: Milankunderzzz/SetupLens@v0.1.0
+      - uses: Milankunderzzz/SetupLens@v0.1.1
         with:
           path: .
           threshold: 75
