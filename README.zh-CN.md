@@ -4,7 +4,7 @@
 
 **一条命令，在 30 秒内告诉你一个仓库为什么跑不起来。**
 
-[English](README.md) | [为什么做这个项目](ARCHITECTURE.md) | [插件 API](docs/PLUGIN_API.md) | [示例报告](docs/demo-report.html)
+[English](README.md) | [版本路线](ROADMAP.zh-CN.md) | [为什么做这个项目](ARCHITECTURE.md) | [插件 API](docs/PLUGIN_API.md) | [示例报告](docs/demo-report.html)
 
 </div>
 
@@ -108,6 +108,8 @@ README、许可证、`.gitignore`、CI 和测试覆盖属于独立的 `hygiene` 
 在 JSON 输出中，`summary` 表示启动就绪统计，`allSummary` 表示全部检查统计，`scopes` 则包含 setup 与 hygiene 各自的分数。`scorable`、`scoreStatus`、`notScoredReason` 和 `scoreMessage` 用于说明数字分数是否有效。`primaryStack`、`primaryStacks` 和 `stackEvidence` 会说明主技术栈、支持技术栈及其清单证据。
 
 ## 我正在做什么
+
+详细的版本进入条件和暂缓方向记录在[版本路线](ROADMAP.zh-CN.md)中。当前版本线仍为 `v0.1.x`；`v0.2.0-alpha.1` 将用于冻结 pilot 版本，稳定的 `v0.2.0` 必须完成计划中的实验与分发证据。
 
 - **现在：** 完成 10 个 pilot 仓库的 Pass A、Pass B 和 Pass C 人工审核，研究范围继续锁定为 Node.js、Python 和 Docker。
 - **下一步：** 找到 5 个真实外部用户，记录 3 个成功发现真实问题的案例，获得至少 1 条外部 Issue 或反馈，并制作一个 30 秒前后对比演示。

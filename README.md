@@ -4,7 +4,7 @@
 
 **Know why a repository will not run, in one command and under 30 seconds.**
 
-[中文](README.zh-CN.md) | [Why I built it](ARCHITECTURE.md) | [Plugin API](docs/PLUGIN_API.md) | [Example report](docs/demo-report.html)
+[中文](README.zh-CN.md) | [Roadmap](ROADMAP.md) | [Why I built it](ARCHITECTURE.md) | [Plugin API](docs/PLUGIN_API.md) | [Example report](docs/demo-report.html)
 
 [![CI](https://github.com/Milankunderzzz/SetupLens/actions/workflows/ci.yml/badge.svg)](https://github.com/Milankunderzzz/SetupLens/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/Milankunderzzz/SetupLens?sort=semver)](https://github.com/Milankunderzzz/SetupLens/releases)
@@ -175,6 +175,11 @@ I am not trying to replace every repository or web auditing tool. SetupLens focu
 The project currently favors checks that can point to a file, command, or manifest entry. I may add optional AI explanations later, but the underlying finding should remain reproducible without a model.
 
 ## What I Am Working On
+
+The detailed release gates and deferred directions are maintained in the
+[version roadmap](ROADMAP.md). The current release line remains `v0.1.x`;
+`v0.2.0-alpha.1` will freeze the pilot build, and stable `v0.2.0` will require
+the planned evaluation and distribution evidence.
 
 - **Now:** Complete full Pass A, Pass B, and Pass C review for 10 pilot repositories, while keeping the research scope fixed to Node.js, Python, and Docker.
 - **Next:** Find five external users, record three confirmed setup problems, obtain at least one external issue or feedback report, and produce a 30-second before/after demonstration.
