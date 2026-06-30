@@ -1,6 +1,6 @@
 {
   "name": "setuplens",
-  "version": "0.1.0",
+  "version": "0.2.0-alpha.1",
   "description": "Know why a repository will not run, in one command and under 30 seconds.",
   "type": "module",
   "bin": {
@@ -13,6 +13,7 @@
     "bin",
     "src",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "scripts": {

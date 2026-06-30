@@ -40,6 +40,9 @@ test('detects missing dependencies, paths, configuration, and credentials', asyn
   assert.equal(ids.get('security.secret-scan').status, 'fail');
   assert.equal(ids.get('configuration.env.missing..env.example').status, 'warn');
   assert.equal(ids.get('paths.compose.docker-compose.yml').status, 'fail');
+  assert.equal(report.startup.status, 'blocked');
+  assert.ok(report.startup.blockers.some((item) => item.id === 'paths.compose.docker-compose.yml'));
+  assert.equal(report.startup.runCommands.some((item) => item.command.includes('docker compose')), false);
   assert.match(renderTerminal(report, { color: false }), /Values are never printed/);
   assert.doesNotMatch(renderTerminal(report, { color: false }), /this-is-a-real-looking-secret/);
   assert.ok(report.score < 90);
@@ -81,6 +84,50 @@ test('names available npm scripts when a Makefile command is invalid', async (t)
   assert.match(finding.evidence, /available scripts: dev, test/);
 });
 
+test('builds a practical startup plan for a Node application', async (t) => {
+  const root = await fixture({
+    'package.json': JSON.stringify({
+      name: 'web-app',
+      scripts: { dev: 'vite --host 0.0.0.0', test: 'vitest' },
+      dependencies: { vite: '1.0.0' }
+    }),
+    'README.md': '# Web app\n',
+    '.gitignore': 'node_modules\n.env\n'
+  });
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+
+  const report = await scan(root);
+  const terminal = renderTerminal(report, { color: false });
+
+  assert.equal(report.startup.status, 'needs_setup');
+  assert.equal(report.startup.setupCommands[0].command, 'npm install');
+  assert.equal(report.startup.runCommands[0].command, 'npm run dev');
+  assert.match(terminal, /Verdict NEEDS SETUP/);
+  assert.match(terminal, /Prepare/);
+  assert.match(terminal, /npm install/);
+  assert.match(terminal, /Run/);
+  assert.match(terminal, /npm run dev/);
+  assert.doesNotMatch(terminal, /README \[hygiene \/ Repository\]/);
+});
+
+test('detects a Python web app startup path', async (t) => {
+  const root = await fixture({
+    'requirements.txt': 'flask\n',
+    'app.py': 'from flask import Flask\napp = Flask(__name__)\n',
+    'README.md': '# Flask app\n',
+    '.gitignore': '.venv\n.env\n'
+  });
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+
+  const report = await scan(root);
+
+  assert.equal(report.primaryStack, 'python');
+  assert.equal(report.startup.status, 'needs_setup');
+  assert.ok(report.startup.setupCommands.some((item) => item.command === 'python -m venv .venv'));
+  assert.ok(report.startup.setupCommands.some((item) => item.command === 'python -m pip install -r requirements.txt'));
+  assert.ok(report.startup.runCommands.some((item) => item.command === 'python -m flask --app app run'));
+});
+
 test('separates setup readiness from repository hygiene', async (t) => {
   const root = await fixture({
     'package.json': JSON.stringify({ name: 'scope-fixture' })
@@ -89,7 +136,7 @@ test('separates setup readiness from repository hygiene', async (t) => {
 
   const report = await scan(root);
   const ids = new Map(report.findings.map((item) => [item.id, item]));
-  const terminal = renderTerminal(report, { color: false });
+  const terminal = renderTerminal(report, { color: false, showAll: true });
 
   assert.equal(report.schemaVersion, '1.2');
   assert.equal(report.score, 100);

@@ -4,7 +4,7 @@
 
 **Know why a repository will not run, in one command and under 30 seconds.**
 
-[中文](README.zh-CN.md) | [Why I built it](ARCHITECTURE.md) | [Plugin API](docs/PLUGIN_API.md) | [Example report](docs/demo-report.html)
+[中文](README.zh-CN.md) | [Why I built it](ARCHITECTURE.md) | [Product direction](docs/PRODUCT_DIRECTION.md) | [Plugin API](docs/PLUGIN_API.md) | [Example report](docs/demo-report.html)
 
 [![CI](https://github.com/Milankunderzzz/SetupLens/actions/workflows/ci.yml/badge.svg)](https://github.com/Milankunderzzz/SetupLens/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/Milankunderzzz/SetupLens?sort=semver)](https://github.com/Milankunderzzz/SetupLens/releases)
@@ -18,17 +18,20 @@
 
 ![A failed Docker Compose run followed by SetupLens finding five confirmed setup blockers in 810 milliseconds](docs/assets/demo.gif)
 
-SetupLens is an early personal open-source project for a problem I keep meeting: a repository looks complete, but it does not run after cloning. It checks the local machine and repository for missing runtimes, dependencies, environment files, broken paths, and a few other common setup failures.
+SetupLens is an early personal open-source project for a problem I keep meeting: a repository looks complete, but it does not run after cloning. The v0.2 line is being refocused around one practical output: what to prepare, what to run, and what is blocking startup.
 
-I am building it in public and keeping the first versions deliberately small. The current rules work best for Node.js, Python, and Docker repositories. The reasoning behind the scope and code structure is in [ARCHITECTURE.md](ARCHITECTURE.md).
+I am building it in public and keeping the first versions deliberately small. The current rules work best for Node.js, Python, and Docker repositories. Repository hygiene checks still exist, but the default experience now prioritizes startup diagnosis. The reasoning behind the scope and code structure is in [ARCHITECTURE.md](ARCHITECTURE.md), and the product plan is in [docs/PRODUCT_DIRECTION.md](docs/PRODUCT_DIRECTION.md).
 
 ## Current Development Status
 
 SetupLens is an early research prototype and usable MVP, not yet a product whose effectiveness has been established. The current `main` branch includes:
 
-- 44 automated tests, executed in CI on Windows, Linux, and macOS with Node.js 18 and 22;
+- 46 automated tests, executed in CI on Windows, Linux, and macOS with Node.js 18 and 22;
 - context-aware file classification, workspace-level dependency reporting, and primary-stack ranking;
 - `Unsupported / Not scored` results for empty repositories, unknown stacks, and unsupported primary stacks instead of misleading numeric grades;
+- startup diagnosis with `ready`, `needs_setup`, `blocked`, and `unsupported` verdicts;
+- detected prepare and run commands for common Node.js, Python, and Docker projects;
+- default terminal output that hides low-impact pass/hygiene noise unless `--show-all` is requested;
 - one documented CMMS validation case and one external C++ boundary pilot.
 
 Precision, recall, F1, developer time savings, and low false-positive rates have not yet been established. Those claims remain gated on the independent pilot and holdout study in [SetupBench-Lens](https://github.com/Milankunderzzz/SetupBench-Lens).
@@ -51,6 +54,9 @@ SetupLens reads local files and commands only. It does not upload repository con
 
 ## What It Finds
 
+- A startup verdict: `READY`, `NEEDS SETUP`, `BLOCKED`, or `UNSUPPORTED`
+- Prepare commands such as `npm install`, `python -m venv .venv`, or `python -m pip install -r requirements.txt`
+- Run commands such as `npm run dev`, `python -m flask --app app run`, `python -m uvicorn main:app --reload`, or `docker compose up --build`
 - Runtime availability and declared Node.js version compatibility
 - npm, pnpm, Yarn, Bun, Python, Git, Docker, and Docker Compose readiness
 - Missing `node_modules`, Python virtual environments, and dependency lockfiles, with root-level workspace aggregation
@@ -83,6 +89,9 @@ Results vary by disk, repository size, and runtime commands. The demo GIF shows 
 ```bash
 # Human-readable terminal report
 setuplens scan .
+
+# Full audit list, including passed checks and repository hygiene
+setuplens scan . --show-all
 
 # Machine-readable JSON
 setuplens scan . --format json --output setuplens-report.json
@@ -176,10 +185,10 @@ The project currently favors checks that can point to a file, command, or manife
 
 ## What I Am Working On
 
-- **Now:** Complete full Pass A, Pass B, and Pass C review for 10 pilot repositories, while keeping the research scope fixed to Node.js, Python, and Docker.
-- **Next:** Find five external users, record three confirmed setup problems, obtain at least one external issue or feedback report, and produce a 30-second before/after demonstration.
-- **After the pilot:** Freeze the confirmatory commit, rerun eligible holdout repositories, and calculate precision, recall, F1, confidence intervals, and diagnosis-time comparisons.
-- **Later:** Evaluate npm and GitHub Marketplace distribution, then reconsider deeper Java, Go, and Rust support only if the evidence justifies expansion.
+- **Now:** Make the default report useful in the first minute: verdict, prepare commands, run commands, startup blockers, and safety risks.
+- **Next:** Improve command detection for common Node.js and Python frameworks, then test it on more real repositories that actually fail to start.
+- **After that:** Prepare npm distribution and a clean 30-second before/after demo showing a real failed setup becoming understandable.
+- **Later:** Reconsider deeper ecosystem support only when the core Node.js, Python, and Docker experience is genuinely useful.
 
 Existing Java, Go, and Rust manifest detection remains available as experimental boundary behavior, but new rules for those ecosystems are paused. Issues that include a minimal reproduction are the most useful input.
 

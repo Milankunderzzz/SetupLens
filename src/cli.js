@@ -19,6 +19,7 @@ Options:
   --threshold <0-100>           Exit 1 when lower, 2 when not scorable
   --plugin <file>               Load a trusted local plugin (repeatable)
   --no-color                    Disable terminal colors
+  --show-all                    Print pass, info, and hygiene details
   -h, --help                    Show help
   -v, --version                 Show version
 
@@ -37,7 +38,7 @@ function valueAfter(args, index, option) {
 function parseArguments(argv) {
   const args = [...argv];
   if (args[0] === 'scan') args.shift();
-  const options = { format: 'terminal', output: null, threshold: null, plugins: [], color: true, target: '.' };
+  const options = { format: 'terminal', output: null, threshold: null, plugins: [], color: true, showAll: false, target: '.' };
   let targetSet = false;
 
   for (let index = 0; index < args.length; index += 1) {
@@ -45,6 +46,7 @@ function parseArguments(argv) {
     if (arg === '-h' || arg === '--help') return { help: true };
     if (arg === '-v' || arg === '--version') return { version: true };
     if (arg === '--no-color') { options.color = false; continue; }
+    if (arg === '--show-all') { options.showAll = true; continue; }
     if (arg === '--format') { options.format = valueAfter(args, index, arg); index += 1; continue; }
     if (arg === '-o' || arg === '--output') { options.output = valueAfter(args, index, arg); index += 1; continue; }
     if (arg === '--threshold') { options.threshold = Number(valueAfter(args, index, arg)); index += 1; continue; }
@@ -73,13 +75,13 @@ export async function main(argv) {
     ? renderJson(report)
     : options.format === 'html'
       ? renderHtml(report)
-      : renderTerminal(report, { color: options.color });
+      : renderTerminal(report, { color: options.color, showAll: options.showAll });
 
   if (options.output) {
     const output = path.resolve(options.output);
     await fs.mkdir(path.dirname(output), { recursive: true });
     await fs.writeFile(output, rendered, 'utf8');
-    process.stdout.write(`${renderTerminal(report, { color: options.color })}\nReport written to ${output}\n`);
+    process.stdout.write(`${renderTerminal(report, { color: options.color, showAll: options.showAll })}\nReport written to ${output}\n`);
   } else {
     process.stdout.write(rendered);
   }

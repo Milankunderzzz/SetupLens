@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SetupLens report for CMMS-Milankunderzzz</title>
+  <title>SetupLens report for SetupLens</title>
   <style>
     :root { color-scheme: light; --ink:#17202a; --muted:#607080; --line:#d9e0e6; --paper:#ffffff; --canvas:#f3f6f8; --red:#b42318; --red-bg:#fff1f0; --amber:#9a6700; --amber-bg:#fff8df; --green:#147a45; --green-bg:#eaf8f0; --blue:#1769aa; --blue-bg:#eaf4fb; }
     * { box-sizing:border-box; }
@@ -28,6 +28,27 @@
     .actions ol { margin:8px 0 0; padding-left:22px; }
     .actions li { overflow-wrap:anywhere; }
     .actions li + li { margin-top:6px; }
+    .diagnosis { background:var(--paper); border:1px solid var(--line); border-radius:6px; padding:18px 20px; margin-bottom:22px; }
+    .diagnosis-header { display:flex; align-items:flex-start; justify-content:space-between; gap:18px; border-bottom:1px solid var(--line); padding-bottom:14px; margin-bottom:16px; }
+    .verdict { display:inline-block; font-size:12px; font-weight:800; color:white; background:#5f6f7c; border-radius:4px; padding:4px 8px; text-transform:uppercase; }
+    .verdict-ready { background:var(--green); }
+    .verdict-needs_setup { background:var(--amber); }
+    .verdict-blocked { background:var(--red); }
+    .verdict-unsupported { background:#5f6f7c; }
+    .diagnosis h2, .diagnosis h3 { margin:0; }
+    .diagnosis p { margin:6px 0 0; color:var(--muted); }
+    .startup-grid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:16px; }
+    .startup-panel { border:1px solid var(--line); border-radius:6px; padding:14px; }
+    .startup-panel h3 { font-size:14px; margin-bottom:8px; }
+    .commands { margin:0; padding-left:20px; }
+    .commands li + li { margin-top:9px; }
+    .commands code { display:block; width:100%; padding:7px 8px; margin-bottom:3px; background:#f0f3f5; border-radius:4px; color:#10202c; overflow-wrap:anywhere; }
+    .commands span, .empty { color:var(--muted); font-size:13px; }
+    .compact-findings { margin:0; padding-left:18px; }
+    .compact-findings li + li { margin-top:9px; }
+    .compact-findings strong, .compact-findings span { display:block; }
+    .compact-findings span { color:var(--muted); }
+    .compact-findings code { display:block; margin-top:4px; color:#44515c; font-size:12px; overflow-wrap:anywhere; }
     .findings { display:grid; gap:8px; }
     .finding { background:var(--paper); border:1px solid var(--line); border-left-width:4px; border-radius:4px; overflow:hidden; }
     .finding-fail { border-left-color:var(--red); }
@@ -46,7 +67,7 @@
     .category { color:var(--muted); font-size:12px; white-space:nowrap; }
     .recommendation { margin:0; padding:10px 16px 12px 88px; background:#f8fafb; border-top:1px solid #edf0f2; }
     footer { padding:20px 0; color:var(--muted); font-size:13px; border-top:1px solid var(--line); }
-    @media (max-width:720px) { .brand { align-items:flex-start; flex-direction:column; } .score { min-width:0; text-align:left; } .score strong { font-size:36px; } .meta span { min-width:0; overflow-wrap:anywhere; } .metrics { grid-template-columns:repeat(2,minmax(0,1fr)); } .finding-main { grid-template-columns:54px minmax(0,1fr); } .category { grid-column:2; } .recommendation { padding-left:16px; overflow-wrap:anywhere; } }
+    @media (max-width:720px) { .brand, .diagnosis-header { align-items:flex-start; flex-direction:column; } .score { min-width:0; text-align:left; } .score strong { font-size:36px; } .meta span { min-width:0; overflow-wrap:anywhere; } .metrics, .startup-grid { grid-template-columns:1fr; } .finding-main { grid-template-columns:54px minmax(0,1fr); } .category { grid-column:2; } .recommendation { padding-left:16px; overflow-wrap:anywhere; } }
   </style>
 </head>
 <body>
@@ -54,145 +75,72 @@
     <div class="wrap">
       <div class="brand">
         <div><h1>SetupLens</h1><p>Know why a repository will not run, in one command and under 30 seconds.</p></div>
-        <div class="score"><strong>62</strong><span>Readiness grade D / 100</span></div>
+        <div class="score"><strong>100</strong><span>Readiness grade A / 100</span></div>
       </div>
-      <div class="meta"><span><strong>Target:</strong> CMMS-Milankunderzzz</span><span><strong>Stack:</strong> node / python / docker</span><span><strong>Duration:</strong> 915 ms</span><span><strong>Files:</strong> 261</span></div>
+      <div class="meta"><span><strong>Target:</strong> SetupLens</span><span><strong>Stack:</strong> node</span><span><strong>Duration:</strong> 573 ms</span><span><strong>Files:</strong> 62</span></div>
     </div>
   </header>
   <main class="wrap">
     <div class="metrics">
-      <div class="metric"><span>Setup failures</span><strong>2</strong></div>
-      <div class="metric"><span>Setup warnings</span><strong>8</strong></div>
-      <div class="metric"><span>Hygiene findings</span><strong>1</strong></div>
-      <div class="metric"><span>Total checks</span><strong>27</strong></div>
+      <div class="metric"><span>Verdict</span><strong>ready</strong></div>
+      <div class="metric"><span>Setup failures</span><strong>0</strong></div>
+      <div class="metric"><span>Setup warnings</span><strong>0</strong></div>
     </div>
-    <section class="actions"><h2>Highest-impact next actions</h2><ol><li>Correct the paths or restore the referenced files before running Docker Compose.</li><li>Define the missing script or update the Makefile command to use an available script.</li><li>Copy .env.example to a local environment file and fill in your own values.</li><li>Copy .mcp.env.example to a local environment file and fill in your own values.</li><li>Copy backend/.env.example to a local environment file and fill in your own values.</li><li>Copy frontend/.env.example to a local environment file and fill in your own values.</li></ol></section>
+    <section class="diagnosis">
+      <div class="diagnosis-header">
+        <div><h2>Startup diagnosis</h2><p>No startup blockers found. Try the detected run command.</p></div>
+        <span class="verdict verdict-ready">ready</span>
+      </div>
+      <div class="startup-grid">
+        <div class="startup-panel"><h3>Prepare</h3><p class="empty">No command detected.</p></div>
+        <div class="startup-panel"><h3>Run</h3><ol class="commands"><li><code>npm run start</code><span>Root package defines &quot;start&quot;.</span></li></ol></div>
+        <div class="startup-panel"><h3>Startup blockers</h3><p class="empty">None detected.</p></div>
+        <div class="startup-panel"><h3>Safety risks</h3><p class="empty">None detected.</p></div>
+      </div>
+    </section>
+    <div class="metrics">
+      <div class="metric"><span>Hygiene findings</span><strong>0</strong></div>
+      <div class="metric"><span>Total checks</span><strong>17</strong></div>
+      <div class="metric"><span>Run commands</span><strong>1</strong></div>
+      <div class="metric"><span>Prepare commands</span><strong>0</strong></div>
+    </div>
 
-    <section><h2>Findings</h2><div class="findings"><article class="finding finding-fail">
+    <section><h2>Findings</h2><div class="findings"><article class="finding finding-info">
     <div class="finding-main">
-      <span class="status">FAIL</span>
+      <span class="status">INFO</span>
       <div>
-        <h3>Compose paths: docker-compose.yml</h3>
-        <p>4 of 6 local path references do not exist.</p>
-        <p class="evidence">Evidence: infra/docker/Dockerfile.api (line 23), infra/docker/Dockerfile.web (line 74), ./infra/nginx/nginx.conf (line 98), ./infra/nginx/conf.d (line 99)</p>
-      </div>
-      <span class="category">setup / Paths</span>
-    </div>
-    <p class="recommendation"><strong>Fix:</strong> Correct the paths or restore the referenced files before running Docker Compose.</p>
-  </article><article class="finding finding-fail">
-    <div class="finding-main">
-      <span class="status">FAIL</span>
-      <div>
-        <h3>Makefile commands: Makefile</h3>
-        <p>1 Makefile command is invalid.</p>
-        <p class="evidence">Evidence: line 46: npm run format is not defined in frontend/package.json; available scripts: build, dev, e2e, lint, start, test</p>
-      </div>
-      <span class="category">setup / Paths</span>
-    </div>
-    <p class="recommendation"><strong>Fix:</strong> Define the missing script or update the Makefile command to use an available script.</p>
-  </article><article class="finding finding-warn">
-    <div class="finding-main">
-      <span class="status">WARN</span>
-      <div>
-        <h3>Local environment for .env.example</h3>
-        <p>No local environment file was found for 17 documented variables.</p>
-        <p class="evidence">Evidence: Expected .env or .env.local</p>
+        <h3>Environment templates</h3>
+        <p>No environment template was found.</p>
       </div>
       <span class="category">setup / Configuration</span>
     </div>
-    <p class="recommendation"><strong>Fix:</strong> Copy .env.example to a local environment file and fill in your own values.</p>
-  </article><article class="finding finding-warn">
-    <div class="finding-main">
-      <span class="status">WARN</span>
-      <div>
-        <h3>Local environment for .mcp.env.example</h3>
-        <p>No local environment file was found for 9 documented variables.</p>
-        <p class="evidence">Evidence: Expected .mcp.env</p>
-      </div>
-      <span class="category">setup / Configuration</span>
-    </div>
-    <p class="recommendation"><strong>Fix:</strong> Copy .mcp.env.example to a local environment file and fill in your own values.</p>
-  </article><article class="finding finding-warn">
-    <div class="finding-main">
-      <span class="status">WARN</span>
-      <div>
-        <h3>Local environment for backend/.env.example</h3>
-        <p>No local environment file was found for 10 documented variables.</p>
-        <p class="evidence">Evidence: Expected backend/.env or backend/.env.local</p>
-      </div>
-      <span class="category">setup / Configuration</span>
-    </div>
-    <p class="recommendation"><strong>Fix:</strong> Copy backend/.env.example to a local environment file and fill in your own values.</p>
-  </article><article class="finding finding-warn">
-    <div class="finding-main">
-      <span class="status">WARN</span>
-      <div>
-        <h3>Local environment for frontend/.env.example</h3>
-        <p>No local environment file was found for 6 documented variables.</p>
-        <p class="evidence">Evidence: Expected frontend/.env or frontend/.env.local</p>
-      </div>
-      <span class="category">setup / Configuration</span>
-    </div>
-    <p class="recommendation"><strong>Fix:</strong> Copy frontend/.env.example to a local environment file and fill in your own values.</p>
-  </article><article class="finding finding-warn">
-    <div class="finding-main">
-      <span class="status">WARN</span>
-      <div>
-        <h3>Dependency lockfile: frontend</h3>
-        <p>No supported lockfile was found.</p>
-      </div>
-      <span class="category">setup / Dependencies</span>
-    </div>
-    <p class="recommendation"><strong>Fix:</strong> Commit a lockfile for reproducible installs.</p>
-  </article><article class="finding finding-warn">
-    <div class="finding-main">
-      <span class="status">WARN</span>
-      <div>
-        <h3>Node dependencies: frontend</h3>
-        <p>node_modules is missing for 20 declared dependencies.</p>
-      </div>
-      <span class="category">setup / Dependencies</span>
-    </div>
-    <p class="recommendation"><strong>Fix:</strong> Run the package manager install command in frontend.</p>
-  </article><article class="finding finding-warn">
-    <div class="finding-main">
-      <span class="status">WARN</span>
-      <div>
-        <h3>Python virtual environment</h3>
-        <p>No local Python virtual environment was found.</p>
-      </div>
-      <span class="category">setup / Dependencies</span>
-    </div>
-    <p class="recommendation"><strong>Fix:</strong> Create a project-local virtual environment before installing packages.</p>
-  </article><article class="finding finding-warn">
-    <div class="finding-main">
-      <span class="status">WARN</span>
-      <div>
-        <h3>Compose schema: docker-compose.yml</h3>
-        <p>The top-level version key is obsolete in modern Docker Compose.</p>
-      </div>
-      <span class="category">setup / Paths</span>
-    </div>
-    <p class="recommendation"><strong>Fix:</strong> Remove the version key after confirming compatibility.</p>
-  </article><article class="finding finding-warn">
-    <div class="finding-main">
-      <span class="status">WARN</span>
-      <div>
-        <h3>License</h3>
-        <p>No license file was found.</p>
-      </div>
-      <span class="category">hygiene / Repository</span>
-    </div>
-    <p class="recommendation"><strong>Fix:</strong> Choose and add an explicit open-source license.</p>
   </article><article class="finding finding-info">
     <div class="finding-main">
       <span class="status">INFO</span>
       <div>
         <h3>VS Code recommendations</h3>
-        <p>6 extensions match the detected stack.</p>
-        <p class="evidence">Evidence: dbaeumer.vscode-eslint, esbenp.prettier-vscode, ms-python.python, charliermarsh.ruff, ms-azuretools.vscode-containers, redhat.vscode-yaml</p>
+        <p>2 extensions match the detected stack.</p>
+        <p class="evidence">Evidence: dbaeumer.vscode-eslint, esbenp.prettier-vscode</p>
       </div>
       <span class="category">setup / Editor</span>
+    </div>
+  </article><article class="finding finding-pass">
+    <div class="finding-main">
+      <span class="status">PASS</span>
+      <div>
+        <h3>Dependency lockfile: root package</h3>
+        <p>Found package-lock.json.</p>
+      </div>
+      <span class="category">setup / Dependencies</span>
+    </div>
+  </article><article class="finding finding-pass">
+    <div class="finding-main">
+      <span class="status">PASS</span>
+      <div>
+        <h3>Node dependencies: root package</h3>
+        <p>node_modules is present.</p>
+      </div>
+      <span class="category">setup / Dependencies</span>
     </div>
   </article><article class="finding finding-pass">
     <div class="finding-main">
@@ -225,6 +173,15 @@
     <div class="finding-main">
       <span class="status">PASS</span>
       <div>
+        <h3>License</h3>
+        <p>A license file is present.</p>
+      </div>
+      <span class="category">hygiene / Repository</span>
+    </div>
+  </article><article class="finding finding-pass">
+    <div class="finding-main">
+      <span class="status">PASS</span>
+      <div>
         <h3>README</h3>
         <p>A README is present.</p>
       </div>
@@ -235,27 +192,9 @@
       <span class="status">PASS</span>
       <div>
         <h3>Repository scan coverage</h3>
-        <p>Indexed 261 files without hitting safety limits.</p>
+        <p>Indexed 62 files without hitting safety limits.</p>
       </div>
       <span class="category">setup / Repository</span>
-    </div>
-  </article><article class="finding finding-pass">
-    <div class="finding-main">
-      <span class="status">PASS</span>
-      <div>
-        <h3>Docker CLI</h3>
-        <p>Docker version 29.4.0, build 9d7ad9f.</p>
-      </div>
-      <span class="category">setup / Runtime</span>
-    </div>
-  </article><article class="finding finding-pass">
-    <div class="finding-main">
-      <span class="status">PASS</span>
-      <div>
-        <h3>Docker Compose</h3>
-        <p>Docker Compose version v5.1.2.</p>
-      </div>
-      <span class="category">setup / Runtime</span>
     </div>
   </article><article class="finding finding-pass">
     <div class="finding-main">
@@ -271,7 +210,7 @@
       <span class="status">PASS</span>
       <div>
         <h3>Node.js runtime</h3>
-        <p>v24.14.1.</p>
+        <p>v24.14.1 satisfies &gt;=18.17.0.</p>
       </div>
       <span class="category">setup / Runtime</span>
     </div>
@@ -281,15 +220,6 @@
       <div>
         <h3>npm package manager</h3>
         <p>11.11.0.</p>
-      </div>
-      <span class="category">setup / Runtime</span>
-    </div>
-  </article><article class="finding finding-pass">
-    <div class="finding-main">
-      <span class="status">PASS</span>
-      <div>
-        <h3>Python runtime</h3>
-        <p>Python 3.14.3.</p>
       </div>
       <span class="category">setup / Runtime</span>
     </div>
@@ -325,12 +255,13 @@
       <span class="status">PASS</span>
       <div>
         <h3>Project stack detected</h3>
-        <p>Detected node, python, docker across 261 indexed files.</p>
+        <p>Primary stack: node.</p>
+        <p class="evidence">Evidence: node: package.json</p>
       </div>
       <span class="category">setup / Stack</span>
     </div>
   </article></div></section>
   </main>
-  <footer><div class="wrap">Generated locally by SetupLens 0.1.0 at 2026-06-18T04:00:12.357Z. No repository data was uploaded.</div></footer>
+  <footer><div class="wrap">Generated locally by SetupLens 0.2.0-alpha.1 at 2026-06-30T11:33:25.720Z. No repository data was uploaded.</div></footer>
 </body>
 </html>

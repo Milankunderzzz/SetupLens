@@ -13,6 +13,7 @@ import { securityFindings } from './checks/security.js';
 import { repositoryFindings } from './checks/repository.js';
 import { editorFindings } from './checks/editor.js';
 import { runPlugins } from './plugins.js';
+import { buildStartupDiagnosis } from './startup.js';
 
 function calculateScore(findings) {
   const deduction = findings.reduce((total, item) => {
@@ -101,6 +102,7 @@ export async function scan(target = '.', options = {}) {
   });
 
   const eligibility = scoreEligibility(index, detection);
+  const startup = buildStartupDiagnosis(index, detection, findings, eligibility);
   const scopes = {
     setup: scopeResult(findings, FINDING_SCOPES.SETUP, eligibility.scorable),
     hygiene: scopeResult(findings, FINDING_SCOPES.HYGIENE)
@@ -125,6 +127,7 @@ export async function scan(target = '.', options = {}) {
     summary: scopes.setup.summary,
     allSummary: summary(findings),
     scopes,
+    startup,
     findings,
     vscodeExtensions: editor.extensions,
     plugins: pluginResult.loaded
