@@ -184,6 +184,53 @@ function issueRecipeFix(index, adapter, issue) {
   return null;
 }
 
+function envKeyFromIssue(issue) {
+  return issue.title.match(/: ([A-Z][A-Z0-9_]{2,})$/)?.[1] ?? issue.evidence?.match(/\b([A-Z][A-Z0-9_]{2,})\b/)?.[1];
+}
+
+function envTemplateTarget(index) {
+  return index.files.find((file) => ['.env.example', '.env.sample', '.env.template', '.env.local.example'].includes(file.name));
+}
+
+function bulkEnvTemplateRecipeFix(index, adapter, issues) {
+  const keys = [...new Set(issues.map(envKeyFromIssue).filter(Boolean))].sort();
+  if (keys.length === 0) return null;
+  const template = envTemplateTarget(index);
+  return {
+    id: `manual.env-template.bulk.${adapter.id}`,
+    source: adapter.id,
+    title: `Review env template entries for ${keys.length} variables`,
+    description: template
+      ? `Review adding ${keys.slice(0, 12).join(', ')}${keys.length > 12 ? `, and ${keys.length - 12} more` : ''} to ${template.relative}.`
+      : `Review creating .env.example with ${keys.slice(0, 12).join(', ')}${keys.length > 12 ? `, and ${keys.length - 12} more` : ''}.`,
+    safety: 'manual',
+    confidence: 'medium',
+    reason: 'Environment values are project-specific, so SetupLens only proposes template placeholders and groups large env sets into one review item.',
+    patch: {
+      file: template?.relative ?? '.env.example',
+      summary: `Add documented placeholders for ${keys.join(', ')}.`
+    },
+    relatedCount: issues.length,
+    examples: issues.slice(0, 20).map((issue) => ({
+      title: issue.title,
+      evidence: issue.evidence
+    }))
+  };
+}
+
+function recipeFixesForAdapter(index, adapter) {
+  const issues = adapter.issues ?? [];
+  const envIssues = issues.filter((issue) => issue.type === 'missing_env_reference');
+  const regularIssues = issues.filter((issue) => issue.type !== 'missing_env_reference');
+  const regularFixes = regularIssues
+    .flatMap((issue) => [fixFromIssue(adapter, issue), issueRecipeFix(index, adapter, issue)])
+    .filter(Boolean);
+  const envFixes = envIssues.length > 5
+    ? [bulkEnvTemplateRecipeFix(index, adapter, envIssues)].filter(Boolean)
+    : envIssues.map((issue) => issueRecipeFix(index, adapter, issue)).filter(Boolean);
+  return [...regularFixes, ...envFixes];
+}
+
 function fixFromIssue(adapter, issue) {
   if (!issue.safeFix) return null;
   return {
@@ -282,9 +329,7 @@ function fixFromCause(cause) {
 }
 
 export function buildFixPlan({ index, adapters, rootCauses = [] }) {
-  const adapterFixes = adapters.flatMap((adapter) => (adapter.issues ?? [])
-    .flatMap((issue) => [fixFromIssue(adapter, issue), issueRecipeFix(index, adapter, issue)])
-    .filter(Boolean));
+  const adapterFixes = adapters.flatMap((adapter) => recipeFixesForAdapter(index, adapter));
   const causeFixes = rootCauses.map(fixFromCause).filter(Boolean);
   const genericFixes = [envTemplateFix(index), gitignoreEnvFix(index)].filter(Boolean);
   const fixes = uniqueBy([...adapterFixes, ...causeFixes, ...genericFixes], (fix) => {

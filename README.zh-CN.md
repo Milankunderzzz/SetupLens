@@ -164,7 +164,7 @@ manifest 会保留仓库 URL、clone URL、默认分支、license、topics、Git
 
 SetupLens 仍然是早期产品预览版，不是成熟稳定工具。当前已经具备：
 
-- 72 项自动化测试
+- 74 项自动化测试
 - Windows、Linux、macOS CI
 - setup 与 hygiene 分离
 - 不支持技术栈不打分

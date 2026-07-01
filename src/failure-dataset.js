@@ -252,6 +252,48 @@ async function gitOutput(args, options = {}) {
   return result.stdout.trim();
 }
 
+export function classifyCloneFailure(result = {}) {
+  const combined = `${result.stderr ?? ''}\n${result.stdout ?? ''}\n${result.error ?? ''}`;
+  if (/Filename too long|file name too long|cannot create directory at .*Filename too long/i.test(combined)) {
+    return {
+      type: 'windows_path_too_long',
+      title: 'Checkout failed because a path exceeded the local filename limit',
+      evidence: combined.match(/fatal: .*(?:Filename too long|file name too long).*/i)?.[0] ?? 'Git reported a filename length failure during checkout.',
+      recommendation: 'Retry with Windows long paths enabled, a shorter clone directory, sparse checkout, or exclude this repository from fast corpus intake.'
+    };
+  }
+  if (/Clone succeeded, but checkout failed/i.test(combined)) {
+    return {
+      type: 'git_checkout_failed',
+      title: 'Clone succeeded but checkout failed',
+      evidence: combined.match(/warning: Clone succeeded, but checkout failed\./i)?.[0] ?? 'Git reported a checkout failure after clone.',
+      recommendation: 'Inspect git status in the partial clone or retry with a narrower checkout strategy.'
+    };
+  }
+  if (/RPC failed|early EOF|invalid index-pack output|remote end hung up/i.test(combined)) {
+    return {
+      type: 'git_network_or_pack_failure',
+      title: 'Git clone failed during network or pack transfer',
+      evidence: combined.match(/(?:RPC failed|early EOF|invalid index-pack output|remote end hung up).*/i)?.[0] ?? 'Git reported a transfer failure.',
+      recommendation: 'Retry later, reduce clone depth/filtering further, or skip the source for this dataset pass.'
+    };
+  }
+  if (result.timedOut || result.status === 'timeout') {
+    return {
+      type: 'git_clone_timeout',
+      title: 'Git clone timed out',
+      evidence: `Clone exceeded the configured timeout after ${result.durationMs ?? 'unknown'} ms.`,
+      recommendation: 'Increase clone timeout for large repositories or add size filters to the dataset collector.'
+    };
+  }
+  return {
+    type: 'git_clone_failed',
+    title: 'Git clone failed',
+    evidence: combined.trim().split(/\r?\n/).filter(Boolean).slice(-1)[0] ?? 'Git clone returned a non-zero exit code.',
+    recommendation: 'Inspect the clone stderr and decide whether to retry, skip, or classify a new collection failure pattern.'
+  };
+}
+
 async function cloneSource(source, options) {
   const root = path.resolve(options.reposDir ?? path.join(DEFAULT_ROOT, 'repos'));
   const localPath = path.join(root, safeSlug(source.source.fullName));
@@ -274,9 +316,11 @@ async function cloneSource(source, options) {
     });
 
   if (result.status !== 'success') {
+    const classification = classifyCloneFailure(result);
     return {
       status: result.status,
       reason: 'git_clone_failed',
+      classification,
       path: localPath,
       durationMs: result.durationMs,
       exitCode: result.exitCode,
@@ -371,10 +415,12 @@ function summarizeCollection(sources, errors) {
   const statusCounts = new Map();
   const scanStatusCounts = new Map();
   const failureTypeCounts = new Map();
+  const cloneFailureTypeCounts = new Map();
   for (const source of sources) {
     increment(ecosystemCounts, source.source.discoveredBy.ecosystem);
     increment(licenseCounts, source.source.license ?? 'unknown');
     increment(statusCounts, source.clone?.status ?? source.status);
+    increment(cloneFailureTypeCounts, source.clone?.classification?.type);
     increment(scanStatusCounts, source.scan?.status);
     for (const type of source.scan?.rootCauseTypes ?? []) increment(failureTypeCounts, type);
   }
@@ -386,6 +432,7 @@ function summarizeCollection(sources, errors) {
     sourceEcosystems: sortedCounts(ecosystemCounts),
     sourceLicenses: sortedCounts(licenseCounts),
     cloneStatuses: sortedCounts(statusCounts),
+    cloneFailureTypes: sortedCounts(cloneFailureTypeCounts),
     scanStatuses: sortedCounts(scanStatusCounts),
     failureTypeDistribution: sortedCounts(failureTypeCounts)
   };
@@ -533,10 +580,11 @@ function buildRuleGaps(sources) {
     }
     if (source.clone?.status && !['cloned', 'existing'].includes(source.clone.status)) {
       gaps.push({
-        type: 'collection_error',
+        type: source.clone.classification?.type ?? 'collection_error',
         sourceId: source.id,
         project: source.source.fullName,
-        evidence: source.clone.reason ?? source.clone.status
+        evidence: source.clone.classification?.evidence ?? source.clone.reason ?? source.clone.status,
+        recommendation: source.clone.classification?.recommendation
       });
     }
     if (source.scan?.status === 'error') {

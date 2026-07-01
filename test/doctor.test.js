@@ -282,6 +282,40 @@ test('doctor separates readiness score from diagnosis confidence and recommends 
   assert.notEqual(report.diagnosis.readiness.score, report.diagnosis.confidence.score);
 });
 
+test('doctor aggregates repeated environment reference causes and fix-plan entries', async (t) => {
+  const root = await fixture({
+    'package.json': JSON.stringify({
+      name: 'env-heavy-app',
+      scripts: { dev: 'vite' },
+      dependencies: { vite: '^7.0.0' }
+    }),
+    '.env.example': 'DATABASE_URL=\n',
+    'src/env.ts': [
+      'process.env.DATABASE_URL',
+      'process.env.REDIS_URL',
+      'process.env.STRIPE_SECRET_KEY',
+      'process.env.NEXT_PUBLIC_SITE_URL',
+      'process.env.SENTRY_DSN',
+      'process.env.AUTH_SECRET',
+      'process.env.CLOUDINARY_CLOUD_NAME',
+      'process.env.CLOUDINARY_API_KEY'
+    ].join(';\n')
+  });
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+
+  const report = await doctor(root);
+  const envCauses = report.diagnosis.rootCauses.filter((cause) => cause.type === 'missing_env_reference');
+  const bulkFix = report.diagnosis.fixPlan.fixes.find((fix) => fix.id === 'manual.env-template.bulk.node');
+  const individualEnvFixes = report.diagnosis.fixPlan.fixes.filter((fix) => fix.id.startsWith('manual.env-template.') && fix.id !== 'manual.env-template.bulk.node');
+
+  assert.equal(envCauses.length, 1);
+  assert.equal(envCauses[0].relatedCount, 8);
+  assert.match(envCauses[0].evidence, /8 missing environment references/);
+  assert.ok(bulkFix);
+  assert.equal(bulkFix.relatedCount, 8);
+  assert.equal(individualEnvFixes.length, 0);
+});
+
 test('doctor reports macOS archive metadata as the Python compile blocker', async (t) => {
   const root = await fixture({
     'requirements.txt': 'fastapi\n',

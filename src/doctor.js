@@ -131,6 +131,84 @@ function severityWeight(value) {
   return 1;
 }
 
+function envKeyFromCause(cause) {
+  return cause.title?.match(/: ([A-Z][A-Z0-9_]{2,})$/)?.[1]
+    ?? cause.evidence?.match(/\b([A-Z][A-Z0-9_]{2,})\b/)?.[1]
+    ?? null;
+}
+
+function composeTargetFromCause(cause) {
+  return cause.recommendation?.match(/^Create ([^ ]+) or /)?.[1]
+    ?? cause.evidence?.match(/ references ([^ ]+) for /)?.[1]
+    ?? null;
+}
+
+function aggregateCauseGroup(type, causes) {
+  if (type === 'missing_env_reference') {
+    const keys = [...new Set(causes.map(envKeyFromCause).filter(Boolean))].sort();
+    const examples = causes.slice(0, 5).map((cause) => cause.evidence).filter(Boolean);
+    return {
+      ...causes[0],
+      title: `${keys.length || causes.length} environment variables may need local values`,
+      evidence: `${causes.length} missing environment reference${causes.length === 1 ? '' : 's'} were found. Keys: ${keys.slice(0, 12).join(', ')}${keys.length > 12 ? `, and ${keys.length - 12} more` : ''}. Examples: ${examples.join(' | ')}`,
+      recommendation: 'Review the referenced keys, add documented placeholders to the environment template, and provide local values before startup.',
+      relatedCount: causes.length,
+      examples: causes.slice(0, 20).map((cause) => ({
+        title: cause.title,
+        evidence: cause.evidence,
+        recommendation: cause.recommendation
+      }))
+    };
+  }
+  if (type === 'missing_compose_env_file') {
+    const targets = [...new Set(causes.map(composeTargetFromCause).filter(Boolean))].sort();
+    const examples = causes.slice(0, 5).map((cause) => cause.evidence).filter(Boolean);
+    return {
+      ...causes[0],
+      title: `${targets.length || causes.length} Compose env_file target${(targets.length || causes.length) === 1 ? '' : 's'} missing`,
+      evidence: `${causes.length} Compose env_file reference${causes.length === 1 ? '' : 's'} point to missing files. Targets: ${targets.slice(0, 12).join(', ')}${targets.length > 12 ? `, and ${targets.length - 12} more` : ''}. Examples: ${examples.join(' | ')}`,
+      recommendation: 'Create the missing Compose env files or update env_file paths before starting Docker Compose.',
+      relatedCount: causes.length,
+      examples: causes.slice(0, 20).map((cause) => ({
+        title: cause.title,
+        evidence: cause.evidence,
+        recommendation: cause.recommendation
+      }))
+    };
+  }
+  return causes[0];
+}
+
+function aggregateRootCauses(causes) {
+  const aggregatable = new Set(['missing_env_reference', 'missing_compose_env_file']);
+  const groups = new Map();
+  for (const cause of causes) {
+    if (!aggregatable.has(cause.type)) continue;
+    const key = `${cause.type}:${cause.source}:${cause.severity}`;
+    const group = groups.get(key) ?? [];
+    group.push(cause);
+    groups.set(key, group);
+  }
+  const emitted = new Set();
+  const output = [];
+  for (const cause of causes) {
+    if (!aggregatable.has(cause.type)) {
+      output.push(cause);
+      continue;
+    }
+    const key = `${cause.type}:${cause.source}:${cause.severity}`;
+    const group = groups.get(key) ?? [cause];
+    if (group.length <= 3) {
+      output.push(cause);
+      continue;
+    }
+    if (emitted.has(key)) continue;
+    output.push(aggregateCauseGroup(cause.type, group));
+    emitted.add(key);
+  }
+  return output;
+}
+
 function rankRootCauses(causes) {
   return [...causes]
     .sort((left, right) => severityWeight(right.severity) - severityWeight(left.severity)
@@ -311,7 +389,7 @@ export async function doctor(target = '.', options = {}) {
     ...adapters.flatMap((adapter) => (adapter.issues ?? []).map((issue) => issueCause(adapter, issue)))
   ];
   const probeCauses = probes.map(probeCause).filter(Boolean);
-  const rootCauses = rankRootCauses(uniqueBy([...staticCauses, ...probeCauses], (cause) => `${cause.type}:${cause.evidence}`));
+  const rootCauses = rankRootCauses(aggregateRootCauses(uniqueBy([...staticCauses, ...probeCauses], (cause) => `${cause.type}:${cause.evidence}`)));
   const adapterActions = adapters.flatMap((adapter) => adapter.actions ?? []).map(normalizeAction);
   const fixActions = rootCauses.map(actionFromCause).filter(Boolean);
   const status = buildStatus({ scanReport, rootCauses, probesEnabled, probes, adapters });

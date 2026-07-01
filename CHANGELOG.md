@@ -39,6 +39,9 @@ This alpha turns SetupLens from a static readiness scanner into a broader local 
 - Terminal output now defaults to the practical startup path instead of printing every pass/fail item.
 - Doctor terminal, JSON, and HTML output now include an action panel with confidence, ranked root causes, next command, safe/manual fixes, probe trace, and unknowns.
 - Doctor action panels now separate readiness score from diagnosis confidence so a blocked project is not presented like a healthy 100-point result.
+- Doctor root-cause ranking now groups large repeated environment-reference and Compose `env_file` failures into evidence-rich aggregate causes, based on the first 50-source failure dataset scan.
+- Fix plans now group large environment-template placeholder reviews into one manual recipe instead of flooding reports with one action per variable.
+- Failure dataset collection now classifies clone failures such as Windows path-length checkout failures instead of recording them as generic collection errors.
 - Safe fixes now include conservative `tsconfig.json` and Vite `index.html` creation recipes, while package script and env-template patches remain manual.
 - Probe classifiers now distinguish missing local Node dependencies from generic command-not-found failures and identify macOS `__MACOSX`/`._*` files that make Python compile checks fail with null-byte syntax errors.
 - Real-project failures can now be distilled into corpus cases and run as part of the automated test suite.

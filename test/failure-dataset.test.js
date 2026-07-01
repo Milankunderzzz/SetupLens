@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
-import { collectFailureDataset, reviewFailureDataset } from '../src/failure-dataset.js';
+import { classifyCloneFailure, collectFailureDataset, reviewFailureDataset } from '../src/failure-dataset.js';
 
 const cliPath = fileURLToPath(new URL('../bin/setuplens.js', import.meta.url));
 
@@ -123,6 +123,27 @@ test('failure dataset review builds a corpus queue and classifier backlog', asyn
           unknowns: [],
           reportPath: 'reports/unknown.doctor.json'
         }
+      },
+      {
+        id: 'github-example-long-path',
+        source: {
+          fullName: 'example/long-path',
+          htmlUrl: 'https://github.com/example/long-path',
+          cloneUrl: 'https://github.com/example/long-path.git',
+          license: 'MIT',
+          primaryLanguage: 'Ruby',
+          discoveredBy: { ecosystem: 'rails', query: 'topic:rails', page: 1, rank: 1 }
+        },
+        clone: {
+          status: 'failed',
+          reason: 'git_clone_failed',
+          classification: {
+            type: 'windows_path_too_long',
+            evidence: 'fatal: cannot create directory at spec/fixtures/example: Filename too long',
+            recommendation: 'Retry with Windows long paths enabled.'
+          }
+        },
+        scan: { status: 'skipped', reason: 'repository_not_cloned' }
       }
     ]
   };
@@ -130,12 +151,23 @@ test('failure dataset review builds a corpus queue and classifier backlog', asyn
   const review = await reviewFailureDataset({ dataset, now: '2026-07-01T00:00:00.000Z' });
 
   assert.equal(review.schemaVersion, '1.0-failure-dataset-review');
-  assert.equal(review.summary.sources, 2);
+  assert.equal(review.summary.sources, 3);
   assert.equal(review.summary.corpusCandidates, 1);
   assert.equal(review.promotionCandidates[0].id, 'github-example-next-app');
   assert.equal(review.feedback.safeFixOpportunities[0].safeFixCount, 1);
   assert.ok(review.ruleGaps.some((gap) => gap.type === 'unclassified_probe_log'));
   assert.ok(review.ruleGaps.some((gap) => gap.type === 'unsupported_stack'));
+  assert.ok(review.ruleGaps.some((gap) => gap.type === 'windows_path_too_long'));
+});
+
+test('failure dataset classifies Windows path length clone failures', () => {
+  const classification = classifyCloneFailure({
+    status: 'failed',
+    stderr: "fatal: cannot create directory at 'spec/fixtures/vcr_cassettes/very/long/path': Filename too long\nwarning: Clone succeeded, but checkout failed.\n"
+  });
+
+  assert.equal(classification.type, 'windows_path_too_long');
+  assert.match(classification.recommendation, /long paths/i);
 });
 
 test('failure-dataset review command supports terminal output', async (t) => {
@@ -157,4 +189,3 @@ test('failure-dataset review command supports terminal output', async (t) => {
   assert.match(result.stdout, /SetupLens Failure Dataset Review/);
   assert.match(result.stdout, /Sources\s+0/);
 });
-
