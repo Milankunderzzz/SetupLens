@@ -284,7 +284,8 @@ function classifyNodeProbe(result, combined) {
   }
 
   const missingScriptBinary = combined.match(/['"]?([A-Za-z][\w.-]+)['"]?\s+is not recognized as an internal or external command/i)
-    ?? combined.match(/sh:\s*(?:\d+:\s*)?([A-Za-z][\w.-]+):\s*not found/i);
+    ?? combined.match(/sh:\s*(?:\d+:\s*)?([A-Za-z][\w.-]+):\s*(?:not found|command not found)/i)
+    ?? combined.match(/^([A-Za-z][\w.-]+):\s*command not found/im);
   const packageScript = /\b(?:npm|pnpm|yarn|bun)\s+(?:run\s+)?[\w:-]+/.test(result.display ?? '')
     || /^>\s+[^\n]+\n>\s+[A-Za-z][\w.-]+/m.test(combined);
   if (missingScriptBinary && packageScript) {
