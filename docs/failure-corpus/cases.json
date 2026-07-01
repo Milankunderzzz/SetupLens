@@ -128,7 +128,19 @@
         "status": "needs_setup",
         "adapters": ["node"],
         "rootCauseTypes": ["vite_missing_index_html", "typescript_missing_tsconfig"],
-        "probes": ["node.vite.build"]
+        "probes": ["node.vite.build"],
+        "safeFixTitles": ["Create minimal Vite index.html", "Create minimal tsconfig.json"],
+        "applySafe": true,
+        "createdFiles": [
+          {
+            "path": "index.html",
+            "contains": "src/main.ts"
+          },
+          {
+            "path": "tsconfig.json",
+            "contains": "moduleResolution"
+          }
+        ]
       }
     },
     {

@@ -68,10 +68,22 @@ export function renderDoctorTerminal(report, options = {}) {
   lines.push(`Verdict  ${statusLabel(report.status, paint)}  ${paint.dim(report.summary)}`);
   lines.push('');
 
+  const panel = report.diagnosis.actionPanel;
+  if (panel) {
+    lines.push(paint.bold('Action panel'));
+    lines.push(`  Confidence ${paint.bold(`${panel.confidence.level} (${panel.confidence.score}/100)`)}`);
+    if (panel.topRootCause) lines.push(`  Top cause  ${paint.bold(panel.topRootCause.title)} ${paint.dim(`[${panel.topRootCause.source}]`)}`);
+    if (panel.nextCommand) lines.push(`  Next cmd   ${paint.bold(panel.nextCommand.command)}${paint.dim(panel.nextCommand.cwd && panel.nextCommand.cwd !== '.' ? ` in ${panel.nextCommand.cwd}` : '')}`);
+    if (panel.safeFixes.length > 0) lines.push(`  Safe fixes ${panel.safeFixes.length}`);
+    if (panel.manualFixes.length > 0) lines.push(`  Manual     ${panel.manualFixes.length}`);
+    if (panel.unknowns.length > 0) lines.push(`  Unknowns   ${panel.unknowns.length}`);
+    lines.push('');
+  }
+
   if (report.diagnosis.rootCauses.length > 0) {
     lines.push(paint.bold('Likely root causes'));
     for (const cause of report.diagnosis.rootCauses.slice(0, 8)) {
-      lines.push(`${severityLabel(cause.severity, paint)}  ${paint.bold(cause.title)} ${paint.dim(`[${cause.source}]`)}`);
+      lines.push(`${severityLabel(cause.severity, paint)}  #${cause.rank ?? '?'} ${paint.bold(cause.title)} ${paint.dim(`[${cause.source}]`)}`);
       if (cause.evidence) lines.push(paint.dim(`      Evidence: ${cause.evidence}`));
       if (cause.recommendation) lines.push(`      Fix: ${cause.recommendation}`);
     }
@@ -92,10 +104,12 @@ export function renderDoctorTerminal(report, options = {}) {
     for (const fix of safe.slice(0, 6)) {
       lines.push(`  ${paint.pass('SAFE')}  ${paint.bold(fix.title)} ${paint.dim(`[${fix.source}]`)}`);
       lines.push(`        ${fix.description}`);
+      if (fix.explanation) lines.push(paint.dim(`        Why safe: ${fix.explanation}`));
     }
     for (const fix of manual.slice(0, 4)) {
       lines.push(`  ${paint.warn('MANUAL')} ${paint.bold(fix.title)} ${paint.dim(`[${fix.source}]`)}`);
       lines.push(`        ${fix.description}`);
+      if (fix.explanation) lines.push(paint.dim(`        Why manual: ${fix.explanation}`));
     }
     if (report.diagnosis.fixPlan.applied?.length > 0) {
       lines.push(paint.bold('Applied safe fixes'));
@@ -115,6 +129,12 @@ export function renderDoctorTerminal(report, options = {}) {
     lines.push(paint.bold('Probe results'));
     if (report.probes.results.length === 0) lines.push('  No probes were available for this project.');
     for (const result of report.probes.results) renderProbe(result, lines, paint);
+  }
+
+  if (report.diagnosis.unknowns?.length > 0) {
+    lines.push('');
+    lines.push(paint.bold('Unknowns'));
+    for (const item of report.diagnosis.unknowns.slice(0, 4)) lines.push(`  ${item}`);
   }
 
   lines.push('');

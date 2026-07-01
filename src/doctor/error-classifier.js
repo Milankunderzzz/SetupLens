@@ -28,6 +28,104 @@ const RULES = [
     recommendation: () => 'Restore the missing file, generate it from the documented template, or update the command/path that references it.'
   },
   {
+    type: 'next_invalid_config',
+    severity: 'fail',
+    title: 'Next.js configuration is invalid',
+    pattern: /(?:Invalid next\.config|next\.config\.(?:js|mjs|ts).*invalid|next config.*invalid|Could not find a production build|No such directory.*\.next)/i,
+    recommendation: () => 'Fix next.config and verify the build output before starting Next.js.'
+  },
+  {
+    type: 'next_missing_routes',
+    severity: 'fail',
+    title: 'Next.js route directory is missing',
+    pattern: /(?:Couldn't find any `pages` or `app` directory|couldn't find any pages or app directory|No app directory|No pages directory)/i,
+    recommendation: () => 'Add an app/ or pages/ route directory, or point SetupLens at the package that owns the Next.js app.'
+  },
+  {
+    type: 'react_server_component_boundary',
+    severity: 'fail',
+    title: 'React Server Component boundary failed',
+    pattern: /(?:ReactServerComponentsError|You're importing a component that needs use(?:State|Effect)|needs ["']use client["']|Hooks can only be used in Client Components)/i,
+    recommendation: () => 'Move client-only code behind a "use client" boundary or remove browser-only hooks from server components.'
+  },
+  {
+    type: 'prisma_database_unreachable',
+    severity: 'fail',
+    title: 'Prisma cannot reach the database',
+    pattern: /(?:P1001|Can't reach database server|PrismaClientInitializationError)/i,
+    recommendation: () => 'Start the database service and verify DATABASE_URL host, port, credentials, and network access.'
+  },
+  {
+    type: 'prisma_database_missing',
+    severity: 'fail',
+    title: 'Prisma database does not exist',
+    pattern: /(?:P1003|Database .* does not exist)/i,
+    recommendation: () => 'Create the target database or point DATABASE_URL at an existing development database.'
+  },
+  {
+    type: 'prisma_schema_drift',
+    severity: 'fail',
+    title: 'Prisma schema and database are out of sync',
+    pattern: /(?:P2021|P2022|table .* does not exist|column .* does not exist|The table .* does not exist)/i,
+    recommendation: () => 'Run the project migration workflow after confirming the target database is safe to change.'
+  },
+  {
+    type: 'django_settings_error',
+    severity: 'fail',
+    title: 'Django settings are not configured',
+    pattern: /(?:django\.core\.exceptions\.ImproperlyConfigured|Requested setting .* settings are not configured|DJANGO_SETTINGS_MODULE|No module named .*settings)/i,
+    recommendation: () => 'Set DJANGO_SETTINGS_MODULE or restore the settings module before running Django commands.'
+  },
+  {
+    type: 'django_allowed_hosts',
+    severity: 'fail',
+    title: 'Django ALLOWED_HOSTS rejected the request',
+    pattern: /(?:DisallowedHost|Invalid HTTP_HOST header|ALLOWED_HOSTS)/i,
+    recommendation: () => 'Add the local hostname to ALLOWED_HOSTS for development.'
+  },
+  {
+    type: 'rails_credentials_key_missing',
+    severity: 'fail',
+    title: 'Rails credentials key is missing',
+    pattern: /(?:Missing.*RAILS_MASTER_KEY|Missing.*master\.key|ActiveSupport::MessageEncryptor::InvalidMessage|Couldn't decrypt .*credentials)/i,
+    recommendation: () => 'Provide RAILS_MASTER_KEY or config/master.key before booting encrypted credentials.'
+  },
+  {
+    type: 'spring_datasource_config',
+    severity: 'fail',
+    title: 'Spring Boot datasource is not configured',
+    pattern: /(?:Failed to configure a DataSource|url attribute is not specified and no embedded datasource|Cannot determine embedded database driver class)/i,
+    recommendation: () => 'Define spring.datasource settings or activate the profile that supplies local database configuration.'
+  },
+  {
+    type: 'spring_bean_creation',
+    severity: 'fail',
+    title: 'Spring Boot bean creation failed',
+    pattern: /(?:APPLICATION FAILED TO START|BeanCreationException|UnsatisfiedDependencyException)/i,
+    recommendation: () => 'Inspect the failing bean dependency and the active Spring profile/configuration.'
+  },
+  {
+    type: 'dotnet_configuration_missing',
+    severity: 'fail',
+    title: '.NET configuration file or launch profile is missing',
+    pattern: /(?:appsettings(?:\.[A-Za-z0-9_-]+)?\.json.*(?:not found|missing)|launchSettings\.json.*(?:not found|missing)|Unable to configure HTTPS endpoint)/i,
+    recommendation: () => 'Restore appsettings/launchSettings or document the environment variables used for local startup.'
+  },
+  {
+    type: 'go_entrypoint_or_package_error',
+    severity: 'fail',
+    title: 'Go package entrypoint is not runnable',
+    pattern: /(?:no Go files|package .* is not a main package|function main is undeclared|cannot find main module)/i,
+    recommendation: () => 'Run the correct cmd/<service> package or add a conventional main.go entrypoint.'
+  },
+  {
+    type: 'rust_feature_mismatch',
+    severity: 'fail',
+    title: 'Rust feature or target configuration mismatch',
+    pattern: /(?:package .* does not have feature|the package .* depends on .* with features .* but .* does not have these features|no bin target named)/i,
+    recommendation: () => 'Fix Cargo features, target names, or workspace member selection before running the binary.'
+  },
+  {
     type: 'port_in_use',
     severity: 'fail',
     title: 'Port already in use',

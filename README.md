@@ -26,7 +26,7 @@ I am building it in public and still keeping the core deterministic and local-fi
 
 SetupLens is an early research prototype and usable MVP, not yet a product whose effectiveness has been established. The current `main` branch includes:
 
-- 61 automated tests, executed in CI on Windows, Linux, and macOS with Node.js 18 and 22;
+- 65 automated tests, executed in CI on Windows, Linux, and macOS with Node.js 18 and 22;
 - context-aware file classification, workspace-level dependency reporting, and primary-stack ranking;
 - `Unsupported / Not scored` results for empty repositories, unknown stacks, and unsupported primary stacks instead of misleading numeric grades;
 - startup diagnosis with `ready`, `needs_setup`, `blocked`, and `unsupported` verdicts;
@@ -36,7 +36,10 @@ SetupLens is an early research prototype and usable MVP, not yet a product whose
 - deep doctor rules for Next.js, Vite, Prisma, Django, FastAPI, Laravel, Rails, Spring Boot, .NET web apps, Go services, Rust binaries, Turbo, and Nx;
 - a failure corpus with real-project and distilled fixtures that keeps doctor rules tied to reproducible setup failures;
 - multi-ecosystem doctor adapters for PHP, Ruby, Java, .NET, Go, Rust, monorepos, and local service dependencies;
-- fix-plan output plus `doctor --apply safe` for whitelisted local repairs that never overwrite existing files;
+- corpus metrics for diagnostic hit rate, first root-cause ranking, safe-fix generation, false blockers, and ecosystem coverage;
+- safer probe execution that runs verify probes by default, records probe traces, and only runs startup commands with `--probe-startup`;
+- action-panel doctor reports in terminal, JSON, and HTML;
+- fix-plan output plus `doctor --apply safe` for whitelisted local repairs and safe recipes that never overwrite existing files;
 - default terminal output that hides low-impact pass/hygiene noise unless `--show-all` is requested;
 - one documented CMMS validation case and one external C++ boundary pilot.
 
@@ -80,7 +83,7 @@ Generate a shareable, offline HTML report:
 npx --yes github:Milankunderzzz/SetupLens scan . --format html --output setuplens-report.html
 ```
 
-SetupLens reads local files and commands only. It does not upload repository contents, environment values, or scan results. `doctor --probe` executes local adapter probes such as runtime checks, project-defined verification scripts, Compose validation, or short startup probes with a timeout; plain `doctor` and `scan` stay static. `doctor --apply safe` is intentionally narrow: it can copy env templates to missing local env files, append local env ignore rules, and create missing Compose env placeholders, but it refuses overwrites and writes outside the repository.
+SetupLens reads local files and commands only. It does not upload repository contents, environment values, or scan results. `doctor --probe` executes safe diagnostic and verify probes by default; `doctor --probe --probe-startup` opts into long-running startup probes. Probe results include trace metadata, timeout policy, ready-output detection, and classified failures. Plain `doctor` and `scan` stay static. `doctor --apply safe` is intentionally narrow: it can copy env templates to missing local env files, append local env ignore rules, create missing Compose env placeholders, and create conservative missing `tsconfig.json` or Vite `index.html` files, but it refuses overwrites and writes outside the repository. Package-script and env-template patches stay manual.
 
 ## What It Finds
 
@@ -92,6 +95,7 @@ SetupLens reads local files and commands only. It does not upload repository con
 - Deep ecosystem checks for Next.js route roots, Vite entry HTML, Prisma datasource/generator/migration state, Django settings/migrations, FastAPI ASGI entrypoints, Laravel env/app key state, Rails credentials/database config, Spring application config, .NET web appsettings, Go service entrypoints, Rust bin targets, and Turbo/Nx tasks
 - A fix plan that separates whitelisted safe automatic repairs from manual repair steps
 - A failure corpus workflow for turning real broken projects into sanitized fixtures and regression tests
+- Corpus metrics, probe traces, confidence explanations, unknowns, and an action panel with root causes, next command, safe fixes, manual fixes, and evidence
 - Planned probes, optional probe results, and classified failures such as missing environment variables, missing files, missing modules, port conflicts, database connection failures, pending migrations, private registry authentication failures, dependency resolution errors, Docker daemon failures, incompatible runtime versions, native build tool failures, TLS/certificate errors, DNS/network failures, lockfile mismatches, permission problems, configuration parse errors, and compile errors
 - Prisma `env("...")` and JavaScript/TypeScript `process.env.*` references that are not backed by a local environment value
 - Runtime availability and declared Node.js version compatibility
@@ -127,9 +131,12 @@ Results vary by disk, repository size, and runtime commands. The demo GIF shows 
 # Deep repository diagnosis
 setuplens doctor .
 setuplens doctor . --probe
+setuplens doctor . --probe --probe-startup
 setuplens doctor . --fix-plan
 setuplens doctor . --apply safe
+setuplens doctor . --format html --output setuplens-doctor.html
 setuplens doctor . --format json --output setuplens-doctor.json
+setuplens doctor-suite ./repos --format json
 
 # Human-readable terminal report
 setuplens scan .
@@ -251,6 +258,7 @@ npm test
 npm run corpus
 node ./bin/setuplens.js scan .
 node ./bin/setuplens.js doctor . --probe
+node ./bin/setuplens.js doctor-suite ./repos --format json
 ```
 
 The scanning runtime uses only Node.js built-ins. Development dependencies are used solely to generate the README demo GIF.
