@@ -20,6 +20,7 @@
     "start": "node ./bin/setuplens.js",
     "test": "node --test",
     "check": "node ./scripts/check-syntax.js",
+    "corpus": "node ./scripts/evaluate-failure-corpus.js",
     "demo": "node ./bin/setuplens.js scan . --format html --output ./docs/demo-report.html"
   },
   "engines": {
