@@ -113,7 +113,7 @@ export function renderHtml(report) {
   <header>
     <div class="wrap">
       <div class="brand">
-        <div><h1>SetupLens</h1><p>Know why a repository will not run, in one command and under 30 seconds.</p></div>
+        <div><h1>SetupLens</h1><p>Repository setup readiness scan. Use SetupLens Doctor for deeper diagnosis and probes.</p></div>
         <div class="score"><strong>${escapeHtml(scoreValue)}</strong><span>${escapeHtml(scoreCaption)}</span></div>
       </div>
       <div class="meta"><span><strong>Target:</strong> ${escapeHtml(report.target.name)}</span><span><strong>Stack:</strong> ${escapeHtml(stack)}</span><span><strong>Duration:</strong> ${report.durationMs} ms</span><span><strong>Files:</strong> ${report.target.filesIndexed}</span></div>

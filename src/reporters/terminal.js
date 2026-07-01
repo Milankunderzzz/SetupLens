@@ -67,7 +67,7 @@ export function renderTerminal(report, options = {}) {
 
   lines.push('');
   lines.push(paint.bold(`SetupLens ${report.tool.version}`));
-  lines.push(paint.dim('Know why a repository will not run, in one command and under 30 seconds.'));
+  lines.push(paint.dim('Repository setup readiness scan. Use "setuplens doctor" for deeper diagnosis and probes.'));
   lines.push('');
   lines.push(`Target  ${paint.bold(report.target.name)}  ${paint.dim(`(${report.target.filesIndexed} files, ${report.durationMs} ms)`)}`);
   const supportingStacks = report.stackEvidence

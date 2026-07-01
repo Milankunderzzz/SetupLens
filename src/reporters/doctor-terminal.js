@@ -1,0 +1,98 @@
+const ANSI = Object.freeze({
+  reset: '\u001b[0m', bold: '\u001b[1m', dim: '\u001b[2m',
+  red: '\u001b[31m', green: '\u001b[32m', yellow: '\u001b[33m', cyan: '\u001b[36m'
+});
+
+function painter(enabled) {
+  const color = (name, value) => enabled ? `${ANSI[name]}${value}${ANSI.reset}` : value;
+  return {
+    bold: (value) => color('bold', value),
+    dim: (value) => color('dim', value),
+    fail: (value) => color('red', value),
+    warn: (value) => color('yellow', value),
+    pass: (value) => color('green', value),
+    info: (value) => color('cyan', value)
+  };
+}
+
+function statusLabel(status, paint) {
+  const labels = {
+    blocked: paint.fail('BLOCKED'),
+    needs_setup: paint.warn('NEEDS SETUP'),
+    needs_probe: paint.info('NEEDS PROBE'),
+    ready: paint.pass('READY'),
+    unsupported: paint.warn('PARTIAL')
+  };
+  return labels[status] ?? status;
+}
+
+function severityLabel(severity, paint) {
+  if (severity === 'fail') return paint.fail('FAIL');
+  if (severity === 'warn') return paint.warn('WARN');
+  return paint.info('INFO');
+}
+
+function renderAction(action, index, lines, paint) {
+  const body = action.command ? paint.bold(action.command) : action.description;
+  const location = action.cwd && action.cwd !== '.' ? ` in ${action.cwd}` : '';
+  lines.push(`  ${index + 1}. ${body}${paint.dim(`${location} (${action.reason})`)}`);
+}
+
+function renderProbe(result, lines, paint) {
+  const label = result.status === 'pass'
+    ? paint.pass('PASS')
+    : result.status === 'timeout'
+      ? paint.warn('TIME')
+      : result.status === 'skipped'
+        ? paint.info('SKIP')
+        : paint.fail('FAIL');
+  lines.push(`${label}  ${paint.bold(result.label)} ${paint.dim(result.display)} ${paint.dim(`${result.durationMs} ms`)}`);
+  if (result.classification) {
+    lines.push(`      ${result.classification.title}${result.classification.recommendation ? `: ${result.classification.recommendation}` : ''}`);
+  }
+}
+
+export function renderDoctorTerminal(report, options = {}) {
+  const useColor = options.color !== false && Boolean(process.stdout.isTTY);
+  const paint = painter(useColor);
+  const lines = [];
+  const adapters = report.project.adapters.map((adapter) => adapter.id).join(', ') || 'none';
+
+  lines.push('');
+  lines.push(paint.bold(`SetupLens Doctor ${report.tool.version}`));
+  lines.push(paint.dim('Diagnose unfamiliar repositories with adapters, static evidence, and optional probes.'));
+  lines.push('');
+  lines.push(`Target   ${paint.bold(report.target.name)}  ${paint.dim(`(${report.target.filesIndexed} files, ${report.durationMs} ms)`)}`);
+  lines.push(`Stack    ${report.project.primaryStacks?.length > 0 ? report.project.primaryStacks.join(', ') : 'unknown'}`);
+  lines.push(`Adapters ${adapters}`);
+  lines.push(`Verdict  ${statusLabel(report.status, paint)}  ${paint.dim(report.summary)}`);
+  lines.push('');
+
+  if (report.diagnosis.rootCauses.length > 0) {
+    lines.push(paint.bold('Likely root causes'));
+    for (const cause of report.diagnosis.rootCauses.slice(0, 8)) {
+      lines.push(`${severityLabel(cause.severity, paint)}  ${paint.bold(cause.title)} ${paint.dim(`[${cause.source}]`)}`);
+      if (cause.evidence) lines.push(paint.dim(`      Evidence: ${cause.evidence}`));
+      if (cause.recommendation) lines.push(`      Fix: ${cause.recommendation}`);
+    }
+    lines.push('');
+  }
+
+  if (report.diagnosis.nextActions.length > 0) {
+    lines.push(paint.bold('Next actions'));
+    report.diagnosis.nextActions.slice(0, 8).forEach((action, index) => renderAction(action, index, lines, paint));
+    lines.push('');
+  }
+
+  if (!report.probes.enabled) {
+    lines.push(paint.bold('Probes'));
+    lines.push(`  Planned ${report.probes.planned.length} probe${report.probes.planned.length === 1 ? '' : 's'}. Run ${paint.bold('setuplens doctor . --probe')} to execute them.`);
+  } else {
+    lines.push(paint.bold('Probe results'));
+    if (report.probes.results.length === 0) lines.push('  No probes were available for this project.');
+    for (const result of report.probes.results) renderProbe(result, lines, paint);
+  }
+
+  lines.push('');
+  return lines.join('\n');
+}

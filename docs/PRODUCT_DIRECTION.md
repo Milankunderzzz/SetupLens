@@ -1,40 +1,41 @@
 # Product Direction
 
-SetupLens should be useful before it is impressive.
+SetupLens should be powerful because it is useful, not because it is noisy.
 
 The product goal is not to score a repository for being open-source ready. The goal is to help a developer answer:
 
-> I cloned this repository. What should I run, and what will stop it from starting?
+> I cloned this repository. What is it, what should I run, what can SetupLens safely try, and what is the most likely reason it fails?
 
 ## Current Product Priority
 
-The v0.2 line focuses on startup diagnosis:
+The v0.2 line now has two layers:
 
-1. Detect the main stack and refuse misleading scores for unsupported projects.
-2. Identify high-impact startup blockers such as missing runtimes, missing installed dependencies, missing local environment files, broken Docker Compose paths, invalid Makefile/package scripts, and exposed credentials.
-3. Produce a short startup plan with prepare commands and run commands.
-4. Keep repository hygiene visible but secondary.
+1. `scan`: deterministic setup readiness for CI-style use.
+2. `doctor`: broader local diagnosis with adapters, startup plans, optional probes, failure classification, and next actions.
+
+The product priority is to grow `doctor` until it can handle unfamiliar repositories across many ecosystems without pretending static rules can explain every failure.
 
 ## What Should Feel Different
 
-The default terminal output should not feel like a long checklist. It should feel like a practical handoff:
+The doctor output should not feel like a long checklist. It should feel like a practical handoff:
 
 ```text
 Verdict BLOCKED
 
-Prepare
-  npm install
-  python -m venv .venv
+Likely root causes
+  Missing environment variable DATABASE_URL
+  Docker daemon unavailable
 
-Run
+Next actions
+  Copy .env.example to .env
+  Start Docker Desktop
   npm run dev
 
-Startup blockers
-  Compose paths are missing
-  Makefile calls an npm script that does not exist
+Probe results
+  npm run dev -> classified as missing_env_var
 ```
 
-The full audit list remains available with `--show-all`, but most users should not need it during the first minute.
+The full scan audit list remains available with `scan --show-all`, but most users should start with `doctor`.
 
 ## Near-Term Roadmap
 
@@ -47,26 +48,35 @@ Product preview for the startup diagnosis redesign.
 - Blockers and safety risks separated from low-value repository hygiene.
 - HTML and GitHub Action summaries aligned with the new model.
 
+### v0.2.0-alpha.2
+
+Turn the startup scanner into a broader repository doctor.
+
+- Add `setuplens doctor`.
+- Add adapter-driven signals, actions, issues, and probes.
+- Add optional `--probe` execution with timeouts.
+- Add failure classification for common command-output families.
+- Add Prisma, PHP, Ruby, Java, .NET, Go, Rust, monorepo, local service, and README instruction adapters.
+
 ### v0.2.0-beta
 
-Make detected startup plans more trustworthy.
+Make doctor mode more trustworthy across real repositories.
 
-- Improve framework entry-point detection for common Node.js and Python projects.
-- Add safer command confidence labels.
-- Add optional dry-run/probe design for commands that can be checked without mutating the project.
+- Improve framework entry-point detection for common Node.js, Python, PHP, Ruby, Java, .NET, Go, and Rust projects.
+- Expand probe safety labels and let users choose verification-only versus startup probes.
+- Add more dry-run probes for package managers, ORMs, build tools, and monorepo runners.
 - Add more real-world fixtures from projects that failed to start.
 
 ### v0.2.0
 
 Ship the first product-oriented release.
 
-- Keep the startup diagnosis contract stable enough for users and GitHub Actions.
-- Publish a clean demo showing before/after diagnosis on real setup failures.
-- Prepare npm distribution so users can run `npx setuplens scan .`.
+- Keep the scan and doctor contracts stable enough for users and GitHub Actions.
+- Publish demos showing static diagnosis, probe diagnosis, and classified real failures.
+- Prepare npm distribution so users can run `npx setuplens doctor .`.
 
 ## Explicit Non-Goals For Now
 
-- Deep Java, Go, Rust, or C++ startup support.
-- Auto-repair that changes user files.
+- Auto-repair that changes user files without explicit approval.
 - AI-only diagnosis without deterministic evidence.
 - Replacing vulnerability scanners, package managers, IDEs, or Docker itself.

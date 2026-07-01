@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- `setuplens doctor` for broader repository diagnosis beyond static readiness scoring.
+- Doctor adapters for Node.js, Python, Docker, Prisma, PHP, Ruby, Java, .NET, Go, Rust, monorepos, local services, and README instructions.
+- Optional `doctor --probe` execution with bounded local command probes and timeout control.
+- Failure-log classification for missing environment variables, missing files, missing modules, port conflicts, database failures, pending migrations, private registry authentication failures, dependency resolution errors, Docker daemon failures, incompatible runtime versions, native build tool failures, TLS/certificate errors, DNS/network failures, lockfile mismatches, permission problems, configuration parse errors, and compile errors.
+- Doctor JSON and terminal reports with likely root causes, next actions, planned probes, and probe results.
+
+### Changed
+
+- Product positioning now emphasizes broad local startup diagnosis instead of a 30-second scan promise.
+- Main package description and scan report tagline now point users to doctor mode for deeper investigation.
+
 ## 0.2.0-alpha.1
 
 This alpha refocuses SetupLens from a broad repository checklist into a startup diagnosis tool.
