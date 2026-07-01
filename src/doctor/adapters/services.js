@@ -95,6 +95,14 @@ function serviceKinds(services) {
   return [...kinds].sort();
 }
 
+function safeFixIdPath(relative) {
+  return relative.replace(/\\/g, '/').replace(/^\.+\/?/, '').replace(/[^A-Za-z0-9_.-]+/g, '.');
+}
+
+function isSafeLocalPath(relative) {
+  return relative && !path.posix.isAbsolute(relative) && !relative.split('/').includes('..');
+}
+
 export async function servicesAdapter({ index }) {
   const composeFiles = index.files.filter((file) => COMPOSE_NAMES.has(file.name));
   if (composeFiles.length === 0) return null;
@@ -116,7 +124,17 @@ export async function servicesAdapter({ index }) {
           severity: 'fail',
           title: `Compose env_file is missing: ${envFile.value}`,
           evidence: `${file.relative}:${envFile.line} references ${envFile.value} for ${envFile.service}`,
-          recommendation: `Create ${relative} or update the env_file path before starting Compose.`
+          recommendation: `Create ${relative} or update the env_file path before starting Compose.`,
+          safeFix: isSafeLocalPath(relative) ? {
+            id: `safe.compose-env.${safeFixIdPath(relative)}`,
+            title: `Create Compose env file ${relative}`,
+            description: `Create an empty ${relative} placeholder for local Compose configuration without overwriting an existing file.`,
+            apply: {
+              type: 'create_file',
+              path: relative,
+              contents: '# Local Compose environment values\n'
+            }
+          } : null
         });
       }
     }

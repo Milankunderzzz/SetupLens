@@ -16,12 +16,23 @@ async function hasSpringBoot(files) {
   return false;
 }
 
+async function springConfig(index) {
+  const files = index.files.filter((file) => /src\/main\/resources\/application(?:-[A-Za-z0-9_.-]+)?\.(?:properties|ya?ml)$/.test(file.relative));
+  const profiles = [];
+  for (const file of files) {
+    const match = file.name.match(/^application-([A-Za-z0-9_.-]+)\./);
+    if (match) profiles.push(match[1]);
+  }
+  return { files: files.map((file) => file.relative), profiles: [...new Set(profiles)].sort() };
+}
+
 export async function javaAdapter({ index, detection }) {
   const pomFiles = index.files.filter((file) => file.name === 'pom.xml');
   const gradleFiles = index.files.filter((file) => ['build.gradle', 'build.gradle.kts', 'settings.gradle', 'settings.gradle.kts'].includes(file.name));
   if (!detection.stacks.includes('java') && pomFiles.length === 0 && gradleFiles.length === 0) return null;
 
   const springBoot = await hasSpringBoot([...pomFiles, ...gradleFiles]);
+  const spring = await springConfig(index);
   const buildTool = pomFiles.length > 0 ? 'maven' : 'gradle';
   const rootPom = pomFiles.find((file) => path.posix.dirname(file.relative) === '.') ?? pomFiles[0];
   const rootGradle = gradleFiles.find((file) => path.posix.dirname(file.relative) === '.') ?? gradleFiles[0];
@@ -97,6 +108,40 @@ export async function javaAdapter({ index, detection }) {
       purpose: 'Verify that Gradle or the Gradle wrapper is available for this project.',
       confidence: 'high'
     }));
+  probes.push(buildTool === 'maven'
+    ? createProbe({
+      id: 'java.maven.compile',
+      adapter: 'java',
+      label: 'Maven compile',
+      command: 'mvn',
+      args: ['-DskipTests', 'compile'],
+      cwd,
+      purpose: 'Compile Java sources without running tests or starting the service.',
+      kind: 'verify',
+      confidence: 'medium'
+    })
+    : createProbe({
+      id: 'java.gradle.classes',
+      adapter: 'java',
+      label: 'Gradle classes',
+      command: gradle,
+      args: ['classes'],
+      cwd,
+      purpose: 'Compile Java sources without starting the service.',
+      kind: 'verify',
+      confidence: 'medium'
+    }));
+
+  const issues = [];
+  if (springBoot && spring.files.length === 0) {
+    issues.push({
+      type: 'spring_missing_application_config',
+      severity: 'warn',
+      title: 'Spring Boot application config was not found',
+      evidence: 'Spring Boot evidence was detected, but no application.properties/yml file was indexed.',
+      recommendation: 'Verify whether configuration is supplied through environment variables, config server, or an omitted application.yml/properties file.'
+    });
+  }
 
   return {
     id: 'java',
@@ -105,11 +150,12 @@ export async function javaAdapter({ index, detection }) {
     signals: {
       buildTool,
       frameworks: springBoot ? ['Spring Boot'] : [],
+      spring,
       pomFiles: pomFiles.map((file) => file.relative),
       gradleFiles: gradleFiles.map((file) => file.relative)
     },
     actions,
     probes,
-    issues: []
+    issues
   };
 }

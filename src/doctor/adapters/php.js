@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { readJson } from '../../lib/files.js';
+import { readJson, readText } from '../../lib/files.js';
 import { createProbe } from '../probes.js';
 
 function dependencies(manifest) {
@@ -36,6 +36,8 @@ export async function phpAdapter({ index }) {
   const rootComposer = composerFiles.find((file) => path.posix.dirname(file.relative) === '.') ?? composerFiles[0];
   const rootDirectory = rootComposer ? (path.posix.dirname(rootComposer.relative) === '.' ? '.' : path.posix.dirname(rootComposer.relative)) : '.';
   const hasVendor = fs.existsSync(path.join(index.root, rootDirectory, 'vendor'));
+  const envExample = index.byRelative.get(rootDirectory === '.' ? '.env.example' : `${rootDirectory}/.env.example`);
+  const envFile = index.byRelative.get(rootDirectory === '.' ? '.env' : `${rootDirectory}/.env`);
   const actions = [];
   if (composerFiles.length > 0 && !hasVendor) {
     actions.push({
@@ -56,6 +58,13 @@ export async function phpAdapter({ index }) {
       cwd: directory,
       reason: 'artisan indicates a Laravel application.',
       confidence: 'high'
+    });
+    actions.push({
+      type: 'setup',
+      command: commandIn(directory, 'php artisan migrate:status'),
+      cwd: directory,
+      reason: 'Laravel database migration status is commonly required before startup.',
+      confidence: 'medium'
     });
   } else if (phpEntrypoints.length > 0) {
     actions.push({
@@ -102,6 +111,47 @@ export async function phpAdapter({ index }) {
       kind: 'verify',
       confidence: 'medium'
     }));
+    probes.push(createProbe({
+      id: 'php.laravel.migrate-status',
+      adapter: 'php',
+      label: 'Laravel migration status',
+      command: 'php',
+      args: ['artisan', 'migrate:status'],
+      cwd: path.posix.dirname(artisan.relative) === '.' ? '.' : path.posix.dirname(artisan.relative),
+      purpose: 'Inspect Laravel migration state without applying migrations.',
+      kind: 'verify',
+      confidence: 'medium'
+    }));
+  }
+
+  const issues = [];
+  if (frameworks.has('Laravel') && envExample && !envFile) {
+    const target = rootDirectory === '.' ? '.env' : `${rootDirectory}/.env`;
+    issues.push({
+      type: 'laravel_missing_env',
+      severity: 'warn',
+      title: 'Laravel .env file is missing',
+      evidence: `${envExample.relative} exists but ${target} was not found.`,
+      recommendation: `Copy ${envExample.relative} to ${target} and fill in local values.`,
+      safeFix: {
+        id: `safe.laravel.copy-env.${envExample.relative}`,
+        title: 'Create Laravel .env from template',
+        description: `Copy ${envExample.relative} to ${target} without overwriting an existing file.`,
+        apply: { type: 'copy_file', from: envExample.relative, to: target }
+      }
+    });
+  }
+  if (frameworks.has('Laravel') && envFile) {
+    const envText = await readText(envFile);
+    if (!/^APP_KEY=base64:/m.test(envText ?? '')) {
+      issues.push({
+        type: 'laravel_missing_app_key',
+        severity: 'warn',
+        title: 'Laravel APP_KEY is not configured',
+        evidence: `${envFile.relative} does not contain a base64 APP_KEY.`,
+        recommendation: 'Run php artisan key:generate after confirming this is a local development environment.'
+      });
+    }
   }
 
   return {
@@ -115,6 +165,6 @@ export async function phpAdapter({ index }) {
     },
     actions,
     probes,
-    issues: []
+    issues
   };
 }

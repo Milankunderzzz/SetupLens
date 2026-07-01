@@ -95,6 +95,30 @@ test('doctor command supports machine-readable json output', async (t) => {
   assert.ok(parsed.probes.planned.length >= 2);
 });
 
+test('doctor command shows terminal fix plan only when requested', async (t) => {
+  const root = await fixture({
+    'package.json': JSON.stringify({ name: 'cli-fix-plan', scripts: { start: 'node index.js' } }),
+    'index.js': 'console.log("ok");\n',
+    '.env.example': 'DATABASE_URL=\n'
+  });
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+
+  const plain = spawnSync(process.execPath, [cliPath, 'doctor', root, '--no-color', '--timeout', '3000'], {
+    encoding: 'utf8',
+    windowsHide: true
+  });
+  const planned = spawnSync(process.execPath, [cliPath, 'doctor', root, '--fix-plan', '--no-color', '--timeout', '3000'], {
+    encoding: 'utf8',
+    windowsHide: true
+  });
+
+  assert.equal(plain.status, 0, plain.stderr);
+  assert.doesNotMatch(plain.stdout, /Fix plan/);
+  assert.equal(planned.status, 0, planned.stderr);
+  assert.match(planned.stdout, /Fix plan/);
+  assert.match(planned.stdout, /Create local environment file/);
+});
+
 test('doctor diagnoses unsupported scan stacks when a doctor adapter exists', async (t) => {
   const root = await fixture({
     'composer.json': JSON.stringify({ require: { php: '^8.3', 'laravel/framework': '^11.0' } }),
@@ -163,4 +187,154 @@ test('error classifier recognizes broad setup failure families', () => {
   assert.equal(classifyLog('SELF_SIGNED_CERT_IN_CHAIN certificate verify failed').type, 'tls_certificate');
   assert.equal(classifyLog('gyp ERR! stack Error: not found: make').type, 'native_build_tools_missing');
   assert.equal(classifyLog('NETSDK1045: The current .NET SDK does not support targeting .NET 9.0').type, 'unsupported_runtime_version');
+});
+
+test('doctor adds deep Next, Vite, Prisma, and TypeScript rules', async (t) => {
+  const root = await fixture({
+    'package.json': JSON.stringify({
+      name: 'web-stack',
+      scripts: { dev: 'next dev', build: 'vite build' },
+      dependencies: { next: '^15.0.0', vite: '^7.0.0', react: '^19.0.0', '@prisma/client': '^6.0.0' },
+      devDependencies: { typescript: '^5.0.0', prisma: '^6.0.0' }
+    }),
+    'next.config.mjs': 'export default {};\n',
+    'vite.config.ts': 'export default {};\n',
+    'prisma/schema.prisma': 'generator client { provider = "prisma-client-js" }\ndatasource db { provider = "postgresql" url = env("DATABASE_URL") }\n'
+  });
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+
+  const report = await doctor(root);
+  const node = report.project.adapters.find((adapter) => adapter.id === 'node');
+  const prisma = report.project.adapters.find((adapter) => adapter.id === 'prisma');
+
+  assert.equal(node.signals.deep.next.configFiles[0], 'next.config.mjs');
+  assert.equal(node.signals.deep.vite.hasIndexHtml, false);
+  assert.equal(node.signals.deep.typescript.hasTsconfig, false);
+  assert.ok(report.diagnosis.rootCauses.some((item) => item.type === 'next_missing_routes'));
+  assert.ok(report.diagnosis.rootCauses.some((item) => item.type === 'vite_missing_index_html'));
+  assert.ok(report.diagnosis.rootCauses.some((item) => item.type === 'typescript_missing_tsconfig'));
+  assert.equal(prisma.signals.schemaFiles[0].providers[0], 'postgresql');
+  assert.ok(report.probes.planned.some((item) => item.id.includes('prisma.generate')));
+  assert.ok(report.probes.planned.some((item) => item.id === 'node.next.info'));
+});
+
+test('doctor adds deep FastAPI and Django rules', async (t) => {
+  const root = await fixture({
+    'requirements.txt': 'fastapi\ndjango\n',
+    'main.py': 'from fastapi import FastAPI\napp = FastAPI()\n',
+    'manage.py': 'print("manage")\n',
+    'project/settings.py': 'SECRET_KEY = "x"\n'
+  });
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+
+  const report = await doctor(root);
+  const python = report.project.adapters.find((adapter) => adapter.id === 'python');
+
+  assert.ok(python.signals.deep.fastApiEntrypoints.some((item) => item.module === 'main'));
+  assert.ok(python.signals.deep.django.settings.includes('project/settings.py'));
+  assert.ok(report.diagnosis.nextActions.some((item) => /uvicorn main:app/.test(item.command ?? '')));
+  assert.ok(report.diagnosis.rootCauses.some((item) => item.type === 'fastapi_missing_uvicorn'));
+  assert.ok(report.probes.planned.some((item) => item.id === 'python.compileall'));
+  assert.ok(report.probes.planned.some((item) => item.id === 'python.django.migrations'));
+});
+
+test('safe fix plan can create local env files and compose env placeholders', async (t) => {
+  const root = await fixture({
+    'composer.json': JSON.stringify({ require: { 'laravel/framework': '^11.0' } }),
+    'artisan': '<?php echo "Laravel";\n',
+    '.env.example': 'APP_KEY=\nDB_DATABASE=local\n',
+    'compose.yaml': 'services:\n  app:\n    image: php:8.3\n    env_file: .env.compose\n'
+  });
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+
+  const planned = await doctor(root);
+  assert.ok(planned.diagnosis.fixPlan.fixes.some((item) => item.id.startsWith('safe.laravel.copy-env')));
+  assert.ok(planned.diagnosis.fixPlan.fixes.some((item) => item.id === 'safe.compose-env.env.compose'));
+
+  const applied = await doctor(root, { apply: 'safe' });
+  assert.ok(applied.diagnosis.fixPlan.applied.some((item) => item.id.startsWith('safe.laravel.copy-env') && item.status === 'applied'));
+  assert.equal(await fs.readFile(path.join(root, '.env'), 'utf8'), 'APP_KEY=\nDB_DATABASE=local\n');
+  assert.equal(await fs.readFile(path.join(root, '.env.compose'), 'utf8'), '# Local Compose environment values\n');
+});
+
+test('doctor adds deep Laravel, Rails, Spring, and .NET web rules', async (t) => {
+  const root = await fixture({
+    'composer.json': JSON.stringify({ require: { 'laravel/framework': '^11.0' } }),
+    'artisan': '<?php echo "Laravel";\n',
+    '.env': 'APP_KEY=\n',
+    'Gemfile': 'source "https://rubygems.org"\ngem "rails"\n',
+    'config/credentials.yml.enc': 'encrypted\n',
+    'pom.xml': '<project><dependencies><dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-web</artifactId></dependency></dependencies></project>',
+    'web.csproj': '<Project Sdk="Microsoft.NET.Sdk.Web"><PropertyGroup><TargetFramework>net8.0</TargetFramework></PropertyGroup></Project>'
+  });
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+
+  const report = await doctor(root);
+  const php = report.project.adapters.find((adapter) => adapter.id === 'php');
+  const ruby = report.project.adapters.find((adapter) => adapter.id === 'ruby');
+  const java = report.project.adapters.find((adapter) => adapter.id === 'java');
+  const dotnet = report.project.adapters.find((adapter) => adapter.id === 'dotnet');
+
+  assert.ok(php.signals.frameworks.includes('Laravel'));
+  assert.ok(report.diagnosis.rootCauses.some((item) => item.type === 'laravel_missing_app_key'));
+  assert.ok(report.probes.planned.some((item) => item.id === 'php.laravel.migrate-status'));
+  assert.ok(report.diagnosis.nextActions.some((item) => item.command === 'php artisan migrate:status'));
+  assert.ok(ruby.signals.frameworks.includes('Rails'));
+  assert.equal(ruby.signals.credentials, 'config/credentials.yml.enc');
+  assert.ok(report.diagnosis.rootCauses.some((item) => item.type === 'rails_missing_master_key'));
+  assert.ok(report.diagnosis.rootCauses.some((item) => item.type === 'rails_missing_database_config'));
+  assert.ok(report.probes.planned.some((item) => item.id === 'ruby.rails.db-version'));
+  assert.deepEqual(java.signals.frameworks, ['Spring Boot']);
+  assert.deepEqual(java.signals.spring.files, []);
+  assert.ok(report.diagnosis.rootCauses.some((item) => item.type === 'spring_missing_application_config'));
+  assert.ok(report.probes.planned.some((item) => item.id === 'java.maven.compile'));
+  assert.ok(dotnet.signals.projects.some((project) => project.kind === 'web' && project.targetFrameworks.includes('net8.0')));
+  assert.ok(report.diagnosis.rootCauses.some((item) => item.type === 'dotnet_missing_appsettings'));
+  assert.ok(report.probes.planned.some((item) => item.id === 'dotnet.build.web.csproj'));
+});
+
+test('doctor adds deep Turbo and Nx workspace rules', async (t) => {
+  const root = await fixture({
+    'package.json': JSON.stringify({
+      private: true,
+      workspaces: ['apps/*'],
+      scripts: { build: 'turbo build', test: 'nx run-many -t test' },
+      devDependencies: { turbo: '^2.0.0', nx: '^20.0.0' }
+    }),
+    'apps/web/package.json': JSON.stringify({ scripts: { dev: 'vite' }, dependencies: { vite: '^7.0.0' } }),
+    'turbo.json': JSON.stringify({ tasks: { build: {}, test: {} } }),
+    'nx.json': JSON.stringify({ targetDefaults: { build: {}, test: {} } }),
+    'pnpm-workspace.yaml': "packages:\n  - 'apps/*'\n"
+  });
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+
+  const report = await doctor(root);
+  const monorepo = report.project.adapters.find((adapter) => adapter.id === 'monorepo');
+
+  assert.ok(monorepo.signals.tools.includes('turbo'));
+  assert.ok(monorepo.signals.tools.includes('nx'));
+  assert.deepEqual(monorepo.signals.turbo.tasks, ['build', 'test']);
+  assert.deepEqual(monorepo.signals.nx.targetDefaults, ['build', 'test']);
+  assert.ok(report.probes.planned.some((item) => item.id === 'monorepo.turbo.dry-run'));
+  assert.ok(report.probes.planned.some((item) => item.id === 'monorepo.nx.graph'));
+});
+
+test('doctor deepens Go service and Rust binary signals', async (t) => {
+  const root = await fixture({
+    'go.mod': 'module example.com/service\n\ngo 1.22\n',
+    'internal/server/server.go': 'package server\nimport "net/http"\nfunc Run() { _ = http.ListenAndServe(":8080", nil) }\n',
+    'Cargo.toml': '[package]\nname = "worker"\nversion = "0.1.0"\nedition = "2021"\n',
+    'src/bin/worker.rs': 'fn main() { let _ = std::env::var("DATABASE_URL"); }\n'
+  });
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+
+  const report = await doctor(root);
+  const go = report.project.adapters.find((adapter) => adapter.id === 'go');
+  const rust = report.project.adapters.find((adapter) => adapter.id === 'rust');
+
+  assert.ok(go.signals.serviceSignals.httpServerFiles.includes('internal/server/server.go'));
+  assert.ok(report.diagnosis.rootCauses.some((item) => item.type === 'go_service_missing_cmd_entry'));
+  assert.deepEqual(rust.signals.binTargets, ['src/bin/worker.rs']);
+  assert.ok(rust.signals.serviceSignals.envKeys.includes('DATABASE_URL'));
+  assert.ok(report.diagnosis.nextActions.some((item) => item.command === 'cargo run --bin worker'));
 });

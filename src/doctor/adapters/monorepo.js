@@ -1,4 +1,5 @@
 import { createProbe } from '../probes.js';
+import { readJson } from '../../lib/files.js';
 
 function packageManager(index, detection) {
   if (detection.workspace?.manager) return detection.workspace.manager;
@@ -30,6 +31,10 @@ export async function monorepoAdapter({ index, detection }) {
   const manager = packageManager(index, detection);
   const rootPackage = detection.packages.find((pkg) => pkg.relativeDirectory === '.');
   const rootScripts = Object.keys(rootPackage?.manifest.scripts ?? {}).sort();
+  const turboConfig = toolFiles.turbo ? await readJson(toolFiles.turbo) : null;
+  const nxConfig = toolFiles.nx ? await readJson(toolFiles.nx) : null;
+  const turboTasks = Object.keys(turboConfig?.tasks ?? turboConfig?.pipeline ?? {}).sort();
+  const nxTargets = Object.keys(nxConfig?.targetDefaults ?? {}).sort();
   const actions = [
     {
       type: 'install',
@@ -50,6 +55,28 @@ export async function monorepoAdapter({ index, detection }) {
       });
     }
   }
+  if (tools.includes('turbo')) {
+    for (const task of ['build', 'test', 'lint', 'dev'].filter((item) => turboTasks.includes(item) || rootScripts.includes(item))) {
+      actions.push({
+        type: task === 'dev' ? 'run' : 'verify',
+        command: manager === 'yarn' ? `yarn turbo ${task}` : `${manager} exec turbo ${task}`,
+        cwd: '.',
+        reason: `Turbo task "${task}" is available for the workspace.`,
+        confidence: 'medium'
+      });
+    }
+  }
+  if (tools.includes('nx')) {
+    for (const target of ['build', 'test', 'lint', 'serve'].filter((item) => nxTargets.includes(item) || rootScripts.includes(item))) {
+      actions.push({
+        type: target === 'serve' ? 'run' : 'verify',
+        command: manager === 'yarn' ? `yarn nx run-many -t ${target}` : `${manager} exec nx run-many -t ${target}`,
+        cwd: '.',
+        reason: `Nx target "${target}" is available for the workspace.`,
+        confidence: 'medium'
+      });
+    }
+  }
 
   return {
     id: 'monorepo',
@@ -58,6 +85,8 @@ export async function monorepoAdapter({ index, detection }) {
     signals: {
       packageManager: manager,
       tools,
+      turbo: turboConfig ? { tasks: turboTasks } : null,
+      nx: nxConfig ? { targetDefaults: nxTargets, workspaceLayout: nxConfig.workspaceLayout ?? null } : null,
       workspace: workspace ? {
         manifest: workspace.manifest,
         members: workspace.members.map((pkg) => pkg.relativeDirectory)
@@ -75,7 +104,25 @@ export async function monorepoAdapter({ index, detection }) {
         purpose: 'Verify that the workspace package manager is available.',
         confidence: 'high'
       })
-    ],
+    ].concat(tools.includes('turbo') ? [createProbe({
+      id: 'monorepo.turbo.dry-run',
+      adapter: 'monorepo',
+      label: 'Turbo dry run',
+      command: manager,
+      args: ['exec', 'turbo', 'run', 'build', '--dry-run'],
+      purpose: 'Ask Turbo to resolve the build graph without executing tasks.',
+      kind: 'verify',
+      confidence: 'medium'
+    })] : [], tools.includes('nx') ? [createProbe({
+      id: 'monorepo.nx.graph',
+      adapter: 'monorepo',
+      label: 'Nx project graph',
+      command: manager,
+      args: ['exec', 'nx', 'show', 'projects'],
+      purpose: 'Ask Nx to resolve workspace projects without running targets.',
+      kind: 'verify',
+      confidence: 'medium'
+    })] : []),
     issues: []
   };
 }
