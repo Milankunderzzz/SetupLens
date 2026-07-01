@@ -26,7 +26,7 @@ I am building it in public and still keeping the core deterministic and local-fi
 
 SetupLens is an early research prototype and usable MVP, not yet a product whose effectiveness has been established. The current `main` branch includes:
 
-- 60 automated tests, executed in CI on Windows, Linux, and macOS with Node.js 18 and 22;
+- 61 automated tests, executed in CI on Windows, Linux, and macOS with Node.js 18 and 22;
 - context-aware file classification, workspace-level dependency reporting, and primary-stack ranking;
 - `Unsupported / Not scored` results for empty repositories, unknown stacks, and unsupported primary stacks instead of misleading numeric grades;
 - startup diagnosis with `ready`, `needs_setup`, `blocked`, and `unsupported` verdicts;
@@ -34,6 +34,7 @@ SetupLens is an early research prototype and usable MVP, not yet a product whose
 - `doctor` mode with adapters, planned probes, real command probing, failure-log classification, and next-action ranking;
 - Node/Prisma/README instruction signals such as framework packages, `process.env.*`, Prisma `env("...")`, and documented commands;
 - deep doctor rules for Next.js, Vite, Prisma, Django, FastAPI, Laravel, Rails, Spring Boot, .NET web apps, Go services, Rust binaries, Turbo, and Nx;
+- a failure corpus with real-project and distilled fixtures that keeps doctor rules tied to reproducible setup failures;
 - multi-ecosystem doctor adapters for PHP, Ruby, Java, .NET, Go, Rust, monorepos, and local service dependencies;
 - fix-plan output plus `doctor --apply safe` for whitelisted local repairs that never overwrite existing files;
 - default terminal output that hides low-impact pass/hygiene noise unless `--show-all` is requested;
@@ -90,6 +91,7 @@ SetupLens reads local files and commands only. It does not upload repository con
 - Framework and tooling signals such as Next.js, Vite, React, TypeScript, Prisma, Drizzle, Django, Flask, FastAPI, Laravel, Rails, Spring Boot, Compose, Makefile, justfile, Taskfile, devcontainer files, Turbo, Nx, Lerna, Rush, and pnpm workspaces
 - Deep ecosystem checks for Next.js route roots, Vite entry HTML, Prisma datasource/generator/migration state, Django settings/migrations, FastAPI ASGI entrypoints, Laravel env/app key state, Rails credentials/database config, Spring application config, .NET web appsettings, Go service entrypoints, Rust bin targets, and Turbo/Nx tasks
 - A fix plan that separates whitelisted safe automatic repairs from manual repair steps
+- A failure corpus workflow for turning real broken projects into sanitized fixtures and regression tests
 - Planned probes, optional probe results, and classified failures such as missing environment variables, missing files, missing modules, port conflicts, database connection failures, pending migrations, private registry authentication failures, dependency resolution errors, Docker daemon failures, incompatible runtime versions, native build tool failures, TLS/certificate errors, DNS/network failures, lockfile mismatches, permission problems, configuration parse errors, and compile errors
 - Prisma `env("...")` and JavaScript/TypeScript `process.env.*` references that are not backed by a local environment value
 - Runtime availability and declared Node.js version compatibility
@@ -246,6 +248,7 @@ cd SetupLens
 npm ci
 npm run check
 npm test
+npm run corpus
 node ./bin/setuplens.js scan .
 node ./bin/setuplens.js doctor . --probe
 ```

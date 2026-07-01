@@ -1,0 +1,400 @@
+{
+  "schemaVersion": "1.0",
+  "description": "Distilled setup-failure cases used to keep SetupLens doctor rules tied to reproducible project failures.",
+  "cases": [
+    {
+      "id": "cmms-compose-paths-and-make-script",
+      "ecosystems": ["docker", "node"],
+      "source": {
+        "kind": "private_real_project",
+        "label": "CMMS validation on 2026-06-18",
+        "reference": "docs/devlog/2026-06-18-cmms-validation.md",
+        "sanitized": true
+      },
+      "fixture": {
+        "files": {
+          "docker-compose.yml": "services:\n  api:\n    build:\n      context: .\n      dockerfile: infra/api/Dockerfile\n  nginx:\n    image: nginx:alpine\n    volumes:\n      - ./infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro\n",
+          "infrastructure/api/Dockerfile": "FROM node:22-alpine\n",
+          "infrastructure/nginx/nginx.conf": "events {}\n",
+          "Makefile": "format:\n\tcd apps/web && npm run format\n",
+          "apps/web/package.json": {
+            "json": {
+              "name": "cmms-web",
+              "scripts": {
+                "dev": "vite",
+                "build": "vite build",
+                "test": "vitest"
+              },
+              "dependencies": {
+                "vite": "^7.0.0"
+              }
+            }
+          }
+        }
+      },
+      "expect": {
+        "status": "blocked",
+        "adapters": ["docker", "services", "node"],
+        "rootCauseTypes": ["paths.compose.docker-compose.yml", "paths.makefile.Makefile"],
+        "rootCauseEvidence": ["infra/api/Dockerfile", "npm run format"]
+      }
+    },
+    {
+      "id": "next-prisma-env-template-missing-local-env",
+      "ecosystems": ["next", "prisma", "node"],
+      "source": {
+        "kind": "seeded_failure_pattern",
+        "label": "Common Next.js + Prisma local clone missing .env",
+        "sanitized": true
+      },
+      "fixture": {
+        "files": {
+          "package.json": {
+            "json": {
+              "name": "next-prisma-app",
+              "scripts": {
+                "dev": "next dev",
+                "build": "next build"
+              },
+              "dependencies": {
+                "next": "^15.0.0",
+                "react": "^19.0.0",
+                "@prisma/client": "^6.0.0"
+              },
+              "devDependencies": {
+                "prisma": "^6.0.0",
+                "typescript": "^5.0.0"
+              }
+            }
+          },
+          "app/page.tsx": "export default function Page() { return <main>Hello</main>; }\n",
+          "src/db.ts": "export const databaseUrl = process.env.DATABASE_URL;\n",
+          ".env.example": "DATABASE_URL=postgresql://user:pass@localhost:5432/app\n",
+          "prisma/schema.prisma": "generator client { provider = \"prisma-client-js\" }\ndatasource db { provider = \"postgresql\" url = env(\"DATABASE_URL\") }\n"
+        }
+      },
+      "logSamples": [
+        {
+          "name": "prisma missing database url",
+          "text": "Error: Environment variable not found: DATABASE_URL.",
+          "expect": {
+            "type": "missing_env_var",
+            "subject": "DATABASE_URL"
+          }
+        }
+      ],
+      "expect": {
+        "status": "needs_setup",
+        "adapters": ["node", "prisma"],
+        "rootCauseTypes": ["missing_env_reference", "typescript_missing_tsconfig", "prisma_missing_migrations"],
+        "probes": ["node.next.info", "prisma.generate.prisma.schema.prisma"],
+        "safeFixTitles": ["Create local environment file from .env.example"],
+        "applySafe": true,
+        "createdFiles": [
+          {
+            "path": ".env",
+            "contains": "DATABASE_URL="
+          }
+        ]
+      }
+    },
+    {
+      "id": "vite-missing-entry-html",
+      "ecosystems": ["vite", "node"],
+      "source": {
+        "kind": "seeded_failure_pattern",
+        "label": "Vite package without index.html after partial copy",
+        "sanitized": true
+      },
+      "fixture": {
+        "files": {
+          "package.json": {
+            "json": {
+              "name": "vite-app",
+              "scripts": {
+                "dev": "vite",
+                "build": "vite build"
+              },
+              "dependencies": {
+                "vite": "^7.0.0",
+                "typescript": "^5.0.0"
+              }
+            }
+          },
+          "src/main.ts": "console.log('boot');\n"
+        }
+      },
+      "expect": {
+        "status": "needs_setup",
+        "adapters": ["node"],
+        "rootCauseTypes": ["vite_missing_index_html", "typescript_missing_tsconfig"],
+        "probes": ["node.vite.build"]
+      }
+    },
+    {
+      "id": "fastapi-app-without-uvicorn",
+      "ecosystems": ["fastapi", "python"],
+      "source": {
+        "kind": "seeded_failure_pattern",
+        "label": "FastAPI app imports FastAPI but runtime server dependency is missing",
+        "sanitized": true
+      },
+      "fixture": {
+        "files": {
+          "requirements.txt": "fastapi\npydantic\n",
+          "main.py": "from fastapi import FastAPI\napp = FastAPI()\n"
+        }
+      },
+      "logSamples": [
+        {
+          "name": "uvicorn missing module",
+          "text": "ModuleNotFoundError: No module named 'uvicorn'",
+          "expect": {
+            "type": "module_not_found",
+            "subject": "uvicorn"
+          }
+        }
+      ],
+      "expect": {
+        "status": "needs_setup",
+        "adapters": ["python"],
+        "rootCauseTypes": ["fastapi_missing_uvicorn"],
+        "nextActionCommands": ["uvicorn main:app --reload"],
+        "probes": ["python.compileall"]
+      }
+    },
+    {
+      "id": "django-manage-without-settings",
+      "ecosystems": ["django", "python"],
+      "source": {
+        "kind": "seeded_failure_pattern",
+        "label": "Django checkout where settings package is missing from the indexed files",
+        "sanitized": true
+      },
+      "fixture": {
+        "files": {
+          "requirements.txt": "django\n",
+          "manage.py": "import os\nos.environ.setdefault('DJANGO_SETTINGS_MODULE', 'project.settings')\n"
+        }
+      },
+      "expect": {
+        "status": "needs_setup",
+        "adapters": ["python"],
+        "rootCauseTypes": ["django_missing_settings"],
+        "nextActionCommands": ["manage.py runserver"],
+        "probes": ["python.django.migrations"]
+      }
+    },
+    {
+      "id": "laravel-template-env-without-app-key",
+      "ecosystems": ["laravel", "php"],
+      "source": {
+        "kind": "seeded_failure_pattern",
+        "label": "Laravel clone with .env.example but no local .env",
+        "sanitized": true
+      },
+      "fixture": {
+        "files": {
+          "composer.json": {
+            "json": {
+              "require": {
+                "laravel/framework": "^11.0"
+              }
+            }
+          },
+          "artisan": "<?php echo \"Laravel\";\n",
+          ".env.example": "APP_KEY=\nDB_CONNECTION=sqlite\n"
+        }
+      },
+      "logSamples": [
+        {
+          "name": "laravel missing app key",
+          "text": "RuntimeException: No application encryption key has been specified.",
+          "expect": {
+            "type": "laravel_missing_app_key"
+          }
+        }
+      ],
+      "expect": {
+        "status": "needs_setup",
+        "adapters": ["php"],
+        "rootCauseTypes": ["laravel_missing_env"],
+        "nextActionCommands": ["php artisan serve", "php artisan migrate:status"],
+        "safeFixTitles": ["Create Laravel .env from template"],
+        "applySafe": true,
+        "createdFiles": [
+          {
+            "path": ".env",
+            "contains": "APP_KEY="
+          }
+        ]
+      }
+    },
+    {
+      "id": "rails-encrypted-credentials-no-local-key",
+      "ecosystems": ["rails", "ruby"],
+      "source": {
+        "kind": "seeded_failure_pattern",
+        "label": "Rails app with encrypted credentials but no local master key",
+        "sanitized": true
+      },
+      "fixture": {
+        "files": {
+          "Gemfile": "source \"https://rubygems.org\"\ngem \"rails\"\n",
+          "config/credentials.yml.enc": "encrypted\n"
+        }
+      },
+      "expect": {
+        "status": "needs_setup",
+        "adapters": ["ruby"],
+        "rootCauseTypes": ["rails_missing_master_key", "rails_missing_database_config"],
+        "nextActionCommands": ["bundle exec rails server", "bundle exec rails db:prepare"],
+        "probes": ["ruby.rails.db-version"]
+      }
+    },
+    {
+      "id": "spring-boot-web-without-application-config",
+      "ecosystems": ["spring", "java"],
+      "source": {
+        "kind": "seeded_failure_pattern",
+        "label": "Spring Boot service missing local application.properties/yml",
+        "sanitized": true
+      },
+      "fixture": {
+        "files": {
+          "pom.xml": "<project><dependencies><dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-web</artifactId></dependency></dependencies></project>"
+        }
+      },
+      "expect": {
+        "status": "needs_setup",
+        "adapters": ["java"],
+        "rootCauseTypes": ["spring_missing_application_config"],
+        "nextActionCommands": ["mvn spring-boot:run"],
+        "probes": ["java.maven.compile"]
+      }
+    },
+    {
+      "id": "dotnet-web-without-appsettings",
+      "ecosystems": ["dotnet"],
+      "source": {
+        "kind": "seeded_failure_pattern",
+        "label": ".NET Web SDK project missing appsettings.json",
+        "sanitized": true
+      },
+      "fixture": {
+        "files": {
+          "Api.csproj": "<Project Sdk=\"Microsoft.NET.Sdk.Web\"><PropertyGroup><TargetFramework>net8.0</TargetFramework></PropertyGroup></Project>"
+        }
+      },
+      "expect": {
+        "status": "needs_setup",
+        "adapters": ["dotnet"],
+        "rootCauseTypes": ["dotnet_missing_appsettings"],
+        "nextActionCommands": ["dotnet run --project Api.csproj"],
+        "probes": ["dotnet.build.Api.csproj"]
+      }
+    },
+    {
+      "id": "go-http-service-without-cmd-entry",
+      "ecosystems": ["go"],
+      "source": {
+        "kind": "seeded_failure_pattern",
+        "label": "Go service code starts an HTTP server but has no conventional cmd entry",
+        "sanitized": true
+      },
+      "fixture": {
+        "files": {
+          "go.mod": "module example.com/service\n\ngo 1.22\n",
+          "internal/server/server.go": "package server\nimport \"net/http\"\nfunc Run() { _ = http.ListenAndServe(\":8080\", nil) }\n"
+        }
+      },
+      "expect": {
+        "status": "needs_setup",
+        "adapters": ["go"],
+        "rootCauseTypes": ["go_service_missing_cmd_entry"],
+        "nextActionCommands": ["go test ./..."],
+        "probes": ["go.test"]
+      }
+    },
+    {
+      "id": "rust-bin-target-with-runtime-env",
+      "ecosystems": ["rust"],
+      "source": {
+        "kind": "seeded_failure_pattern",
+        "label": "Rust binary target with runtime environment dependency",
+        "sanitized": true
+      },
+      "fixture": {
+        "files": {
+          "Cargo.toml": "[package]\nname = \"worker\"\nversion = \"0.1.0\"\nedition = \"2021\"\n",
+          "src/bin/worker.rs": "fn main() { let _ = std::env::var(\"DATABASE_URL\"); }\n"
+        }
+      },
+      "expect": {
+        "status": "needs_probe",
+        "adapters": ["rust"],
+        "nextActionCommands": ["cargo run --bin worker"],
+        "probes": ["rust.cargo.check"]
+      }
+    },
+    {
+      "id": "turbo-nx-workspace-task-discovery",
+      "ecosystems": ["turbo", "nx", "monorepo"],
+      "source": {
+        "kind": "seeded_failure_pattern",
+        "label": "Monorepo with task runners where graph/task probes are needed",
+        "sanitized": true
+      },
+      "fixture": {
+        "files": {
+          "package.json": {
+            "json": {
+              "private": true,
+              "workspaces": ["apps/*"],
+              "scripts": {
+                "build": "turbo build",
+                "test": "nx run-many -t test"
+              },
+              "devDependencies": {
+                "turbo": "^2.0.0",
+                "nx": "^20.0.0"
+              }
+            }
+          },
+          "apps/web/package.json": {
+            "json": {
+              "scripts": {
+                "dev": "vite"
+              },
+              "dependencies": {
+                "vite": "^7.0.0"
+              }
+            }
+          },
+          "turbo.json": {
+            "json": {
+              "tasks": {
+                "build": {},
+                "test": {}
+              }
+            }
+          },
+          "nx.json": {
+            "json": {
+              "targetDefaults": {
+                "build": {},
+                "test": {}
+              }
+            }
+          },
+          "pnpm-workspace.yaml": "packages:\n  - 'apps/*'\n"
+        }
+      },
+      "expect": {
+        "status": "needs_setup",
+        "adapters": ["node", "monorepo"],
+        "probes": ["monorepo.turbo.dry-run", "monorepo.nx.graph"]
+      }
+    }
+  ]
+}
