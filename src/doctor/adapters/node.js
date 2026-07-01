@@ -95,6 +95,37 @@ function frameworkSignals(packages) {
   return [...names].sort();
 }
 
+function hasFile(index, names) {
+  const wanted = new Set(Array.isArray(names) ? names : [names]);
+  return index.files.some((file) => wanted.has(file.relative) || wanted.has(file.name));
+}
+
+function configFiles(index, names) {
+  const wanted = new Set(names);
+  return index.files.filter((file) => wanted.has(file.relative) || wanted.has(file.name)).map((file) => file.relative);
+}
+
+function frameworkDeepSignals(index, packages) {
+  const frameworks = frameworkSignals(packages);
+  return {
+    frameworks,
+    next: frameworks.includes('Next.js') ? {
+      configFiles: configFiles(index, ['next.config.js', 'next.config.mjs', 'next.config.ts']),
+      routeRoots: index.files
+        .filter((file) => /^(?:src\/)?(?:app|pages)\//.test(file.relative))
+        .map((file) => file.relative)
+        .slice(0, 10)
+    } : null,
+    vite: frameworks.includes('Vite') ? {
+      configFiles: configFiles(index, ['vite.config.js', 'vite.config.mjs', 'vite.config.ts']),
+      hasIndexHtml: hasFile(index, 'index.html')
+    } : null,
+    typescript: frameworks.includes('TypeScript') ? {
+      hasTsconfig: hasFile(index, 'tsconfig.json')
+    } : null
+  };
+}
+
 async function envReferences(index) {
   const refs = new Map();
   for (const file of index.files) {
@@ -135,7 +166,8 @@ export async function nodeAdapter({ index, detection }) {
     : detection.packages;
   const dependencyCount = packages.reduce((total, pkg) => total + declaredDependencyCount(pkg), 0);
   const install = installCommand(manager);
-  const frameworks = frameworkSignals(packages);
+  const deep = frameworkDeepSignals(index, packages);
+  const frameworks = deep.frameworks;
   const refs = await envReferences(index);
   const availableEnv = await localEnvKeys(index);
   const missingEnvRefs = refs.filter((ref) => !availableEnv.has(ref.key));
@@ -227,6 +259,79 @@ export async function nodeAdapter({ index, detection }) {
     recommendation: `Document ${ref.key} in an environment template and provide a local value before startup.`
   }));
 
+  const rootScripts = scriptNames(rootPackage);
+  if (deep.next && deep.next.routeRoots.length === 0) {
+    issues.push({
+      type: 'next_missing_routes',
+      severity: 'warn',
+      title: 'Next.js route directory was not found',
+      evidence: 'Next.js is declared but no app/, src/app/, pages/, or src/pages/ route files were indexed.',
+      recommendation: 'Add a Next.js route directory or verify this package is only a supporting frontend dependency.'
+    });
+  }
+  if (deep.next && !rootScripts.some((script) => ['dev', 'start', 'build'].includes(script))) {
+    issues.push({
+      type: 'next_missing_scripts',
+      severity: 'warn',
+      title: 'Next.js scripts are missing',
+      evidence: 'Next.js is declared but package.json does not expose dev, start, or build scripts.',
+      recommendation: 'Add scripts such as "dev": "next dev", "build": "next build", and "start": "next start".'
+    });
+  }
+  if (deep.vite && !deep.vite.hasIndexHtml) {
+    issues.push({
+      type: 'vite_missing_index_html',
+      severity: 'warn',
+      title: 'Vite index.html was not found',
+      evidence: 'Vite expects an index.html entry point in the project root by default.',
+      recommendation: 'Add index.html or verify the Vite root is configured elsewhere.'
+    });
+  }
+  if (deep.vite && !rootScripts.some((script) => ['dev', 'build', 'preview'].includes(script))) {
+    issues.push({
+      type: 'vite_missing_scripts',
+      severity: 'warn',
+      title: 'Vite scripts are missing',
+      evidence: 'Vite is declared but package.json does not expose dev, build, or preview scripts.',
+      recommendation: 'Add scripts such as "dev": "vite", "build": "vite build", and "preview": "vite preview".'
+    });
+  }
+  if (deep.typescript?.hasTsconfig === false) {
+    issues.push({
+      type: 'typescript_missing_tsconfig',
+      severity: 'warn',
+      title: 'TypeScript config was not found',
+      evidence: 'TypeScript is declared but tsconfig.json is not indexed.',
+      recommendation: 'Add a tsconfig.json appropriate for the framework before relying on type checks.'
+    });
+  }
+
+  if (frameworks.includes('Next.js')) {
+    probes.push(createProbe({
+      id: 'node.next.info',
+      adapter: 'node',
+      label: 'Next.js environment info',
+      command: 'npx',
+      args: ['--no-install', 'next', 'info'],
+      purpose: 'Collect Next.js runtime environment information without starting the app.',
+      kind: 'verify',
+      confidence: 'medium'
+    }));
+  }
+  if (frameworks.includes('Vite') && rootScripts.includes('build')) {
+    const command = runScriptCommand(manager, 'build');
+    probes.push(createProbe({
+      id: 'node.vite.build',
+      adapter: 'node',
+      label: 'Vite build',
+      command: command.command,
+      args: command.args,
+      purpose: 'Run the Vite build path to expose framework configuration and module errors.',
+      kind: 'verify',
+      confidence: 'medium'
+    }));
+  }
+
   return {
     id: 'node',
     title: 'Node.js project adapter',
@@ -239,6 +344,7 @@ export async function nodeAdapter({ index, detection }) {
         scripts: scriptNames(pkg)
       })),
       frameworks,
+      deep,
       workspace: detection.workspace ? {
         manager: detection.workspace.manager,
         manifest: detection.workspace.manifest,

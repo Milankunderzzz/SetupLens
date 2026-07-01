@@ -17,6 +17,26 @@ export async function goAdapter({ index, detection }) {
     .filter((file) => file.relative.startsWith('cmd/') && file.name === 'main.go')
     .map((file) => path.posix.dirname(file.relative));
   const runTarget = commandDirs[0] ? `./${commandDirs[0]}` : './...';
+  const sourceTexts = [];
+  for (const file of index.files.filter((item) => item.extension === '.go' && item.size < 512 * 1024)) {
+    const text = await readText(file);
+    if (text) sourceTexts.push({ file: file.relative, text });
+  }
+  const serviceSignals = {
+    httpServerFiles: sourceTexts.filter((item) => /http\.ListenAndServe|gin\.Default|echo\.New|fiber\.New|grpc\.NewServer/.test(item.text)).map((item) => item.file),
+    envKeys: [...new Set(sourceTexts.flatMap((item) => [...item.text.matchAll(/os\.Getenv\(["']([A-Z][A-Z0-9_]{2,})["']\)/g)].map((match) => match[1])))].sort(),
+    configFiles: index.files.filter((file) => /(^|\/)(config|configs)\/.+\.(?:ya?ml|json|toml)$/.test(file.relative)).map((file) => file.relative)
+  };
+  const issues = [];
+  if (serviceSignals.httpServerFiles.length > 0 && commandDirs.length === 0) {
+    issues.push({
+      type: 'go_service_missing_cmd_entry',
+      severity: 'warn',
+      title: 'Go service entrypoint was not found under cmd/',
+      evidence: `${serviceSignals.httpServerFiles[0]} starts an HTTP/gRPC server, but no cmd/*/main.go was indexed.`,
+      recommendation: 'Document the go run target or add a conventional cmd/<service>/main.go entrypoint.'
+    });
+  }
 
   return {
     id: 'go',
@@ -24,7 +44,8 @@ export async function goAdapter({ index, detection }) {
     confidence: commandDirs.length > 0 ? 'high' : 'medium',
     signals: {
       modules,
-      commandDirs
+      commandDirs,
+      serviceSignals
     },
     actions: [
       {
@@ -64,6 +85,6 @@ export async function goAdapter({ index, detection }) {
         confidence: 'medium'
       })
     ],
-    issues: []
+    issues
   };
 }

@@ -6,6 +6,7 @@ import { detectStacks } from './checks/stacks.js';
 import { indexRepository } from './lib/files.js';
 import { scan } from './scan.js';
 import { runAdapters } from './doctor/adapters/index.js';
+import { applySafeFixes, buildFixPlan } from './doctor/fix-plan.js';
 import { runProbes } from './doctor/probes.js';
 
 function uniqueBy(items, key) {
@@ -141,6 +142,9 @@ export async function doctor(target = '.', options = {}) {
   const fixActions = rootCauses.map(actionFromCause).filter(Boolean);
   const nextActions = uniqueBy([...fixActions, ...adapterActions], (action) => action.command ?? action.description).slice(0, 12);
   const status = buildStatus({ scanReport, rootCauses, probesEnabled, probes, adapters });
+  const fixPlan = options.apply === 'safe'
+    ? await applySafeFixes(root, buildFixPlan({ index, adapters, rootCauses }))
+    : buildFixPlan({ index, adapters, rootCauses });
 
   return {
     schemaVersion: '2.0-doctor',
@@ -171,7 +175,8 @@ export async function doctor(target = '.', options = {}) {
     },
     diagnosis: {
       rootCauses,
-      nextActions
+      nextActions,
+      fixPlan
     },
     probes: {
       enabled: probesEnabled,

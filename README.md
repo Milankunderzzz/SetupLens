@@ -26,14 +26,16 @@ I am building it in public and still keeping the core deterministic and local-fi
 
 SetupLens is an early research prototype and usable MVP, not yet a product whose effectiveness has been established. The current `main` branch includes:
 
-- 53 automated tests, executed in CI on Windows, Linux, and macOS with Node.js 18 and 22;
+- 60 automated tests, executed in CI on Windows, Linux, and macOS with Node.js 18 and 22;
 - context-aware file classification, workspace-level dependency reporting, and primary-stack ranking;
 - `Unsupported / Not scored` results for empty repositories, unknown stacks, and unsupported primary stacks instead of misleading numeric grades;
 - startup diagnosis with `ready`, `needs_setup`, `blocked`, and `unsupported` verdicts;
 - detected prepare and run commands for common Node.js, Python, and Docker projects;
 - `doctor` mode with adapters, planned probes, real command probing, failure-log classification, and next-action ranking;
 - Node/Prisma/README instruction signals such as framework packages, `process.env.*`, Prisma `env("...")`, and documented commands;
+- deep doctor rules for Next.js, Vite, Prisma, Django, FastAPI, Laravel, Rails, Spring Boot, .NET web apps, Go services, Rust binaries, Turbo, and Nx;
 - multi-ecosystem doctor adapters for PHP, Ruby, Java, .NET, Go, Rust, monorepos, and local service dependencies;
+- fix-plan output plus `doctor --apply safe` for whitelisted local repairs that never overwrite existing files;
 - default terminal output that hides low-impact pass/hygiene noise unless `--show-all` is requested;
 - one documented CMMS validation case and one external C++ boundary pilot.
 
@@ -53,6 +55,18 @@ Run optional probes when you want SetupLens to execute local diagnostic commands
 npx --yes github:Milankunderzzz/SetupLens doctor . --probe
 ```
 
+Show the repair plan, including safe automatic repairs and manual fixes:
+
+```bash
+npx --yes github:Milankunderzzz/SetupLens doctor . --fix-plan
+```
+
+Apply only whitelisted safe local repairs:
+
+```bash
+npx --yes github:Milankunderzzz/SetupLens doctor . --apply safe
+```
+
 Run the static readiness scan for CI-style scoring and HTML reports:
 
 ```bash
@@ -65,7 +79,7 @@ Generate a shareable, offline HTML report:
 npx --yes github:Milankunderzzz/SetupLens scan . --format html --output setuplens-report.html
 ```
 
-SetupLens reads local files and commands only. It does not upload repository contents, environment values, or scan results. `doctor --probe` executes local adapter probes such as runtime checks, project-defined verification scripts, Compose validation, or short startup probes with a timeout; plain `doctor` and `scan` stay static.
+SetupLens reads local files and commands only. It does not upload repository contents, environment values, or scan results. `doctor --probe` executes local adapter probes such as runtime checks, project-defined verification scripts, Compose validation, or short startup probes with a timeout; plain `doctor` and `scan` stay static. `doctor --apply safe` is intentionally narrow: it can copy env templates to missing local env files, append local env ignore rules, and create missing Compose env placeholders, but it refuses overwrites and writes outside the repository.
 
 ## What It Finds
 
@@ -74,6 +88,8 @@ SetupLens reads local files and commands only. It does not upload repository con
 - Run commands such as `npm run dev`, `python -m flask --app app run`, `python -m uvicorn main:app --reload`, or `docker compose up --build`
 - Doctor adapters for Node.js, Python, Docker, Prisma, PHP, Ruby, Java, .NET, Go, Rust, monorepos, local services, and README instructions
 - Framework and tooling signals such as Next.js, Vite, React, TypeScript, Prisma, Drizzle, Django, Flask, FastAPI, Laravel, Rails, Spring Boot, Compose, Makefile, justfile, Taskfile, devcontainer files, Turbo, Nx, Lerna, Rush, and pnpm workspaces
+- Deep ecosystem checks for Next.js route roots, Vite entry HTML, Prisma datasource/generator/migration state, Django settings/migrations, FastAPI ASGI entrypoints, Laravel env/app key state, Rails credentials/database config, Spring application config, .NET web appsettings, Go service entrypoints, Rust bin targets, and Turbo/Nx tasks
+- A fix plan that separates whitelisted safe automatic repairs from manual repair steps
 - Planned probes, optional probe results, and classified failures such as missing environment variables, missing files, missing modules, port conflicts, database connection failures, pending migrations, private registry authentication failures, dependency resolution errors, Docker daemon failures, incompatible runtime versions, native build tool failures, TLS/certificate errors, DNS/network failures, lockfile mismatches, permission problems, configuration parse errors, and compile errors
 - Prisma `env("...")` and JavaScript/TypeScript `process.env.*` references that are not backed by a local environment value
 - Runtime availability and declared Node.js version compatibility
@@ -109,6 +125,8 @@ Results vary by disk, repository size, and runtime commands. The demo GIF shows 
 # Deep repository diagnosis
 setuplens doctor .
 setuplens doctor . --probe
+setuplens doctor . --fix-plan
+setuplens doctor . --apply safe
 setuplens doctor . --format json --output setuplens-doctor.json
 
 # Human-readable terminal report
@@ -203,7 +221,7 @@ I am not trying to replace every repository or web auditing tool. SetupLens focu
 
 - Early-stage adapter coverage is broader now, but still shallower than mature specialist tools inside each ecosystem.
 - Node.js 18.17 or newer is currently required to launch the scanner.
-- It reports fixes but intentionally does not mutate project files yet.
+- It only mutates whitelisted low-risk local files in `doctor --apply safe`; deeper repairs remain manual by design.
 - Probe mode can observe early startup failures, but it cannot prove that every long-running service is production-ready.
 - It does not replace dependency vulnerability scanners, web performance audits, or long-term maintainer analytics.
 
@@ -211,9 +229,9 @@ The project currently favors checks that can point to a file, command, or manife
 
 ## What I Am Working On
 
-- **Now:** Make `doctor` the powerful path: adapters, startup plans, probes, log classification, and next actions.
-- **Next:** Deepen adapters for common project families such as Next.js, Vite, Prisma, Django, FastAPI, Laravel, Rails, Spring, .NET web apps, Go services, Rust binaries, and monorepo tools.
-- **After that:** Add safer fix planning and optional apply modes for low-risk changes such as generating local env files from templates.
+- **Now:** Make `doctor` the powerful path: deep adapters, startup plans, probes, log classification, fix plans, and safe local repairs.
+- **Next:** Expand ecosystem-specific fixtures and convert more root causes into precise manual or safe repair recipes.
+- **After that:** Validate coverage on real repositories and measure false positives before claiming mature effectiveness.
 - **Later:** Grow into a broad repository startup doctor while keeping findings deterministic, local, and auditable.
 
 The detailed release gates and deferred directions are maintained in the [version roadmap](ROADMAP.md).

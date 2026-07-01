@@ -48,6 +48,13 @@ export async function rubyAdapter({ index }) {
       reason: 'Rails evidence was detected.',
       confidence: 'high'
     });
+    actions.push({
+      type: 'setup',
+      command: 'bundle exec rails db:prepare',
+      cwd: rootDirectory,
+      reason: 'Rails database setup is commonly required before the server can start.',
+      confidence: 'medium'
+    });
   } else if (rackFiles.length > 0) {
     actions.push({
       type: 'run',
@@ -93,6 +100,40 @@ export async function rubyAdapter({ index }) {
       kind: 'verify',
       confidence: 'medium'
     }));
+    probes.push(createProbe({
+      id: 'ruby.rails.db-version',
+      adapter: 'ruby',
+      label: 'Rails database version',
+      command: 'bundle',
+      args: ['exec', 'rails', 'db:version'],
+      cwd: rootDirectory,
+      purpose: 'Check whether Rails can reach its database without applying migrations.',
+      kind: 'verify',
+      confidence: 'medium'
+    }));
+  }
+
+  const credentials = index.files.find((file) => file.relative.endsWith('config/credentials.yml.enc'));
+  const masterKey = index.files.find((file) => file.relative.endsWith('config/master.key'));
+  const databaseConfig = index.files.find((file) => file.relative.endsWith('config/database.yml'));
+  const issues = [];
+  if (frameworks.has('Rails') && credentials && !masterKey) {
+    issues.push({
+      type: 'rails_missing_master_key',
+      severity: 'warn',
+      title: 'Rails master key is missing',
+      evidence: `${credentials.relative} exists but config/master.key was not indexed.`,
+      recommendation: 'Provide RAILS_MASTER_KEY or config/master.key before booting encrypted credentials.'
+    });
+  }
+  if (frameworks.has('Rails') && !databaseConfig) {
+    issues.push({
+      type: 'rails_missing_database_config',
+      severity: 'warn',
+      title: 'Rails database config was not found',
+      evidence: 'Rails evidence was detected but config/database.yml was not indexed.',
+      recommendation: 'Restore config/database.yml or document the database configuration path.'
+    });
   }
 
   return {
@@ -102,10 +143,12 @@ export async function rubyAdapter({ index }) {
     signals: {
       frameworks: [...frameworks].sort(),
       projects,
-      rackFiles: rackFiles.map((file) => file.relative)
+      rackFiles: rackFiles.map((file) => file.relative),
+      credentials: credentials?.relative ?? null,
+      databaseConfig: databaseConfig?.relative ?? null
     },
     actions,
     probes,
-    issues: []
+    issues
   };
 }
