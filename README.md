@@ -26,7 +26,7 @@ I am building it in public and still keeping the core deterministic and local-fi
 
 SetupLens is an early research prototype and usable MVP, not yet a product whose effectiveness has been established. The current `main` branch includes:
 
-- 65 automated tests, executed in CI on Windows, Linux, and macOS with Node.js 18 and 22;
+- 69 automated tests, executed in CI on Windows, Linux, and macOS with Node.js 18 and 22;
 - context-aware file classification, workspace-level dependency reporting, and primary-stack ranking;
 - `Unsupported / Not scored` results for empty repositories, unknown stacks, and unsupported primary stacks instead of misleading numeric grades;
 - startup diagnosis with `ready`, `needs_setup`, `blocked`, and `unsupported` verdicts;
@@ -34,11 +34,11 @@ SetupLens is an early research prototype and usable MVP, not yet a product whose
 - `doctor` mode with adapters, planned probes, real command probing, failure-log classification, and next-action ranking;
 - Node/Prisma/README instruction signals such as framework packages, `process.env.*`, Prisma `env("...")`, and documented commands;
 - deep doctor rules for Next.js, Vite, Prisma, Django, FastAPI, Laravel, Rails, Spring Boot, .NET web apps, Go services, Rust binaries, Turbo, and Nx;
-- a failure corpus with real-project and distilled fixtures that keeps doctor rules tied to reproducible setup failures;
+- a failure corpus with 13 real-project and distilled fixtures that keeps doctor rules tied to reproducible setup failures;
 - multi-ecosystem doctor adapters for PHP, Ruby, Java, .NET, Go, Rust, monorepos, and local service dependencies;
 - corpus metrics for diagnostic hit rate, first root-cause ranking, safe-fix generation, false blockers, and ecosystem coverage;
 - safer probe execution that runs verify probes by default, records probe traces, and only runs startup commands with `--probe-startup`;
-- action-panel doctor reports in terminal, JSON, and HTML;
+- action-panel doctor reports in terminal, JSON, and HTML with readiness separated from diagnosis confidence;
 - fix-plan output plus `doctor --apply safe` for whitelisted local repairs and safe recipes that never overwrite existing files;
 - default terminal output that hides low-impact pass/hygiene noise unless `--show-all` is requested;
 - one documented CMMS validation case and one external C++ boundary pilot.
@@ -95,8 +95,8 @@ SetupLens reads local files and commands only. It does not upload repository con
 - Deep ecosystem checks for Next.js route roots, Vite entry HTML, Prisma datasource/generator/migration state, Django settings/migrations, FastAPI ASGI entrypoints, Laravel env/app key state, Rails credentials/database config, Spring application config, .NET web appsettings, Go service entrypoints, Rust bin targets, and Turbo/Nx tasks
 - A fix plan that separates whitelisted safe automatic repairs from manual repair steps
 - A failure corpus workflow for turning real broken projects into sanitized fixtures and regression tests
-- Corpus metrics, probe traces, confidence explanations, unknowns, and an action panel with root causes, next command, safe fixes, manual fixes, and evidence
-- Planned probes, optional probe results, and classified failures such as missing environment variables, missing files, missing modules, port conflicts, database connection failures, pending migrations, private registry authentication failures, dependency resolution errors, Docker daemon failures, incompatible runtime versions, native build tool failures, TLS/certificate errors, DNS/network failures, lockfile mismatches, permission problems, configuration parse errors, and compile errors
+- Corpus metrics, probe traces, readiness scoring, diagnosis-confidence explanations, unknowns, and an action panel with root causes, next command, safe fixes, manual fixes, and evidence
+- Planned probes, optional probe results, and classified failures such as missing environment variables, missing files, missing modules, missing Node dependencies, macOS archive metadata treated as Python source, port conflicts, database connection failures, pending migrations, private registry authentication failures, dependency resolution errors, Docker daemon failures, incompatible runtime versions, native build tool failures, TLS/certificate errors, DNS/network failures, lockfile mismatches, permission problems, configuration parse errors, and compile errors
 - Prisma `env("...")` and JavaScript/TypeScript `process.env.*` references that are not backed by a local environment value
 - Runtime availability and declared Node.js version compatibility
 - npm, pnpm, Yarn, Bun, Python, Git, Docker, and Docker Compose readiness
@@ -263,7 +263,7 @@ node ./bin/setuplens.js doctor-suite ./repos --format json
 
 The scanning runtime uses only Node.js built-ins. Development dependencies are used solely to generate the README demo GIF.
 
-I keep short notes from real-project testing in the [development log](docs/devlog/2026-06-18-cmms-validation.md).
+I keep short notes from real-project testing in the [development log](docs/devlog/2026-06-18-cmms-validation.md), and real failures are reduced into corpus cases when they expose new rule boundaries.
 
 ## Contributing
 
