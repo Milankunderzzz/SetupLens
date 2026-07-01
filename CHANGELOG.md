@@ -15,6 +15,7 @@ This alpha turns SetupLens from a static readiness scanner into a broader local 
 - Doctor adapters for Node.js, Python, Docker, Prisma, PHP, Ruby, Java, .NET, Go, Rust, monorepos, local services, and README instructions.
 - Deep doctor rules for Next.js, Vite, Prisma, Django, FastAPI, Laravel, Rails, Spring Boot, .NET web apps, Go services, Rust binaries, Turbo, and Nx.
 - `doctor --fix-plan` and `doctor --apply safe` for whitelisted local repairs such as copying env templates, appending env ignore rules, and creating missing Compose env placeholders without overwriting files.
+- Failure corpus evaluation with sanitized fixtures, log-classification expectations, safe-fix assertions, and `npm run corpus`.
 - Optional `doctor --probe` execution with bounded local command probes and timeout control.
 - Failure-log classification for missing environment variables, missing files, missing modules, port conflicts, database failures, pending migrations, private registry authentication failures, dependency resolution errors, Docker daemon failures, incompatible runtime versions, native build tool failures, TLS/certificate errors, DNS/network failures, lockfile mismatches, permission problems, configuration parse errors, and compile errors.
 - Doctor JSON and terminal reports with likely root causes, next actions, planned probes, and probe results.
@@ -31,6 +32,7 @@ This alpha turns SetupLens from a static readiness scanner into a broader local 
 - Main package description and scan report tagline now point users to doctor mode for deeper investigation.
 - Terminal output now defaults to the practical startup path instead of printing every pass/fail item.
 - Doctor terminal and JSON output now include safe/manual fix-plan candidates and applied safe-fix results.
+- Real-project failures can now be distilled into corpus cases and run as part of the automated test suite.
 - README, license, CI, tests, and other repository hygiene findings are hidden from the default terminal report.
 - Lockfile and other non-blocking hygiene-style setup warnings no longer dominate the startup summary.
 
@@ -38,6 +40,7 @@ This alpha turns SetupLens from a static readiness scanner into a broader local 
 
 - Docker Compose startup commands are withheld when Compose paths are already known to be broken.
 - Prisma datasource providers are parsed separately from generator providers before migration checks are planned.
+- Laravel missing `APP_KEY` startup logs are classified directly.
 - Unsupported stacks remain `Unsupported / Not scored` instead of receiving a misleading numeric readiness score.
 
 ## [0.1.1] - 2026-06-21

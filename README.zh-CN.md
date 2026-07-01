@@ -134,12 +134,13 @@ SetupLens 不想替代 IDE、Docker、包管理器或漏洞扫描器。它的定
 
 SetupLens 仍然是早期产品预览版，不是成熟稳定工具。当前已经具备：
 
-- 60 项自动化测试
+- 61 项自动化测试
 - Windows、Linux、macOS CI
 - setup 与 hygiene 分离
 - 不支持技术栈不打分
 - 启动诊断、准备命令、运行命令和阻塞项展示
 - 面向 Next/Vite/Prisma、Django/FastAPI、Laravel、Rails、Spring、.NET Web、Go service、Rust binary、Turbo/Nx 的深度 doctor 规则
+- failure corpus：把真实坏项目和提炼后的失败模式沉淀成可复现 fixture 与回归测试
 - fix-plan 修复计划，以及只执行白名单低风险修改的 `doctor --apply safe`
 - 终端、JSON、HTML、GitHub Action 输出
 
@@ -153,6 +154,7 @@ cd SetupLens
 npm ci
 npm run check
 npm test
+npm run corpus
 node ./bin/setuplens.js scan .
 node ./bin/setuplens.js doctor . --probe
 ```

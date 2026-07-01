@@ -44,6 +44,13 @@ const RULES = [
     recommendation: () => 'Run the project migration command after confirming the target database is correct.'
   },
   {
+    type: 'laravel_missing_app_key',
+    severity: 'fail',
+    title: 'Laravel APP_KEY is missing',
+    pattern: /(?:No application encryption key has been specified|MissingAppKeyException|APP_KEY.*(?:missing|empty|not set))/i,
+    recommendation: () => 'Copy the environment template if needed, then run php artisan key:generate in a local development environment.'
+  },
+  {
     type: 'database_unreachable',
     severity: 'fail',
     title: 'Database connection failed',
