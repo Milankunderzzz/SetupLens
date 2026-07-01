@@ -21,6 +21,8 @@ Options:
   -o, --output <file>           Write the report to a file
   --probe                       Run adapter probes and classify command failures
   --timeout <ms>                Probe timeout in milliseconds (default: 8000)
+  --fix-plan                    Show safe and manual repair candidates
+  --apply <safe>                Apply only whitelisted safe local fixes
   --threshold <0-100>           Exit 1 when lower, 2 when not scorable
   --plugin <file>               Load a trusted local plugin (repeatable)
   --no-color                    Disable terminal colors
@@ -56,6 +58,8 @@ function parseArguments(argv) {
     probe: false,
     timeoutMs: 8000,
     timeoutSet: false,
+    fixPlan: false,
+    apply: null,
     target: '.'
   };
   let targetSet = false;
@@ -67,9 +71,11 @@ function parseArguments(argv) {
     if (arg === '--no-color') { options.color = false; continue; }
     if (arg === '--show-all') { options.showAll = true; continue; }
     if (arg === '--probe') { options.probe = true; continue; }
+    if (arg === '--fix-plan') { options.fixPlan = true; continue; }
     if (arg === '--format') { options.format = valueAfter(args, index, arg); index += 1; continue; }
     if (arg === '-o' || arg === '--output') { options.output = valueAfter(args, index, arg); index += 1; continue; }
     if (arg === '--timeout') { options.timeoutMs = Number(valueAfter(args, index, arg)); options.timeoutSet = true; index += 1; continue; }
+    if (arg === '--apply') { options.apply = valueAfter(args, index, arg); index += 1; continue; }
     if (arg === '--threshold') { options.threshold = Number(valueAfter(args, index, arg)); index += 1; continue; }
     if (arg === '--plugin') { options.plugins.push(valueAfter(args, index, arg)); index += 1; continue; }
     if (arg.startsWith('-')) throw new Error(`Unknown option: ${arg}`);
@@ -89,6 +95,13 @@ function parseArguments(argv) {
   if (options.command === 'scan' && options.timeoutSet) {
     throw new Error('--timeout is only available with doctor probes. Use: setuplens doctor [path] --probe --timeout <ms>');
   }
+  if (options.command === 'scan' && options.fixPlan) {
+    throw new Error('--fix-plan is only available with doctor. Use: setuplens doctor [path] --fix-plan');
+  }
+  if (options.command === 'scan' && options.apply) {
+    throw new Error('--apply is only available with doctor. Use: setuplens doctor [path] --apply safe');
+  }
+  if (options.apply !== null && options.apply !== 'safe') throw new Error('--apply currently only accepts "safe".');
   if (!Number.isFinite(options.timeoutMs) || options.timeoutMs < 1000 || options.timeoutMs > 120000) {
     throw new Error('--timeout must be between 1000 and 120000 milliseconds.');
   }
@@ -102,14 +115,14 @@ export async function main(argv) {
   if (options.version) { process.stdout.write(`${VERSION}\n`); return; }
 
   const report = options.command === 'doctor'
-    ? await doctor(options.target, { plugins: options.plugins, probe: options.probe, timeoutMs: options.timeoutMs })
+    ? await doctor(options.target, { plugins: options.plugins, probe: options.probe, timeoutMs: options.timeoutMs, apply: options.apply })
     : await scan(options.target, { plugins: options.plugins });
   const rendered = options.format === 'json'
     ? renderJson(report)
     : options.format === 'html'
       ? renderHtml(report)
       : options.command === 'doctor'
-        ? renderDoctorTerminal(report, { color: options.color })
+        ? renderDoctorTerminal(report, { color: options.color, showFixPlan: options.fixPlan || options.apply === 'safe' })
         : renderTerminal(report, { color: options.color, showAll: options.showAll });
 
   if (options.output) {
@@ -117,7 +130,7 @@ export async function main(argv) {
     await fs.mkdir(path.dirname(output), { recursive: true });
     await fs.writeFile(output, rendered, 'utf8');
     const terminal = options.command === 'doctor'
-      ? renderDoctorTerminal(report, { color: options.color })
+      ? renderDoctorTerminal(report, { color: options.color, showFixPlan: options.fixPlan || options.apply === 'safe' })
       : renderTerminal(report, { color: options.color, showAll: options.showAll });
     process.stdout.write(`${terminal}\nReport written to ${output}\n`);
   } else {

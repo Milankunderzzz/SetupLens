@@ -20,6 +20,25 @@ export async function rustAdapter({ index, detection }) {
   for (const file of cargoFiles) manifests.push(await cargoInfo(file));
   const root = manifests.find((item) => item.directory === '.') ?? manifests[0];
   const hasMain = index.files.some((file) => file.relative === 'src/main.rs' || file.relative.endsWith('/src/main.rs'));
+  const binTargets = index.files
+    .filter((file) => /(?:^|\/)src\/bin\/.+\.rs$/.test(file.relative))
+    .map((file) => file.relative);
+  const sourceTexts = [];
+  for (const file of index.files.filter((item) => item.extension === '.rs' && item.size < 512 * 1024)) {
+    const text = await readText(file);
+    if (text) sourceTexts.push({ file: file.relative, text });
+  }
+  const serviceSignals = {
+    webFrameworks: [
+      sourceTexts.some((item) => /actix_web|HttpServer::new/.test(item.text)) ? 'Actix Web' : null,
+      sourceTexts.some((item) => /axum|Router::new/.test(item.text)) ? 'Axum' : null,
+      sourceTexts.some((item) => /rocket::/.test(item.text)) ? 'Rocket' : null
+    ].filter(Boolean),
+    envKeys: [...new Set(sourceTexts.flatMap((item) => [...item.text.matchAll(/(?:std::env::var|env::var)\(["']([A-Z][A-Z0-9_]{2,})["']\)/g)].map((match) => match[1])))].sort()
+  };
+  const runCommand = binTargets.length > 0
+    ? `cargo run --bin ${path.posix.basename(binTargets[0], '.rs')}`
+    : 'cargo run';
 
   return {
     id: 'rust',
@@ -27,7 +46,9 @@ export async function rustAdapter({ index, detection }) {
     confidence: hasMain ? 'high' : 'medium',
     signals: {
       manifests,
-      hasMain
+      hasMain,
+      binTargets,
+      serviceSignals
     },
     actions: [
       {
@@ -39,10 +60,10 @@ export async function rustAdapter({ index, detection }) {
       },
       {
         type: hasMain ? 'run' : 'verify',
-        command: hasMain ? 'cargo run' : 'cargo test',
+        command: hasMain || binTargets.length > 0 ? runCommand : 'cargo test',
         cwd: root?.directory ?? '.',
-        reason: hasMain ? 'src/main.rs indicates a runnable binary.' : 'No src/main.rs was found; cargo test is the safest verification path.',
-        confidence: hasMain ? 'high' : 'medium'
+        reason: hasMain ? 'src/main.rs indicates a runnable binary.' : binTargets.length > 0 ? `${binTargets[0]} indicates a runnable binary target.` : 'No Rust binary target was found; cargo test is the safest verification path.',
+        confidence: hasMain || binTargets.length > 0 ? 'high' : 'medium'
       }
     ],
     probes: [

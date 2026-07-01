@@ -10,13 +10,24 @@ async function projectKind(file) {
   return 'library';
 }
 
+async function projectMetadata(file) {
+  const text = await readText(file);
+  return {
+    path: file.relative,
+    kind: await projectKind(file),
+    targetFrameworks: [...(text ?? '').matchAll(/<TargetFrameworks?>\s*([^<]+)\s*<\/TargetFrameworks?>/g)]
+      .flatMap((match) => match[1].split(';').map((item) => item.trim()).filter(Boolean)),
+    userSecrets: /<UserSecretsId>\s*[^<]+\s*<\/UserSecretsId>/i.test(text ?? '')
+  };
+}
+
 export async function dotnetAdapter({ index }) {
   const projectFiles = index.files.filter((file) => /\.(?:csproj|fsproj|vbproj)$/i.test(file.name));
   const solutionFiles = index.files.filter((file) => /\.(?:sln|slnx)$/i.test(file.name));
   if (projectFiles.length === 0 && solutionFiles.length === 0) return null;
 
   const projects = [];
-  for (const file of projectFiles) projects.push({ path: file.relative, kind: await projectKind(file) });
+  for (const file of projectFiles) projects.push(await projectMetadata(file));
   const runnable = projects.find((project) => project.kind === 'web' || project.kind === 'executable') ?? projects[0];
   const cwd = runnable ? (path.posix.dirname(runnable.path) === '.' ? '.' : path.posix.dirname(runnable.path)) : '.';
   const actions = [
@@ -62,16 +73,31 @@ export async function dotnetAdapter({ index }) {
     }));
   }
 
+  const appsettings = index.files.filter((file) => /^appsettings(?:\.[A-Za-z0-9_-]+)?\.json$/i.test(file.name)).map((file) => file.relative);
+  const launchSettings = index.files.filter((file) => file.relative.endsWith('Properties/launchSettings.json')).map((file) => file.relative);
+  const issues = [];
+  if (runnable?.kind === 'web' && appsettings.length === 0) {
+    issues.push({
+      type: 'dotnet_missing_appsettings',
+      severity: 'warn',
+      title: '.NET appsettings file was not found',
+      evidence: `${runnable.path} uses the Web SDK, but no appsettings*.json file was indexed.`,
+      recommendation: 'Confirm configuration is supplied by environment variables or restore appsettings.json for local startup.'
+    });
+  }
+
   return {
     id: 'dotnet',
     title: '.NET project adapter',
     confidence: runnable?.kind === 'web' || runnable?.kind === 'executable' ? 'high' : 'medium',
     signals: {
       projects,
-      solutions: solutionFiles.map((file) => file.relative)
+      solutions: solutionFiles.map((file) => file.relative),
+      appsettings,
+      launchSettings
     },
     actions,
     probes,
-    issues: []
+    issues
   };
 }

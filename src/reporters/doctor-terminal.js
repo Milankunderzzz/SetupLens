@@ -84,6 +84,30 @@ export function renderDoctorTerminal(report, options = {}) {
     lines.push('');
   }
 
+  const showFixPlan = options.showFixPlan === true || report.diagnosis.fixPlan?.applied?.length > 0;
+  if (showFixPlan && report.diagnosis.fixPlan?.fixes?.length > 0) {
+    lines.push(paint.bold('Fix plan'));
+    const safe = report.diagnosis.fixPlan.fixes.filter((fix) => fix.canApply);
+    const manual = report.diagnosis.fixPlan.fixes.filter((fix) => !fix.canApply);
+    for (const fix of safe.slice(0, 6)) {
+      lines.push(`  ${paint.pass('SAFE')}  ${paint.bold(fix.title)} ${paint.dim(`[${fix.source}]`)}`);
+      lines.push(`        ${fix.description}`);
+    }
+    for (const fix of manual.slice(0, 4)) {
+      lines.push(`  ${paint.warn('MANUAL')} ${paint.bold(fix.title)} ${paint.dim(`[${fix.source}]`)}`);
+      lines.push(`        ${fix.description}`);
+    }
+    if (report.diagnosis.fixPlan.applied?.length > 0) {
+      lines.push(paint.bold('Applied safe fixes'));
+      for (const item of report.diagnosis.fixPlan.applied) {
+        lines.push(`  ${item.status.toUpperCase()}  ${item.title}: ${item.message}`);
+      }
+    } else if (safe.length > 0) {
+      lines.push(paint.dim('  Use --apply safe to apply only whitelisted local fixes.'));
+    }
+    lines.push('');
+  }
+
   if (!report.probes.enabled) {
     lines.push(paint.bold('Probes'));
     lines.push(`  Planned ${report.probes.planned.length} probe${report.probes.planned.length === 1 ? '' : 's'}. Run ${paint.bold('setuplens doctor . --probe')} to execute them.`);
