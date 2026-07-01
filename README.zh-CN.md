@@ -4,7 +4,7 @@
 
 **一条命令，告诉你这个仓库该怎么启动，以及哪里会卡住。**
 
-[English](README.md) | [为什么做这个项目](ARCHITECTURE.md) | [产品方向](docs/PRODUCT_DIRECTION.md) | [插件 API](docs/PLUGIN_API.md) | [示例报告](docs/demo-report.html)
+[English](README.md) | [版本路线](ROADMAP.zh-CN.md) | [产品方向](docs/PRODUCT_DIRECTION.md) | [为什么做这个项目](ARCHITECTURE.md) | [插件 API](docs/PLUGIN_API.md) | [示例报告](docs/demo-report.html)
 
 </div>
 
@@ -96,6 +96,8 @@ SetupLens 不想替代 IDE、Docker、包管理器或漏洞扫描器。它的定
 仓库规范检查依然有用，但它们不应该压过真正影响启动的问题。所以默认输出会隐藏大量 PASS 和低影响 hygiene 项，只在 `--show-all` 中完整展示。
 
 ## 当前状态
+
+详细的版本进入条件和暂缓方向记录在[版本路线](ROADMAP.zh-CN.md)中。当前 `0.2.0-alpha.1` 方向会继续把 `doctor` 做成更强的仓库启动医生：adapter、启动计划、probe、日志分类和下一步行动会优先于单纯的速度承诺。
 
 SetupLens 仍然是早期产品预览版，不是成熟稳定工具。当前已经具备：
 

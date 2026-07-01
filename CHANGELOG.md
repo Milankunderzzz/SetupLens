@@ -1,6 +1,13 @@
 # Changelog
 
-## Unreleased
+All notable changes to SetupLens are documented in this file.
+
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and the project uses semantic versioning while it remains in the `0.x` stage.
+
+## [0.2.0-alpha.1] - 2026-07-01
+
+This alpha turns SetupLens from a static readiness scanner into a broader local repository doctor.
 
 ### Added
 
@@ -9,20 +16,8 @@
 - Optional `doctor --probe` execution with bounded local command probes and timeout control.
 - Failure-log classification for missing environment variables, missing files, missing modules, port conflicts, database failures, pending migrations, private registry authentication failures, dependency resolution errors, Docker daemon failures, incompatible runtime versions, native build tool failures, TLS/certificate errors, DNS/network failures, lockfile mismatches, permission problems, configuration parse errors, and compile errors.
 - Doctor JSON and terminal reports with likely root causes, next actions, planned probes, and probe results.
-
-### Changed
-
-- Product positioning now emphasizes broad local startup diagnosis instead of a 30-second scan promise.
-- Main package description and scan report tagline now point users to doctor mode for deeper investigation.
-
-## 0.2.0-alpha.1
-
-This alpha refocuses SetupLens from a broad repository checklist into a startup diagnosis tool.
-
-### Added
-
 - Startup diagnosis model with `ready`, `needs_setup`, `blocked`, and `unsupported` verdicts.
-- Detected prepare and run commands for Node.js, Python, and Docker projects.
+- Detected prepare and run commands for common Node.js, Python, and Docker projects.
 - Startup blockers, setup warnings, and safety risks in structured JSON output.
 - `--show-all` for users who still want the full audit list.
 - HTML report section for startup diagnosis, commands, blockers, and risks.
@@ -30,6 +25,8 @@ This alpha refocuses SetupLens from a broad repository checklist into a startup 
 
 ### Changed
 
+- Product positioning now emphasizes broad local startup diagnosis instead of a 30-second scan promise.
+- Main package description and scan report tagline now point users to doctor mode for deeper investigation.
 - Terminal output now defaults to the practical startup path instead of printing every pass/fail item.
 - README, license, CI, tests, and other repository hygiene findings are hidden from the default terminal report.
 - Lockfile and other non-blocking hygiene-style setup warnings no longer dominate the startup summary.
@@ -39,6 +36,38 @@ This alpha refocuses SetupLens from a broad repository checklist into a startup 
 - Docker Compose startup commands are withheld when Compose paths are already known to be broken.
 - Unsupported stacks remain `Unsupported / Not scored` instead of receiving a misleading numeric readiness score.
 
-## 0.1.0
+## [0.1.1] - 2026-06-21
 
-- Initial public MVP with local repository scanning, terminal/JSON/HTML reports, GitHub Action support, setup and hygiene scopes, and context-aware rule improvements.
+### Added
+
+- Separate `setup` readiness and repository `hygiene` scopes.
+- Primary, supporting, and incidental stack evidence in JSON and plugin context.
+- Context-aware classification for source, documentation, tests, examples, and generated files.
+- Regression coverage for workspaces, contextual secret detection, stack ranking, empty repositories, unknown stacks, and unsupported C++ projects.
+- GitHub Action status output for `scored` and `not_scored` results.
+
+### Changed
+
+- Aggregate explicit Node.js workspace dependency and lockfile results at the repository root instead of repeating member-package warnings.
+- Return schema 1.2 with a null score and grade when readiness cannot be assessed for an empty, unknown, or unsupported primary stack.
+- Use CLI exit code `2` for an unscorable threshold check while retaining exit code `1` for a valid score below the requested threshold.
+- Keep documentation and test fixtures from being treated as primary source in context-sensitive environment and credential checks.
+- Expand the automated suite to 44 tests across the Windows, Linux, and macOS CI matrix on Node.js 18 and 22.
+
+### Fixed
+
+- Prevent unsupported repositories from receiving misleading high readiness grades such as the externally observed C++ `98/100 A` result.
+- Reduce repeated monorepo warnings and documentation-driven credential false positives observed during exploratory validation.
+- Improve primary-stack ranking for mixed-technology repositories.
+
+### Research status
+
+This is a maintenance release. It does not claim validated precision, recall, F1, or developer time savings. Stable `v0.2.0` remains gated on the independent pilot, holdout, and human-comparison evidence maintained in [SetupBench-Lens](https://github.com/Milankunderzzz/SetupBench-Lens).
+
+## [0.1.0] - 2026-06-18
+
+- Initial public MVP with local terminal, JSON, HTML, plugin, and GitHub Action interfaces for Node.js, Python, Docker, configuration, path, security, and repository checks.
+
+[0.2.0-alpha.1]: https://github.com/Milankunderzzz/SetupLens/compare/v0.1.1...v0.2.0-alpha.1
+[0.1.1]: https://github.com/Milankunderzzz/SetupLens/compare/v0.1.0...v0.1.1
+[0.1.0]: https://github.com/Milankunderzzz/SetupLens/releases/tag/v0.1.0

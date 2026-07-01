@@ -4,7 +4,7 @@
 
 **Diagnose why unfamiliar repositories fail to install, configure, or start.**
 
-[中文](README.zh-CN.md) | [Why I built it](ARCHITECTURE.md) | [Product direction](docs/PRODUCT_DIRECTION.md) | [Plugin API](docs/PLUGIN_API.md) | [Example report](docs/demo-report.html)
+[中文](README.zh-CN.md) | [Roadmap](ROADMAP.md) | [Product direction](docs/PRODUCT_DIRECTION.md) | [Why I built it](ARCHITECTURE.md) | [Plugin API](docs/PLUGIN_API.md) | [Example report](docs/demo-report.html)
 
 [![CI](https://github.com/Milankunderzzz/SetupLens/actions/workflows/ci.yml/badge.svg)](https://github.com/Milankunderzzz/SetupLens/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/Milankunderzzz/SetupLens?sort=semver)](https://github.com/Milankunderzzz/SetupLens/releases)
@@ -148,7 +148,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: Milankunderzzz/SetupLens@v0.1.0
+      - uses: Milankunderzzz/SetupLens@v0.1.1
         with:
           path: .
           threshold: 75
@@ -215,6 +215,8 @@ The project currently favors checks that can point to a file, command, or manife
 - **Next:** Deepen adapters for common project families such as Next.js, Vite, Prisma, Django, FastAPI, Laravel, Rails, Spring, .NET web apps, Go services, Rust binaries, and monorepo tools.
 - **After that:** Add safer fix planning and optional apply modes for low-risk changes such as generating local env files from templates.
 - **Later:** Grow into a broad repository startup doctor while keeping findings deterministic, local, and auditable.
+
+The detailed release gates and deferred directions are maintained in the [version roadmap](ROADMAP.md).
 
 Java, Go, Rust, PHP, Ruby, and .NET support is now adapter-driven and intentionally starts with startup planning, runtime probes, and common failure classification. Issues that include a minimal reproduction are the most useful input for deepening each ecosystem.
 
