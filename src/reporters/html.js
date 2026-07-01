@@ -13,11 +13,22 @@ ${item.evidence ? `        <p class="evidence">Evidence: ${escapeHtml(item.evide
 ${item.recommendation ? `    <p class="recommendation"><strong>Fix:</strong> ${escapeHtml(item.recommendation)}</p>\n` : ''}  </article>`;
 }
 
+function commandList(steps) {
+  if (steps.length === 0) return '<p class="empty">No command detected.</p>';
+  return `<ol class="commands">${steps.map((step) => `<li><code>${escapeHtml(step.command)}</code><span>${escapeHtml(step.reason)}</span></li>`).join('')}</ol>`;
+}
+
+function compactFindingList(items) {
+  if (items.length === 0) return '<p class="empty">None detected.</p>';
+  return `<ul class="compact-findings">${items.map((item) => `<li><strong>${escapeHtml(item.title)}</strong><span>${escapeHtml(item.message)}</span>${item.evidence ? `<code>${escapeHtml(item.evidence)}</code>` : ''}</li>`).join('')}</ul>`;
+}
+
 export function renderHtml(report) {
-  const actions = report.findings
-    .filter((item) => item.recommendation && ['fail', 'warn'].includes(item.status))
-    .sort((left, right) => Number(left.scope === 'hygiene') - Number(right.scope === 'hygiene'))
-    .slice(0, 6);
+  const actions = [
+    ...report.startup.blockers,
+    ...report.startup.risks,
+    ...report.startup.warnings
+  ].filter((item) => item.recommendation).slice(0, 6);
   const stack = report.primaryStacks?.length > 0 ? report.primaryStacks.join(' / ') : 'Unknown';
   const hygieneActions = report.scopes.hygiene.summary.fail + report.scopes.hygiene.summary.warn;
   const scoreValue = report.scorable ? report.score : 'Not scored';
@@ -56,6 +67,27 @@ export function renderHtml(report) {
     .actions ol { margin:8px 0 0; padding-left:22px; }
     .actions li { overflow-wrap:anywhere; }
     .actions li + li { margin-top:6px; }
+    .diagnosis { background:var(--paper); border:1px solid var(--line); border-radius:6px; padding:18px 20px; margin-bottom:22px; }
+    .diagnosis-header { display:flex; align-items:flex-start; justify-content:space-between; gap:18px; border-bottom:1px solid var(--line); padding-bottom:14px; margin-bottom:16px; }
+    .verdict { display:inline-block; font-size:12px; font-weight:800; color:white; background:#5f6f7c; border-radius:4px; padding:4px 8px; text-transform:uppercase; }
+    .verdict-ready { background:var(--green); }
+    .verdict-needs_setup { background:var(--amber); }
+    .verdict-blocked { background:var(--red); }
+    .verdict-unsupported { background:#5f6f7c; }
+    .diagnosis h2, .diagnosis h3 { margin:0; }
+    .diagnosis p { margin:6px 0 0; color:var(--muted); }
+    .startup-grid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:16px; }
+    .startup-panel { border:1px solid var(--line); border-radius:6px; padding:14px; }
+    .startup-panel h3 { font-size:14px; margin-bottom:8px; }
+    .commands { margin:0; padding-left:20px; }
+    .commands li + li { margin-top:9px; }
+    .commands code { display:block; width:100%; padding:7px 8px; margin-bottom:3px; background:#f0f3f5; border-radius:4px; color:#10202c; overflow-wrap:anywhere; }
+    .commands span, .empty { color:var(--muted); font-size:13px; }
+    .compact-findings { margin:0; padding-left:18px; }
+    .compact-findings li + li { margin-top:9px; }
+    .compact-findings strong, .compact-findings span { display:block; }
+    .compact-findings span { color:var(--muted); }
+    .compact-findings code { display:block; margin-top:4px; color:#44515c; font-size:12px; overflow-wrap:anywhere; }
     .findings { display:grid; gap:8px; }
     .finding { background:var(--paper); border:1px solid var(--line); border-left-width:4px; border-radius:4px; overflow:hidden; }
     .finding-fail { border-left-color:var(--red); }
@@ -74,14 +106,14 @@ export function renderHtml(report) {
     .category { color:var(--muted); font-size:12px; white-space:nowrap; }
     .recommendation { margin:0; padding:10px 16px 12px 88px; background:#f8fafb; border-top:1px solid #edf0f2; }
     footer { padding:20px 0; color:var(--muted); font-size:13px; border-top:1px solid var(--line); }
-    @media (max-width:720px) { .brand { align-items:flex-start; flex-direction:column; } .score { min-width:0; text-align:left; } .score strong { font-size:36px; } .meta span { min-width:0; overflow-wrap:anywhere; } .metrics { grid-template-columns:repeat(2,minmax(0,1fr)); } .finding-main { grid-template-columns:54px minmax(0,1fr); } .category { grid-column:2; } .recommendation { padding-left:16px; overflow-wrap:anywhere; } }
+    @media (max-width:720px) { .brand, .diagnosis-header { align-items:flex-start; flex-direction:column; } .score { min-width:0; text-align:left; } .score strong { font-size:36px; } .meta span { min-width:0; overflow-wrap:anywhere; } .metrics, .startup-grid { grid-template-columns:1fr; } .finding-main { grid-template-columns:54px minmax(0,1fr); } .category { grid-column:2; } .recommendation { padding-left:16px; overflow-wrap:anywhere; } }
   </style>
 </head>
 <body>
   <header>
     <div class="wrap">
       <div class="brand">
-        <div><h1>SetupLens</h1><p>Know why a repository will not run, in one command and under 30 seconds.</p></div>
+        <div><h1>SetupLens</h1><p>Repository setup readiness scan. Use SetupLens Doctor for deeper diagnosis and probes.</p></div>
         <div class="score"><strong>${escapeHtml(scoreValue)}</strong><span>${escapeHtml(scoreCaption)}</span></div>
       </div>
       <div class="meta"><span><strong>Target:</strong> ${escapeHtml(report.target.name)}</span><span><strong>Stack:</strong> ${escapeHtml(stack)}</span><span><strong>Duration:</strong> ${report.durationMs} ms</span><span><strong>Files:</strong> ${report.target.filesIndexed}</span></div>
@@ -89,10 +121,27 @@ export function renderHtml(report) {
   </header>
   <main class="wrap">
     <div class="metrics">
+      <div class="metric"><span>Verdict</span><strong>${escapeHtml(report.startup.status.replaceAll('_', ' '))}</strong></div>
       <div class="metric"><span>Setup failures</span><strong>${report.scopes.setup.summary.fail}</strong></div>
       <div class="metric"><span>Setup warnings</span><strong>${report.scopes.setup.summary.warn}</strong></div>
+    </div>
+    <section class="diagnosis">
+      <div class="diagnosis-header">
+        <div><h2>Startup diagnosis</h2><p>${escapeHtml(report.startup.summary)}</p></div>
+        <span class="verdict verdict-${escapeHtml(report.startup.status)}">${escapeHtml(report.startup.status.replaceAll('_', ' '))}</span>
+      </div>
+      <div class="startup-grid">
+        <div class="startup-panel"><h3>Prepare</h3>${commandList(report.startup.setupCommands)}</div>
+        <div class="startup-panel"><h3>Run</h3>${commandList(report.startup.runCommands)}</div>
+        <div class="startup-panel"><h3>Startup blockers</h3>${compactFindingList(report.startup.blockers)}</div>
+        <div class="startup-panel"><h3>Safety risks</h3>${compactFindingList(report.startup.risks)}</div>
+      </div>
+    </section>
+    <div class="metrics">
       <div class="metric"><span>Hygiene findings</span><strong>${hygieneActions}</strong></div>
       <div class="metric"><span>Total checks</span><strong>${report.allSummary.total}</strong></div>
+      <div class="metric"><span>Run commands</span><strong>${report.startup.runCommands.length}</strong></div>
+      <div class="metric"><span>Prepare commands</span><strong>${report.startup.setupCommands.length}</strong></div>
     </div>
 ${actions.length > 0 ? `    <section class="actions"><h2>Highest-impact next actions</h2><ol>${actions.map((item) => `<li>${escapeHtml(item.recommendation)}</li>`).join('')}</ol></section>\n` : ''}
     <section><h2>Findings</h2><div class="findings">${report.findings.map(findingRow).join('')}</div></section>

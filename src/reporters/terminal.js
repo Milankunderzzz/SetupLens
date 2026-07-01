@@ -24,22 +24,50 @@ function summaryText(group, paint) {
   return `${paint.fail(`${group.summary.fail} failed`)}  ${paint.warn(`${group.summary.warn} ${warningLabel}`)}  ${paint.pass(`${group.summary.pass} passed`)}`;
 }
 
-function recommendedActions(report, limit) {
-  return report.findings
-    .filter((item) => item.recommendation && ['fail', 'warn'].includes(item.status))
-    .sort((left, right) => Number(left.scope === 'hygiene') - Number(right.scope === 'hygiene'))
-    .slice(0, limit);
+function statusLabel(status, paint) {
+  const labels = {
+    blocked: paint.fail('BLOCKED'),
+    needs_setup: paint.warn('NEEDS SETUP'),
+    ready: paint.pass('READY'),
+    unsupported: paint.warn('UNSUPPORTED')
+  };
+  return labels[status] ?? status;
+}
+
+function renderFinding(lines, item, paint) {
+  const label = paint[item.status](STATUS_LABELS[item.status].padEnd(4));
+  lines.push(`${label}  ${paint.bold(item.title)} ${paint.dim(`[${item.scope ?? 'setup'} / ${item.category}]`)}`);
+  lines.push(`      ${item.message}`);
+  if (item.evidence) lines.push(paint.dim(`      Evidence: ${item.evidence}`));
+  if (item.recommendation) lines.push(`      Fix: ${item.recommendation}`);
+}
+
+function renderStartupFinding(lines, item, paint) {
+  const label = paint[item.status](STATUS_LABELS[item.status].padEnd(4));
+  lines.push(`${label}  ${paint.bold(item.title)} ${paint.dim(`[${item.category}]`)}`);
+  lines.push(`      ${item.message}`);
+  if (item.evidence) lines.push(paint.dim(`      Evidence: ${item.evidence}`));
+  if (item.recommendation) lines.push(`      Fix: ${item.recommendation}`);
+}
+
+function commandRows(title, steps, lines, paint) {
+  if (steps.length === 0) return;
+  lines.push(paint.bold(title));
+  steps.forEach((step, index) => {
+    lines.push(`  ${index + 1}. ${paint.bold(step.command)} ${paint.dim(`(${step.reason})`)}`);
+  });
 }
 
 export function renderTerminal(report, options = {}) {
   const useColor = options.color !== false && Boolean(process.stdout.isTTY);
+  const showAll = options.showAll === true;
   const paint = painter(useColor);
   const lines = [];
   const scoreColor = report.scorable && report.score >= 80 ? 'pass' : report.scorable && report.score >= 60 ? 'warn' : 'fail';
 
   lines.push('');
   lines.push(paint.bold(`SetupLens ${report.tool.version}`));
-  lines.push(paint.dim('Know why a repository will not run, in one command and under 30 seconds.'));
+  lines.push(paint.dim('Repository setup readiness scan. Use "setuplens doctor" for deeper diagnosis and probes.'));
   lines.push('');
   lines.push(`Target  ${paint.bold(report.target.name)}  ${paint.dim(`(${report.target.filesIndexed} files, ${report.durationMs} ms)`)}`);
   const supportingStacks = report.stackEvidence
@@ -48,6 +76,7 @@ export function renderTerminal(report, options = {}) {
   const primaryLabel = report.primaryStacks?.length > 0 ? report.primaryStacks.join(', ') : 'unknown';
   const supportingLabel = supportingStacks.length > 0 ? `  (supporting: ${supportingStacks.join(', ')})` : '';
   lines.push(`Stack   ${primaryLabel}${supportingLabel}`);
+  lines.push(`Verdict ${statusLabel(report.startup.status, paint)}  ${paint.dim(report.startup.summary)}`);
   if (report.scorable) {
     lines.push(`Score   ${paint[scoreColor](`${report.score}/100 ${report.grade}`)}  ${scoreBar(report.score)}  ${paint.dim('(setup readiness)')}`);
   } else {
@@ -58,18 +87,52 @@ export function renderTerminal(report, options = {}) {
   lines.push(`Hygiene ${summaryText(report.scopes.hygiene, paint)}`);
   lines.push('');
 
-  for (const item of report.findings) {
-    const label = paint[item.status](STATUS_LABELS[item.status].padEnd(4));
-    lines.push(`${label}  ${paint.bold(item.title)} ${paint.dim(`[${item.scope} / ${item.category}]`)}`);
-    lines.push(`      ${item.message}`);
-    if (item.evidence) lines.push(paint.dim(`      Evidence: ${item.evidence}`));
+  commandRows('Prepare', report.startup.setupCommands, lines, paint);
+  if (report.startup.setupCommands.length > 0 && report.startup.runCommands.length > 0) lines.push('');
+  commandRows('Run', report.startup.runCommands, lines, paint);
+
+  const noteFailures = report.startup.notes.filter((note) => note.level === 'fail');
+  if (report.startup.blockers.length > 0 || noteFailures.length > 0) {
+    lines.push('');
+    lines.push(paint.bold('Startup blockers'));
+    for (const item of report.startup.blockers) renderStartupFinding(lines, item, paint);
+    for (const note of noteFailures) {
+      lines.push(`${paint.fail('FAIL')}  ${paint.bold(note.title)} ${paint.dim('[Startup]')}`);
+      lines.push(`      ${note.message}`);
+      if (note.recommendation) lines.push(`      Fix: ${note.recommendation}`);
+    }
   }
 
-  const actions = recommendedActions(report, 5);
-  if (actions.length > 0) {
+  if (report.startup.risks.length > 0) {
     lines.push('');
-    lines.push(paint.bold('Next actions'));
-    actions.forEach((item, index) => lines.push(`  ${index + 1}. ${item.recommendation}`));
+    lines.push(paint.bold('Safety risks'));
+    for (const item of report.startup.risks.slice(0, 4)) renderStartupFinding(lines, item, paint);
+  }
+
+  const softNotes = report.startup.notes.filter((note) => note.level !== 'fail');
+  if (report.startup.warnings.length > 0 || softNotes.length > 0) {
+    lines.push('');
+    lines.push(paint.bold('Setup warnings'));
+    for (const item of report.startup.warnings.slice(0, 4)) renderStartupFinding(lines, item, paint);
+    for (const note of softNotes.slice(0, 3)) {
+      lines.push(`${paint.warn('WARN')}  ${paint.bold(note.title)} ${paint.dim('[Startup]')}`);
+      lines.push(`      ${note.message}`);
+      if (note.recommendation) lines.push(`      Fix: ${note.recommendation}`);
+    }
+  }
+
+  if (showAll) {
+    lines.push('');
+    lines.push(paint.bold('All findings'));
+    for (const item of report.findings) renderFinding(lines, item, paint);
+  } else {
+    const hiddenPasses = report.findings.filter((item) => item.status === 'pass').length;
+    const hiddenHygiene = report.findings.filter((item) => item.scope === 'hygiene' && item.status !== 'pass').length;
+    const hiddenInfo = report.findings.filter((item) => item.status === 'info').length;
+    if (hiddenPasses > 0 || hiddenHygiene > 0 || hiddenInfo > 0) {
+      lines.push('');
+      lines.push(paint.dim(`Hidden: ${hiddenPasses} passed checks, ${hiddenHygiene} hygiene findings, ${hiddenInfo} info items. Use --show-all for the full audit list.`));
+    }
   }
 
   lines.push('');

@@ -2,9 +2,9 @@
 
 # SetupLens
 
-**Know why a repository will not run, in one command and under 30 seconds.**
+**Diagnose why unfamiliar repositories fail to install, configure, or start.**
 
-[中文](README.zh-CN.md) | [Roadmap](ROADMAP.md) | [Why I built it](ARCHITECTURE.md) | [Plugin API](docs/PLUGIN_API.md) | [Example report](docs/demo-report.html)
+[中文](README.zh-CN.md) | [Roadmap](ROADMAP.md) | [Product direction](docs/PRODUCT_DIRECTION.md) | [Why I built it](ARCHITECTURE.md) | [Plugin API](docs/PLUGIN_API.md) | [Example report](docs/demo-report.html)
 
 [![CI](https://github.com/Milankunderzzz/SetupLens/actions/workflows/ci.yml/badge.svg)](https://github.com/Milankunderzzz/SetupLens/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/Milankunderzzz/SetupLens?sort=semver)](https://github.com/Milankunderzzz/SetupLens/releases)
@@ -18,24 +18,42 @@
 
 ![A failed Docker Compose run followed by SetupLens finding five confirmed setup blockers in 810 milliseconds](docs/assets/demo.gif)
 
-SetupLens is an early personal open-source project for a problem I keep meeting: a repository looks complete, but it does not run after cloning. It checks the local machine and repository for missing runtimes, dependencies, environment files, broken paths, and a few other common setup failures.
+SetupLens is an early personal open-source project for a problem I keep meeting: a repository looks complete, but it does not run after cloning. The project is moving from a fast static scanner toward a repository doctor: it identifies the project shape, builds a startup plan, optionally probes commands, classifies failure logs, and turns the evidence into concrete next actions.
 
-I am building it in public and keeping the first versions deliberately small. The current rules work best for Node.js, Python, and Docker repositories. The reasoning behind the scope and code structure is in [ARCHITECTURE.md](ARCHITECTURE.md).
+I am building it in public and still keeping the core deterministic and local-first. The current adapters cover Node.js, Python, Docker, Prisma, PHP/Laravel, Ruby/Rails, Java/Spring, .NET, Go, Rust, monorepos, local services, README-driven setup instructions, and common JavaScript framework signals. Repository hygiene checks still exist, but the product direction now prioritizes broad startup diagnosis over a simple speed promise. The reasoning behind the scope and code structure is in [ARCHITECTURE.md](ARCHITECTURE.md), and the product plan is in [docs/PRODUCT_DIRECTION.md](docs/PRODUCT_DIRECTION.md).
 
 ## Current Development Status
 
 SetupLens is an early research prototype and usable MVP, not yet a product whose effectiveness has been established. The current `main` branch includes:
 
-- 44 automated tests, executed in CI on Windows, Linux, and macOS with Node.js 18 and 22;
+- 53 automated tests, executed in CI on Windows, Linux, and macOS with Node.js 18 and 22;
 - context-aware file classification, workspace-level dependency reporting, and primary-stack ranking;
 - `Unsupported / Not scored` results for empty repositories, unknown stacks, and unsupported primary stacks instead of misleading numeric grades;
+- startup diagnosis with `ready`, `needs_setup`, `blocked`, and `unsupported` verdicts;
+- detected prepare and run commands for common Node.js, Python, and Docker projects;
+- `doctor` mode with adapters, planned probes, real command probing, failure-log classification, and next-action ranking;
+- Node/Prisma/README instruction signals such as framework packages, `process.env.*`, Prisma `env("...")`, and documented commands;
+- multi-ecosystem doctor adapters for PHP, Ruby, Java, .NET, Go, Rust, monorepos, and local service dependencies;
+- default terminal output that hides low-impact pass/hygiene noise unless `--show-all` is requested;
 - one documented CMMS validation case and one external C++ boundary pilot.
 
 Precision, recall, F1, developer time savings, and low false-positive rates have not yet been established. Those claims remain gated on the independent pilot and holdout study in [SetupBench-Lens](https://github.com/Milankunderzzz/SetupBench-Lens).
 
 ## Try It
 
-Run directly from GitHub without cloning or registering:
+Run the deeper repository doctor directly from GitHub without cloning or registering:
+
+```bash
+npx --yes github:Milankunderzzz/SetupLens doctor .
+```
+
+Run optional probes when you want SetupLens to execute local diagnostic commands and classify real failures:
+
+```bash
+npx --yes github:Milankunderzzz/SetupLens doctor . --probe
+```
+
+Run the static readiness scan for CI-style scoring and HTML reports:
 
 ```bash
 npx --yes github:Milankunderzzz/SetupLens scan .
@@ -47,10 +65,17 @@ Generate a shareable, offline HTML report:
 npx --yes github:Milankunderzzz/SetupLens scan . --format html --output setuplens-report.html
 ```
 
-SetupLens reads local files and commands only. It does not upload repository contents, environment values, or scan results.
+SetupLens reads local files and commands only. It does not upload repository contents, environment values, or scan results. `doctor --probe` executes local adapter probes such as runtime checks, project-defined verification scripts, Compose validation, or short startup probes with a timeout; plain `doctor` and `scan` stay static.
 
 ## What It Finds
 
+- A startup verdict: `READY`, `NEEDS SETUP`, `BLOCKED`, or `UNSUPPORTED`
+- Prepare commands such as `npm install`, `python -m venv .venv`, or `python -m pip install -r requirements.txt`
+- Run commands such as `npm run dev`, `python -m flask --app app run`, `python -m uvicorn main:app --reload`, or `docker compose up --build`
+- Doctor adapters for Node.js, Python, Docker, Prisma, PHP, Ruby, Java, .NET, Go, Rust, monorepos, local services, and README instructions
+- Framework and tooling signals such as Next.js, Vite, React, TypeScript, Prisma, Drizzle, Django, Flask, FastAPI, Laravel, Rails, Spring Boot, Compose, Makefile, justfile, Taskfile, devcontainer files, Turbo, Nx, Lerna, Rush, and pnpm workspaces
+- Planned probes, optional probe results, and classified failures such as missing environment variables, missing files, missing modules, port conflicts, database connection failures, pending migrations, private registry authentication failures, dependency resolution errors, Docker daemon failures, incompatible runtime versions, native build tool failures, TLS/certificate errors, DNS/network failures, lockfile mismatches, permission problems, configuration parse errors, and compile errors
+- Prisma `env("...")` and JavaScript/TypeScript `process.env.*` references that are not backed by a local environment value
 - Runtime availability and declared Node.js version compatibility
 - npm, pnpm, Yarn, Bun, Python, Git, Docker, and Docker Compose readiness
 - Missing `node_modules`, Python virtual environments, and dependency lockfiles, with root-level workspace aggregation
@@ -81,8 +106,16 @@ Results vary by disk, repository size, and runtime commands. The demo GIF shows 
 ## Output Formats
 
 ```bash
+# Deep repository diagnosis
+setuplens doctor .
+setuplens doctor . --probe
+setuplens doctor . --format json --output setuplens-doctor.json
+
 # Human-readable terminal report
 setuplens scan .
+
+# Full audit list, including passed checks and repository hygiene
+setuplens scan . --show-all
 
 # Machine-readable JSON
 setuplens scan . --format json --output setuplens-report.json
@@ -149,11 +182,11 @@ See the [Plugin API](docs/PLUGIN_API.md) for the complete contract.
 
 ## Scope and Alternatives
 
-I am not trying to replace every repository or web auditing tool. SetupLens focuses on one moment: **a developer has the code, but it will not run on their machine.**
+I am not trying to replace every repository or web auditing tool. SetupLens focuses on one moment: **a developer has the code, but it will not install, configure, or start on their machine.**
 
 | Product | Primary question | Local runtime and environment | Repository hygiene | Maintainer analytics | Web performance | Offline |
 |---|---|:---:|:---:|:---:|:---:|:---:|
-| **SetupLens** | Why will this repository not run here? | **Yes** | Basic | No | No | **Yes** |
+| **SetupLens** | Why will this repository not install or start here? | **Yes** | Basic | No | No | **Yes** |
 | [Repo Doctor](https://github.com/JaaasperLiu/repo-doctor) | Is this repository open-source ready? | No | **Deep, with auto-fixes** | No | No | Yes |
 | [GitVital](https://github.com/bugsNburgers/GitVital) | Is this GitHub project actively maintained? | No | Metadata-based | **Deep** | No | No |
 | [Lighthouse](https://github.com/GoogleChrome/lighthouse) | Is this deployed web page fast and accessible? | Browser only | No | No | **Deep** | Yes |
@@ -162,31 +195,30 @@ I am not trying to replace every repository or web auditing tool. SetupLens focu
 
 - Finds machine-specific setup failures that repository metadata cannot see.
 - Runs locally with zero runtime dependencies, no account, and no telemetry.
-- Produces terminal, JSON, HTML, and GitHub Action results from one scan model.
+- Produces terminal, JSON, HTML, GitHub Action scan results, and a deeper doctor report.
+- Can optionally execute bounded local probes and classify real command failures.
 - Keeps the core focused while allowing explicit project and organization plugins.
 
 ### What still needs work
 
-- Early-stage rule coverage is smaller than mature specialist tools.
+- Early-stage adapter coverage is broader now, but still shallower than mature specialist tools inside each ecosystem.
 - Node.js 18.17 or newer is currently required to launch the scanner.
 - It reports fixes but intentionally does not mutate project files yet.
+- Probe mode can observe early startup failures, but it cannot prove that every long-running service is production-ready.
 - It does not replace dependency vulnerability scanners, web performance audits, or long-term maintainer analytics.
 
 The project currently favors checks that can point to a file, command, or manifest entry. I may add optional AI explanations later, but the underlying finding should remain reproducible without a model.
 
 ## What I Am Working On
 
-The detailed release gates and deferred directions are maintained in the
-[version roadmap](ROADMAP.md). The current release line remains `v0.1.x`;
-`v0.2.0-alpha.1` will freeze the pilot build, and stable `v0.2.0` will require
-the planned evaluation and distribution evidence.
+- **Now:** Make `doctor` the powerful path: adapters, startup plans, probes, log classification, and next actions.
+- **Next:** Deepen adapters for common project families such as Next.js, Vite, Prisma, Django, FastAPI, Laravel, Rails, Spring, .NET web apps, Go services, Rust binaries, and monorepo tools.
+- **After that:** Add safer fix planning and optional apply modes for low-risk changes such as generating local env files from templates.
+- **Later:** Grow into a broad repository startup doctor while keeping findings deterministic, local, and auditable.
 
-- **Now:** Complete full Pass A, Pass B, and Pass C review for 10 pilot repositories, while keeping the research scope fixed to Node.js, Python, and Docker.
-- **Next:** Find five external users, record three confirmed setup problems, obtain at least one external issue or feedback report, and produce a 30-second before/after demonstration.
-- **After the pilot:** Freeze the confirmatory commit, rerun eligible holdout repositories, and calculate precision, recall, F1, confidence intervals, and diagnosis-time comparisons.
-- **Later:** Evaluate npm and GitHub Marketplace distribution, then reconsider deeper Java, Go, and Rust support only if the evidence justifies expansion.
+The detailed release gates and deferred directions are maintained in the [version roadmap](ROADMAP.md).
 
-Existing Java, Go, and Rust manifest detection remains available as experimental boundary behavior, but new rules for those ecosystems are paused. Issues that include a minimal reproduction are the most useful input.
+Java, Go, Rust, PHP, Ruby, and .NET support is now adapter-driven and intentionally starts with startup planning, runtime probes, and common failure classification. Issues that include a minimal reproduction are the most useful input for deepening each ecosystem.
 
 ## Development
 
@@ -197,6 +229,7 @@ npm ci
 npm run check
 npm test
 node ./bin/setuplens.js scan .
+node ./bin/setuplens.js doctor . --probe
 ```
 
 The scanning runtime uses only Node.js built-ins. Development dependencies are used solely to generate the README demo GIF.

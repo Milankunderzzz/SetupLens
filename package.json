@@ -1,7 +1,7 @@
 {
   "name": "setuplens",
-  "version": "0.1.1",
-  "description": "Know why a repository will not run, in one command and under 30 seconds.",
+  "version": "0.2.0-alpha.1",
+  "description": "Diagnose why unfamiliar repositories fail to install, configure, or start.",
   "type": "module",
   "bin": {
     "setuplens": "./bin/setuplens.js"

@@ -2,123 +2,115 @@
 
 # SetupLens
 
-**一条命令，在 30 秒内告诉你一个仓库为什么跑不起来。**
+**一条命令，告诉你这个仓库该怎么启动，以及哪里会卡住。**
 
-[English](README.md) | [版本路线](ROADMAP.zh-CN.md) | [为什么做这个项目](ARCHITECTURE.md) | [插件 API](docs/PLUGIN_API.md) | [示例报告](docs/demo-report.html)
+[English](README.md) | [版本路线](ROADMAP.zh-CN.md) | [产品方向](docs/PRODUCT_DIRECTION.md) | [为什么做这个项目](ARCHITECTURE.md) | [插件 API](docs/PLUGIN_API.md) | [示例报告](docs/demo-report.html)
 
 </div>
 
-**一次真实启动失败的定位过程：** Docker Compose 找不到构建路径后，SetupLens 在 810 ms 内定位到 4 个错误 Compose 路径和 1 个缺失 npm 脚本。
+SetupLens 是我持续维护的本地优先 CLI 工具。它不上传代码，也不要求注册账号。它关注一个很具体的问题：
 
-![Docker Compose 启动失败后，SetupLens 在 810 ms 内找到 5 个已确认的启动阻塞项](docs/assets/demo.gif)
+> 我刚拿到一个仓库，现在应该运行什么命令？如果跑不起来，最可能卡在哪里？
 
-SetupLens 是我正在持续维护的个人开源项目，起因是一个反复遇到的问题：仓库看起来很完整，克隆下来却跑不起来。它会检查当前电脑和仓库，找出缺失的运行时、依赖、环境文件、错误路径和其他常见的启动问题。
+从 `0.2.0-alpha.1` 开始，SetupLens 的产品重心从“仓库清单式检查”转向“启动诊断”。README、License、CI、测试文件这些仓库规范检查仍然保留，但默认终端输出会优先展示启动结论、准备命令、运行命令、阻塞项和安全风险。
 
-目前规则主要覆盖 Node.js、Python 和 Docker，我会先把这些常见场景做扎实，再扩大范围。项目范围与代码设计的理由记录在 [ARCHITECTURE.md](ARCHITECTURE.md)。
-
-## 当前开发状态
-
-SetupLens 目前是一个可以使用和演示的早期研究原型及 MVP，还不是已经通过实验验证有效性的成熟产品。当前 `main` 分支已经具备：
-
-- 44 项自动化测试，并在 Windows、Linux、macOS 的 Node.js 18 与 22 环境中执行 CI；
-- 文件上下文分类、workspace 级依赖汇总和主技术栈排序；
-- 对空仓库、未知技术栈和不支持的主技术栈显示 `Unsupported / Not scored`，不再给出误导性的数字等级；
-- 一个已记录的 CMMS 验证案例和一个外部 C++ 边界测试。
-
-目前尚未证明精确率、召回率、F1、开发者时间节省程度和低误报率。这些结论必须等待 [SetupBench-Lens](https://github.com/Milankunderzzz/SetupBench-Lens) 完成独立 pilot 与 holdout 实验后才能成立。
-
-## 一条命令体验
-
-无需克隆、注册或上传代码：
+## 快速体验
 
 ```bash
 npx --yes github:Milankunderzzz/SetupLens scan .
 ```
 
-生成完全离线、可分享的 HTML 报告：
+生成离线 HTML 报告：
 
 ```bash
 npx --yes github:Milankunderzzz/SetupLens scan . --format html --output setuplens-report.html
 ```
 
-SetupLens 只读取本地文件和命令，不上传仓库内容、环境变量值或扫描结果。
+查看完整审计清单：
 
-扫描器会区分主技术栈、支持技术栈和偶然出现的测试/示例文件；monorepo 依赖按 workspace 根目录汇总，文档与测试夹具也不会再被当作主流程中的环境文件或普通硬编码密钥。
+```bash
+npx --yes github:Milankunderzzz/SetupLens scan . --show-all
+```
 
-## 真实量化结果
+## 现在默认会先回答什么
 
-在 Windows 11、Intel i5-12500H、Node.js 24 环境下，对一个包含 Node.js、Python、Docker 和 261 个文件的真实 CMMS 项目执行 10 次扫描：
+终端输出会优先展示：
 
-| 指标 | 结果 |
-|---|---:|
-| 10 次扫描中位数 | **764 ms** |
-| 最快 / 最慢 | 721 ms / 869 ms |
-| 检查项 | 27 |
-| 结果 | 2 个失败、9 个警告、15 个通过 |
-| 确认发现 | 4 个 Compose 错误路径、1 个缺失 npm 脚本 |
-| 上传数据 | **0 字节** |
+```text
+Verdict BLOCKED
 
-![SetupLens 真实 HTML 报告](docs/assets/report.png)
+Prepare
+  npm install
+  python -m venv .venv
 
-## 项目范围与同类工具
+Run
+  npm run dev
 
-我不打算用 SetupLens 替代所有审计工具。它只聚焦一个时刻：**开发者已经拿到代码，但项目在他的电脑上跑不起来。**
+Startup blockers
+  Docker Compose references missing local paths
+  Makefile calls an npm script that does not exist
+```
 
-| 产品 | 主要解决的问题 | 本地运行环境 | 仓库规范 | 维护者分析 | Web 性能 | 离线 |
-|---|---|:---:|:---:|:---:|:---:|:---:|
-| **SetupLens** | 为什么这个仓库在这里跑不起来？ | **强** | 基础 | 无 | 无 | **是** |
-| [Repo Doctor](https://github.com/JaaasperLiu/repo-doctor) | 仓库是否符合开源规范？ | 无 | **强，支持自动修复** | 无 | 无 | 是 |
-| [GitVital](https://github.com/bugsNburgers/GitVital) | GitHub 项目是否健康活跃？ | 无 | 基于元数据 | **强** | 无 | 否 |
-| [Lighthouse](https://github.com/GoogleChrome/lighthouse) | 已部署网页是否快速、可访问？ | 仅浏览器 | 无 | 无 | **强** | 是 |
+也就是说，它不只是告诉你“缺 README”或者“没有 License”，而是先告诉你这个项目启动前最需要处理什么。
 
-### 目前做得比较好的地方
+## 当前支持范围
 
-- 能发现 GitHub 元数据看不到的本机环境和真实路径问题。
-- 零运行时依赖、无需账号、无遥测、本地完成。
-- 同一份扫描结果支持终端、JSON、HTML 和 GitHub Action。
-- 核心功能聚焦，同时允许显式加载团队插件。
+当前规则主要覆盖：
 
-### 仍需改进的地方
+- Node.js 项目和 monorepo workspace
+- Python 项目，包括常见 Flask、FastAPI、Django 入口
+- Docker 和 Docker Compose
+- `.env.example` 与本地环境文件
+- npm、pnpm、Yarn、Bun、Python、Git、Docker、Docker Compose 运行时
+- Dockerfile、Compose volume、本地路径、Makefile 中的包脚本引用
+- 高置信度凭证泄露风险
 
-- 仍处于早期阶段，规则数量少于成熟专项工具。
-- 当前需要 Node.js 18.17 或更高版本启动。
-- 目前提供修复建议，但不会自动修改项目文件。
-- 不替代漏洞扫描、网页性能测试或长期维护者分析。
+C++、Java、Go、Rust 等生态目前不是深度支持范围。如果主技术栈不受支持，SetupLens 会显示 `Unsupported / Not scored`，不会给出容易误导用户的高分。
 
-目前我只加入能够指向具体文件、命令或配置项的检查。以后可能增加可选的 AI 解释，但底层问题应该在没有模型时也能稳定复现。
-
-## 输出与 CI
+## 输出格式
 
 ```bash
 setuplens scan .
+setuplens scan . --show-all
 setuplens scan . --format json --output setuplens-report.json
 setuplens scan . --format html --output setuplens-report.html
 setuplens scan . --threshold 80
 setuplens scan . --plugin ./examples/custom-plugin.mjs
 ```
 
-## 评分方式
+JSON 输出包含 `startup` 字段，其中包括：
 
-主分数只回答一个问题：**这个仓库在当前电脑上是否已经准备好运行？** 它由 `setup` 范围的检查计算，包括运行时、依赖、配置、路径、安全、扫描覆盖率，以及默认的插件检查。
+- `status`: `ready`、`needs_setup`、`blocked` 或 `unsupported`
+- `setupCommands`: 建议先执行的准备命令
+- `runCommands`: 可能的启动命令
+- `blockers`: 会阻止启动的确定性问题
+- `warnings`: 可能影响启动的准备项
+- `risks`: 安全风险
 
-README、许可证、`.gitignore`、CI 和测试覆盖属于独立的 `hygiene` 范围。它们仍会显示，并拥有单独的分数与摘要，但不会降低启动就绪分数。`--threshold` 和 GitHub Action 阈值均使用启动就绪分数。
+## 和普通检查工具有什么不同
 
-当仓库为空、无法识别主技术栈，或主技术栈不在支持范围内时，SetupLens 会显示 `Unsupported / Not scored`，而不是给出可能误导用户的数字等级。通用的仓库规范和安全观察仍然显示，但不能据此证明该项目能够运行。无法计算就绪分数时，阈值检查会以退出码 `2` 结束；有效分数低于指定阈值时仍使用退出码 `1`。
+SetupLens 不想替代 IDE、Docker、包管理器或漏洞扫描器。它的定位更窄：
 
-在 JSON 输出中，`summary` 表示启动就绪统计，`allSummary` 表示全部检查统计，`scopes` 则包含 setup 与 hygiene 各自的分数。`scorable`、`scoreStatus`、`notScoredReason` 和 `scoreMessage` 用于说明数字分数是否有效。`primaryStack`、`primaryStacks` 和 `stackEvidence` 会说明主技术栈、支持技术栈及其清单证据。
+**在正式运行项目之前，先把启动路径和高影响阻塞项集中展示出来。**
 
-## 我正在做什么
+仓库规范检查依然有用，但它们不应该压过真正影响启动的问题。所以默认输出会隐藏大量 PASS 和低影响 hygiene 项，只在 `--show-all` 中完整展示。
 
-详细的版本进入条件和暂缓方向记录在[版本路线](ROADMAP.zh-CN.md)中。当前版本线仍为 `v0.1.x`；`v0.2.0-alpha.1` 将用于冻结 pilot 版本，稳定的 `v0.2.0` 必须完成计划中的实验与分发证据。
+## 当前状态
 
-- **现在：** 完成 10 个 pilot 仓库的 Pass A、Pass B 和 Pass C 人工审核，研究范围继续锁定为 Node.js、Python 和 Docker。
-- **下一步：** 找到 5 个真实外部用户，记录 3 个成功发现真实问题的案例，获得至少 1 条外部 Issue 或反馈，并制作一个 30 秒前后对比演示。
-- **pilot 之后：** 冻结正式实验 commit，重新扫描合格的 holdout 仓库，并计算 Precision、Recall、F1、置信区间和诊断时间差异。
-- **以后：** 评估 npm 与 GitHub Marketplace 分发；只有证据支持扩展时，才重新考虑 Java、Go、Rust 的深度支持。
+详细的版本进入条件和暂缓方向记录在[版本路线](ROADMAP.zh-CN.md)中。当前 `0.2.0-alpha.1` 方向会继续把 `doctor` 做成更强的仓库启动医生：adapter、启动计划、probe、日志分类和下一步行动会优先于单纯的速度承诺。
 
-现有 Java、Go、Rust 清单检测会保留为实验性边界行为，但暂停新增这些生态的规则。带有最小复现的 issue 对我最有帮助。
+SetupLens 仍然是早期产品预览版，不是成熟稳定工具。当前已经具备：
 
-## 开发
+- 46 项自动化测试
+- Windows、Linux、macOS CI
+- setup 与 hygiene 分离
+- 不支持技术栈不打分
+- 启动诊断、准备命令、运行命令和阻塞项展示
+- 终端、JSON、HTML、GitHub Action 输出
+
+接下来会继续优先提升真实使用价值，而不是盲目扩展更多语言。
+
+## 本地开发
 
 ```bash
 git clone https://github.com/Milankunderzzz/SetupLens.git
@@ -129,12 +121,6 @@ npm test
 node ./bin/setuplens.js scan .
 ```
 
-扫描运行时只使用 Node.js 内置模块。开发依赖仅用于生成 README 演示 GIF。
-
-## 参与项目
-
-这是一个单人维护的早期项目。我尤其需要误报案例、跨平台测试和小而明确的规则改进，提交前请阅读 [CONTRIBUTING.md](CONTRIBUTING.md) 与 [SECURITY.md](SECURITY.md)。
-
-## 许可证
+## License
 
 [MIT](LICENSE)
