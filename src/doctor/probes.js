@@ -35,13 +35,17 @@ function appendOutput(current, chunk) {
   return next.slice(0, MAX_OUTPUT);
 }
 
-function killProcessTree(child) {
+function killProcessTree(child, signal = 'SIGTERM') {
   if (!child.pid) return;
   if (process.platform === 'win32') {
     spawnSync('taskkill', ['/pid', String(child.pid), '/T', '/F'], { windowsHide: true, stdio: 'ignore' });
     return;
   }
-  child.kill('SIGTERM');
+  try {
+    process.kill(-child.pid, signal);
+  } catch {
+    child.kill(signal);
+  }
 }
 
 export function commandDisplay(command, args = []) {
@@ -79,6 +83,7 @@ export async function runProbe(root, probe, options = {}) {
     cwd,
     encoding: 'utf8',
     windowsHide: true,
+    detached: process.platform !== 'win32',
     env: {
       ...process.env,
       CI: process.env.CI ?? 'true',
@@ -86,6 +91,7 @@ export async function runProbe(root, probe, options = {}) {
     },
     shell: false
   });
+  let forceKillTimer = null;
   const finished = new Promise((resolve) => {
     child.stdout?.on('data', (chunk) => { stdout = appendOutput(stdout, chunk); });
     child.stderr?.on('data', (chunk) => { stderr = appendOutput(stderr, chunk); });
@@ -95,9 +101,11 @@ export async function runProbe(root, probe, options = {}) {
   const timer = setTimeout(() => {
     timedOut = true;
     killProcessTree(child);
+    forceKillTimer = setTimeout(() => killProcessTree(child, 'SIGKILL'), 1000);
   }, timeoutMs);
   const result = await finished;
   clearTimeout(timer);
+  if (forceKillTimer) clearTimeout(forceKillTimer);
   const durationMs = Math.max(1, Math.round(performance.now() - started));
   const rawStatus = timedOut ? 'timeout' : result.code === 0 ? 'pass' : 'fail';
   const output = {
