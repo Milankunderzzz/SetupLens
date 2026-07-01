@@ -16,7 +16,10 @@ This alpha turns SetupLens from a static readiness scanner into a broader local 
 - Deep doctor rules for Next.js, Vite, Prisma, Django, FastAPI, Laravel, Rails, Spring Boot, .NET web apps, Go services, Rust binaries, Turbo, and Nx.
 - `doctor --fix-plan` and `doctor --apply safe` for whitelisted local repairs such as copying env templates, appending env ignore rules, and creating missing Compose env placeholders without overwriting files.
 - Failure corpus evaluation with sanitized fixtures, log-classification expectations, safe-fix assertions, and `npm run corpus`.
-- Optional `doctor --probe` execution with bounded local command probes and timeout control.
+- Failure corpus metrics for diagnostic hit rate, first root-cause ranking, safe-fix generation, false blockers, and ecosystem coverage.
+- Optional `doctor --probe` execution with bounded local command probes, safe default probe policy, explicit `--probe-startup`, process-tree timeout cleanup, ready-output detection, and probe traces.
+- `doctor-suite` batch diagnosis for real-project validation with ecosystem coverage, failure-type distribution, and unclassified probe logs.
+- Doctor HTML action-panel reports.
 - Failure-log classification for missing environment variables, missing files, missing modules, port conflicts, database failures, pending migrations, private registry authentication failures, dependency resolution errors, Docker daemon failures, incompatible runtime versions, native build tool failures, TLS/certificate errors, DNS/network failures, lockfile mismatches, permission problems, configuration parse errors, and compile errors.
 - Doctor JSON and terminal reports with likely root causes, next actions, planned probes, and probe results.
 - Startup diagnosis model with `ready`, `needs_setup`, `blocked`, and `unsupported` verdicts.
@@ -31,7 +34,8 @@ This alpha turns SetupLens from a static readiness scanner into a broader local 
 - Product positioning now emphasizes broad local startup diagnosis instead of a 30-second scan promise.
 - Main package description and scan report tagline now point users to doctor mode for deeper investigation.
 - Terminal output now defaults to the practical startup path instead of printing every pass/fail item.
-- Doctor terminal and JSON output now include safe/manual fix-plan candidates and applied safe-fix results.
+- Doctor terminal, JSON, and HTML output now include an action panel with confidence, ranked root causes, next command, safe/manual fixes, probe trace, and unknowns.
+- Safe fixes now include conservative `tsconfig.json` and Vite `index.html` creation recipes, while package script and env-template patches remain manual.
 - Real-project failures can now be distilled into corpus cases and run as part of the automated test suite.
 - README, license, CI, tests, and other repository hygiene findings are hidden from the default terminal report.
 - Lockfile and other non-blocking hygiene-style setup warnings no longer dominate the startup summary.

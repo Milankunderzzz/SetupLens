@@ -47,6 +47,10 @@ function checkIncludes(failures, label, actualValues, expectedValues) {
   }
 }
 
+function countMatches(actualValues, expectedValues) {
+  return asArray(expectedValues).filter((expected) => hasExpected(actualValues, expected)).length;
+}
+
 function checkFiles(root, failures, expectedFiles) {
   return Promise.all(asArray(expectedFiles).map(async (item) => {
     const target = path.join(root, item.path);
@@ -149,6 +153,11 @@ export async function evaluateCase(testCase, options = {}) {
     const report = await doctor(root, { timeoutMs: options.timeoutMs ?? 3000 });
     checkReport(testCase, report, failures);
     checkLogSamples(testCase, failures);
+    const expectedRootCauses = asArray(testCase.expect?.rootCauseTypes);
+    const actualRootCauses = report.diagnosis.rootCauses.map((cause) => cause.type);
+    const expectedSafeFixes = asArray(testCase.expect?.safeFixTitles);
+    const actualSafeFixes = report.diagnosis.fixPlan?.fixes?.filter((fix) => fix.canApply).map((fix) => fix.title) ?? [];
+    const falseBlocker = testCase.expect?.status !== 'blocked' && report.status === 'blocked';
 
     if (testCase.expect?.applySafe) {
       await doctor(root, { timeoutMs: options.timeoutMs ?? 3000, apply: 'safe' });
@@ -161,11 +170,62 @@ export async function evaluateCase(testCase, options = {}) {
       source: testCase.source,
       passed: failures.length === 0,
       failures,
-      status: report.status
+      status: report.status,
+      metrics: {
+        expectedRootCauses: expectedRootCauses.length,
+        matchedRootCauses: countMatches(actualRootCauses, expectedRootCauses),
+        firstRootCauseExpected: expectedRootCauses[0] ?? null,
+        firstRootCauseActual: actualRootCauses[0] ?? null,
+        firstRootCauseHit: expectedRootCauses.length === 0 ? null : actualRootCauses[0] === expectedRootCauses[0],
+        expectedSafeFixes: expectedSafeFixes.length,
+        matchedSafeFixes: countMatches(actualSafeFixes, expectedSafeFixes),
+        falseBlocker
+      }
     };
   } finally {
     if (!options.keep) await fs.rm(root, { recursive: true, force: true });
   }
+}
+
+function percent(numerator, denominator) {
+  if (denominator === 0) return null;
+  return Math.round((numerator / denominator) * 1000) / 10;
+}
+
+function buildMetrics(results) {
+  const rootExpected = results.reduce((total, result) => total + result.metrics.expectedRootCauses, 0);
+  const rootMatched = results.reduce((total, result) => total + result.metrics.matchedRootCauses, 0);
+  const firstEligible = results.filter((result) => result.metrics.firstRootCauseHit !== null);
+  const firstHits = firstEligible.filter((result) => result.metrics.firstRootCauseHit).length;
+  const safeExpected = results.reduce((total, result) => total + result.metrics.expectedSafeFixes, 0);
+  const safeMatched = results.reduce((total, result) => total + result.metrics.matchedSafeFixes, 0);
+  const falseBlockers = results.filter((result) => result.metrics.falseBlocker);
+  const ecosystemCounts = new Map();
+  const ecosystemPassCounts = new Map();
+  for (const result of results) {
+    for (const ecosystem of result.ecosystems) {
+      ecosystemCounts.set(ecosystem, (ecosystemCounts.get(ecosystem) ?? 0) + 1);
+      if (result.passed) ecosystemPassCounts.set(ecosystem, (ecosystemPassCounts.get(ecosystem) ?? 0) + 1);
+    }
+  }
+  const ecosystemCoverage = [...ecosystemCounts.entries()]
+    .sort((left, right) => left[0].localeCompare(right[0]))
+    .map(([ecosystem, cases]) => ({
+      ecosystem,
+      cases,
+      passed: ecosystemPassCounts.get(ecosystem) ?? 0
+    }));
+
+  return {
+    cases: results.length,
+    passed: results.filter((result) => result.passed).length,
+    diagnosticHitRate: percent(rootMatched, rootExpected),
+    rootCauseFirstRate: percent(firstHits, firstEligible.length),
+    safeFixGenerationRate: percent(safeMatched, safeExpected),
+    falseBlockerCount: falseBlockers.length,
+    falseBlockerRate: percent(falseBlockers.length, results.length),
+    ecosystemCoverage
+  };
 }
 
 export async function evaluateCorpus(options = {}) {
@@ -177,7 +237,7 @@ export async function evaluateCorpus(options = {}) {
 
   const results = [];
   for (const testCase of selected) results.push(await evaluateCase(testCase, options));
-  return { corpus, results, passed: results.every((result) => result.passed) };
+  return { corpus, results, metrics: buildMetrics(results), passed: results.every((result) => result.passed) };
 }
 
 function parseArgs(argv) {
@@ -192,6 +252,9 @@ function parseArgs(argv) {
     } else if (arg === '--corpus') {
       options.corpusPath = path.resolve(argv[index + 1]);
       index += 1;
+    } else if (arg === '--format') {
+      options.format = argv[index + 1];
+      index += 1;
     } else {
       throw new Error(`Unknown option: ${arg}`);
     }
@@ -201,12 +264,23 @@ function parseArgs(argv) {
 
 if (process.argv[1] === __filename) {
   const options = parseArgs(process.argv.slice(2));
-  const { results, passed } = await evaluateCorpus(options);
+  const { results, metrics, passed } = await evaluateCorpus(options);
+  if (options.format === 'json') {
+    process.stdout.write(`${JSON.stringify({ passed, metrics, results }, null, 2)}\n`);
+    if (!passed) process.exitCode = 1;
+  } else {
   for (const result of results) {
     const mark = result.passed ? 'PASS' : 'FAIL';
     process.stdout.write(`${mark} ${result.id} (${result.ecosystems.join(', ')}) -> ${result.status}\n`);
     for (const failure of result.failures) process.stdout.write(`  - ${failure}\n`);
   }
-  process.stdout.write(`\nFailure corpus: ${results.filter((result) => result.passed).length}/${results.length} passed\n`);
+    process.stdout.write('\nMetrics\n');
+    process.stdout.write(`  Diagnostic hit rate: ${metrics.diagnosticHitRate ?? 'n/a'}%\n`);
+    process.stdout.write(`  Root cause first: ${metrics.rootCauseFirstRate ?? 'n/a'}%\n`);
+    process.stdout.write(`  Safe fix generation: ${metrics.safeFixGenerationRate ?? 'n/a'}%\n`);
+    process.stdout.write(`  False blockers: ${metrics.falseBlockerCount} (${metrics.falseBlockerRate ?? 'n/a'}%)\n`);
+    process.stdout.write(`  Ecosystems: ${metrics.ecosystemCoverage.map((item) => `${item.ecosystem}:${item.cases}`).join(', ')}\n`);
+    process.stdout.write(`\nFailure corpus: ${metrics.passed}/${metrics.cases} passed\n`);
   if (!passed) process.exitCode = 1;
+  }
 }

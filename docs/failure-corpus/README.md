@@ -47,6 +47,7 @@ Only low-risk, local, non-overwriting repairs belong in `applySafe` expectations
 - Copying `.env.example`, `.env.sample`, or `.env.template` to a missing `.env`.
 - Appending local env ignore rules to `.gitignore`.
 - Creating empty Compose `env_file` placeholders inside the repository.
+- Creating conservative missing `tsconfig.json` and Vite `index.html` files.
 
 Anything that changes application logic, overwrites an existing file, applies migrations, installs packages, or talks to external services must stay manual.
 
@@ -56,10 +57,24 @@ Anything that changes application logic, overwrites an existing file, applies mi
 runs `doctor()`, checks the expected root causes/actions/probes/fixes, and then
 deletes the fixture. It also classifies any stored log samples.
 
+The evaluator reports:
+
+- diagnostic hit rate
+- whether the expected root cause is ranked first
+- safe-fix generation rate
+- false blocker count/rate
+- ecosystem coverage
+
 Run all cases:
 
 ```bash
 npm run corpus
+```
+
+Run all cases as JSON:
+
+```bash
+npm run corpus -- --format json
 ```
 
 Run one case:

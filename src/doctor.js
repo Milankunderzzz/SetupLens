@@ -55,6 +55,7 @@ function probeCause(result) {
     evidence: result.classification.evidence || `${result.label}: ${result.display}`,
     recommendation: result.classification.recommendation,
     confidence: result.status === 'fail' ? 'high' : 'medium',
+    subject: result.classification.subject ?? null,
     probe: result.id
   };
 }
@@ -107,8 +108,131 @@ function summarizeAdapters(adapters) {
     id: adapter.id,
     title: adapter.title,
     confidence: adapter.confidence,
+    explanation: explainAdapter(adapter),
     signals: adapter.signals
   }));
+}
+
+function confidenceWeight(value) {
+  if (value === 'high') return 3;
+  if (value === 'medium') return 2;
+  return 1;
+}
+
+function severityWeight(value) {
+  if (value === 'fail') return 3;
+  if (value === 'warn') return 2;
+  return 1;
+}
+
+function rankRootCauses(causes) {
+  return [...causes]
+    .sort((left, right) => severityWeight(right.severity) - severityWeight(left.severity)
+      || confidenceWeight(right.confidence) - confidenceWeight(left.confidence)
+      || (left.probe ? -1 : 0) - (right.probe ? -1 : 0))
+    .map((cause, index) => ({
+      ...cause,
+      rank: index + 1,
+      explanation: explainCause(cause)
+    }));
+}
+
+function signalSummary(signals) {
+  if (!signals) return [];
+  const values = [];
+  if (Array.isArray(signals.frameworks) && signals.frameworks.length > 0) values.push(`frameworks: ${signals.frameworks.join(', ')}`);
+  if (Array.isArray(signals.projects) && signals.projects.length > 0) values.push(`${signals.projects.length} project file(s)`);
+  if (Array.isArray(signals.packages) && signals.packages.length > 0) values.push(`${signals.packages.length} package manifest(s)`);
+  if (Array.isArray(signals.composeFiles) && signals.composeFiles.length > 0) values.push(`Compose files: ${signals.composeFiles.join(', ')}`);
+  if (Array.isArray(signals.schemaFiles) && signals.schemaFiles.length > 0) values.push(`Prisma schemas: ${signals.schemaFiles.map((item) => item.path).join(', ')}`);
+  if (Array.isArray(signals.commandDirs) && signals.commandDirs.length > 0) values.push(`Go command dirs: ${signals.commandDirs.join(', ')}`);
+  if (Array.isArray(signals.binTargets) && signals.binTargets.length > 0) values.push(`Rust bin targets: ${signals.binTargets.join(', ')}`);
+  if (Array.isArray(signals.tools) && signals.tools.length > 0) values.push(`workspace tools: ${signals.tools.join(', ')}`);
+  return values.slice(0, 4);
+}
+
+function explainAdapter(adapter) {
+  const evidence = signalSummary(adapter.signals);
+  return {
+    question: `Why SetupLens thinks this is ${adapter.title}`,
+    answer: evidence.length > 0
+      ? `${adapter.confidence} confidence from ${evidence.join('; ')}.`
+      : `${adapter.confidence} confidence from adapter-specific manifest or file evidence.`
+  };
+}
+
+function explainCause(cause) {
+  const severity = cause.severity === 'fail' ? 'blocker' : 'setup warning';
+  const evidence = cause.evidence ? ` Evidence: ${cause.evidence}` : '';
+  return `${cause.title} is ranked as a ${severity} from ${cause.source} evidence.${evidence}`;
+}
+
+function explainFix(fix) {
+  if (fix.canApply) return fix.reason ?? 'This safe fix only creates or appends local files and refuses overwrites.';
+  return fix.reason ?? 'This repair needs user review because it can affect project behavior or external state.';
+}
+
+function buildConfidence({ adapters, rootCauses, probesEnabled, probes }) {
+  const highAdapters = adapters.filter((adapter) => adapter.confidence === 'high').length;
+  const highCauses = rootCauses.filter((cause) => cause.confidence === 'high').length;
+  const unclassified = probes.filter((probe) => probe.classification?.type === 'unclassified_command_failure').length;
+  let score = 45 + highAdapters * 8 + highCauses * 10 + (probesEnabled ? 8 : 0) - unclassified * 12;
+  if (rootCauses.length === 0) score -= 8;
+  score = Math.max(0, Math.min(100, score));
+  const level = score >= 80 ? 'high' : score >= 55 ? 'medium' : 'low';
+  return {
+    level,
+    score,
+    reasons: [
+      `${adapters.length} adapter${adapters.length === 1 ? '' : 's'} matched (${highAdapters} high-confidence).`,
+      `${rootCauses.length} root cause${rootCauses.length === 1 ? '' : 's'} ranked (${highCauses} high-confidence).`,
+      probesEnabled ? `${probes.length} probe result${probes.length === 1 ? '' : 's'} included.` : 'Command probes were not executed.',
+      unclassified > 0 ? `${unclassified} probe failure${unclassified === 1 ? '' : 's'} remained unclassified.` : 'No unclassified probe failures were observed.'
+    ]
+  };
+}
+
+function buildUnknowns({ probesEnabled, probes, rootCauses }) {
+  const unknowns = [];
+  if (!probesEnabled) unknowns.push('Command probes were not run, so static diagnosis may miss machine-specific failures.');
+  if (probes.some((probe) => probe.kind === 'startup' && probe.status === 'skipped')) {
+    unknowns.push('Startup probes were skipped by the safe probe policy; long-running service readiness was not verified.');
+  }
+  if (probes.some((probe) => probe.classification?.type === 'unclassified_command_failure')) {
+    unknowns.push('At least one command failed with an unclassified log pattern; add it to the failure corpus if it is reproducible.');
+  }
+  if (rootCauses.length === 0) unknowns.push('No root cause was found; run probes or add a corpus case if the project still fails.');
+  return [...new Set(unknowns)];
+}
+
+function buildActionPanel({ rootCauses, nextActions, fixPlan, probes, unknowns, confidence }) {
+  const safeFixes = fixPlan.fixes.filter((fix) => fix.canApply).map((fix) => ({ ...fix, explanation: explainFix(fix) }));
+  const manualFixes = fixPlan.fixes.filter((fix) => !fix.canApply).map((fix) => ({ ...fix, explanation: explainFix(fix) }));
+  return {
+    confidence,
+    topRootCause: rootCauses[0] ?? null,
+    rootCauses: rootCauses.slice(0, 5),
+    nextCommand: nextActions.find((action) => action.command) ?? null,
+    nextActions: nextActions.slice(0, 5),
+    safeFixes: safeFixes.slice(0, 6),
+    manualFixes: manualFixes.slice(0, 6),
+    probeTrace: {
+      total: probes.length,
+      passed: probes.filter((probe) => probe.status === 'pass').length,
+      failed: probes.filter((probe) => probe.status === 'fail').length,
+      skipped: probes.filter((probe) => probe.status === 'skipped').length,
+      readyDetected: probes.filter((probe) => probe.trace?.readyDetected).length,
+      results: probes.map((probe) => ({
+        id: probe.id,
+        kind: probe.kind,
+        status: probe.status,
+        rawStatus: probe.rawStatus,
+        classification: probe.classification?.type ?? null,
+        trace: probe.trace
+      }))
+    },
+    unknowns
+  };
 }
 
 export async function doctor(target = '.', options = {}) {
@@ -124,7 +248,7 @@ export async function doctor(target = '.', options = {}) {
   const plannedProbes = uniqueBy(adapters.flatMap((adapter) => adapter.probes ?? []), (probe) => probe.id);
   const probesEnabled = options.probe === true;
   const probes = probesEnabled
-    ? runProbes(root, plannedProbes, { timeoutMs: options.timeoutMs ?? 8000 })
+    ? await runProbes(root, plannedProbes, { timeoutMs: options.timeoutMs ?? 8000, includeStartup: options.probeStartup === true })
     : [];
   const hasPrimaryAdapter = scanReport.primaryStacks?.some((stack) => adapters.some((adapter) => adapter.id === stack));
   const startupWarnings = hasPrimaryAdapter
@@ -137,7 +261,7 @@ export async function doctor(target = '.', options = {}) {
     ...adapters.flatMap((adapter) => (adapter.issues ?? []).map((issue) => issueCause(adapter, issue)))
   ];
   const probeCauses = probes.map(probeCause).filter(Boolean);
-  const rootCauses = uniqueBy([...staticCauses, ...probeCauses], (cause) => `${cause.type}:${cause.evidence}`);
+  const rootCauses = rankRootCauses(uniqueBy([...staticCauses, ...probeCauses], (cause) => `${cause.type}:${cause.evidence}`));
   const adapterActions = adapters.flatMap((adapter) => adapter.actions ?? []).map(normalizeAction);
   const fixActions = rootCauses.map(actionFromCause).filter(Boolean);
   const nextActions = uniqueBy([...fixActions, ...adapterActions], (action) => action.command ?? action.description).slice(0, 12);
@@ -145,6 +269,10 @@ export async function doctor(target = '.', options = {}) {
   const fixPlan = options.apply === 'safe'
     ? await applySafeFixes(root, buildFixPlan({ index, adapters, rootCauses }))
     : buildFixPlan({ index, adapters, rootCauses });
+  fixPlan.fixes = fixPlan.fixes.map((fix) => ({ ...fix, explanation: explainFix(fix) }));
+  const confidence = buildConfidence({ adapters, rootCauses, probesEnabled, probes });
+  const unknowns = buildUnknowns({ probesEnabled, probes, rootCauses });
+  const actionPanel = buildActionPanel({ rootCauses, nextActions, fixPlan, probes, unknowns, confidence });
 
   return {
     schemaVersion: '2.0-doctor',
@@ -176,7 +304,10 @@ export async function doctor(target = '.', options = {}) {
     diagnosis: {
       rootCauses,
       nextActions,
-      fixPlan
+      fixPlan,
+      confidence,
+      unknowns,
+      actionPanel
     },
     probes: {
       enabled: probesEnabled,

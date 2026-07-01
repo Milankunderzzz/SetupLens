@@ -93,16 +93,19 @@ Startup blockers
 - 高置信度凭证泄露风险
 - fix-plan 修复计划，以及 `doctor --apply safe` 白名单安全修复
 
-`doctor --apply safe` 只会执行低风险、本地、可解释的修复，例如从 `.env.example` 复制缺失的 `.env`、补充本地 env 的 `.gitignore` 规则、创建缺失的 Compose env 占位文件。它不会覆盖已有文件，也不会写出仓库目录。主技术栈仍不受支持时，SetupLens 会显示 `Unsupported / Not scored`，不会给出容易误导用户的高分。
+`doctor --apply safe` 只会执行低风险、本地、可解释的修复，例如从 `.env.example` 复制缺失的 `.env`、补充本地 env 的 `.gitignore` 规则、创建缺失的 Compose env 占位文件、创建保守的 `tsconfig.json` 或 Vite `index.html`。它不会覆盖已有文件，也不会写出仓库目录。package scripts 和 env template patch 仍然只作为人工 review 建议。主技术栈仍不受支持时，SetupLens 会显示 `Unsupported / Not scored`，不会给出容易误导用户的高分。
 
 ## 输出格式
 
 ```bash
 setuplens doctor .
 setuplens doctor . --probe
+setuplens doctor . --probe --probe-startup
 setuplens doctor . --fix-plan
 setuplens doctor . --apply safe
+setuplens doctor . --format html --output setuplens-doctor.html
 setuplens doctor . --format json --output setuplens-doctor.json
+setuplens doctor-suite ./repos --format json
 setuplens scan .
 setuplens scan . --show-all
 setuplens scan . --format json --output setuplens-report.json
@@ -134,14 +137,17 @@ SetupLens 不想替代 IDE、Docker、包管理器或漏洞扫描器。它的定
 
 SetupLens 仍然是早期产品预览版，不是成熟稳定工具。当前已经具备：
 
-- 61 项自动化测试
+- 65 项自动化测试
 - Windows、Linux、macOS CI
 - setup 与 hygiene 分离
 - 不支持技术栈不打分
 - 启动诊断、准备命令、运行命令和阻塞项展示
 - 面向 Next/Vite/Prisma、Django/FastAPI、Laravel、Rails、Spring、.NET Web、Go service、Rust binary、Turbo/Nx 的深度 doctor 规则
 - failure corpus：把真实坏项目和提炼后的失败模式沉淀成可复现 fixture 与回归测试
-- fix-plan 修复计划，以及只执行白名单低风险修改的 `doctor --apply safe`
+- corpus metrics：诊断命中率、首因命中率、safe-fix 命中率、误报 blocker、生态覆盖
+- 默认安全 probe、显式 `--probe-startup`、probe trace、ready output 识别
+- terminal、JSON、HTML action panel 报告
+- fix-plan 修复计划，以及只执行白名单低风险修改和安全配方的 `doctor --apply safe`
 - 终端、JSON、HTML、GitHub Action 输出
 
 接下来会继续优先提升真实使用价值，而不是盲目扩展更多语言。
@@ -157,6 +163,7 @@ npm test
 npm run corpus
 node ./bin/setuplens.js scan .
 node ./bin/setuplens.js doctor . --probe
+node ./bin/setuplens.js doctor-suite ./repos --format json
 ```
 
 ## License

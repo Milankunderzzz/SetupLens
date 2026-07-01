@@ -6,6 +6,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { doctor } from '../src/doctor.js';
+import { doctorSuite } from '../src/doctor-suite.js';
 import { classifyLog } from '../src/doctor/error-classifier.js';
 import { renderDoctorTerminal } from '../src/reporters/doctor-terminal.js';
 
@@ -66,14 +67,39 @@ test('doctor probe classifies real startup failures into root causes', async (t)
   });
   t.after(() => fs.rm(root, { recursive: true, force: true }));
 
-  const report = await doctor(root, { probe: true, timeoutMs: 3000 });
+  const safeReport = await doctor(root, { probe: true, timeoutMs: 3000 });
+  const skippedStartup = safeReport.probes.results.find((item) => item.id.includes('node.script'));
+  assert.equal(skippedStartup.status, 'skipped');
+  assert.equal(skippedStartup.trace.skippedByPolicy, true);
+  assert.ok(safeReport.diagnosis.unknowns.some((item) => /Startup probes were skipped/.test(item)));
+
+  const report = await doctor(root, { probe: true, probeStartup: true, timeoutMs: 3000 });
   const startupProbe = report.probes.results.find((item) => item.id.includes('node.script'));
 
   assert.equal(report.status, 'blocked');
   assert.equal(startupProbe.status, 'fail');
+  assert.equal(startupProbe.trace.policy, 'startup-enabled');
   assert.equal(startupProbe.classification.type, 'missing_env_var');
   assert.ok(report.diagnosis.rootCauses.some((item) => item.type === 'missing_env_var'));
+  assert.ok(report.diagnosis.fixPlan.fixes.some((item) => item.id === 'manual.probe.env.DATABASE_URL'));
   assert.ok(report.diagnosis.nextActions.some((item) => /DATABASE_URL/.test(item.description ?? '')));
+  assert.equal(report.diagnosis.actionPanel.topRootCause.type, 'missing_env_var');
+});
+
+test('startup probe treats ready output before timeout as a pass signal', async (t) => {
+  const root = await fixture({
+    'package.json': JSON.stringify({ scripts: { dev: 'node ready.js' } }),
+    'ready.js': 'console.log("server ready and listening on http://localhost:3000"); setInterval(() => {}, 1000);\n'
+  });
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+
+  const report = await doctor(root, { probe: true, probeStartup: true, timeoutMs: 1200 });
+  const startupProbe = report.probes.results.find((item) => item.id.includes('node.script'));
+
+  assert.equal(startupProbe.rawStatus, 'timeout');
+  assert.equal(startupProbe.status, 'pass');
+  assert.equal(startupProbe.classification.type, 'startup_appears_ready');
+  assert.equal(startupProbe.trace.readyDetected, true);
 });
 
 test('doctor command supports machine-readable json output', async (t) => {
@@ -93,6 +119,27 @@ test('doctor command supports machine-readable json output', async (t) => {
   assert.equal(parsed.schemaVersion, '2.0-doctor');
   assert.equal(parsed.project.primaryStack, 'node');
   assert.ok(parsed.probes.planned.length >= 2);
+  assert.ok(parsed.diagnosis.confidence.score >= 0);
+  assert.ok(parsed.diagnosis.actionPanel);
+});
+
+test('doctor command writes an HTML action panel report', async (t) => {
+  const root = await fixture({
+    'package.json': JSON.stringify({ name: 'html-doctor', scripts: { start: 'node index.js' } }),
+    'index.js': 'console.log("ok");\n'
+  });
+  const output = path.join(root, 'doctor.html');
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+
+  const result = spawnSync(process.execPath, [cliPath, 'doctor', root, '--format', 'html', '--output', output, '--timeout', '3000'], {
+    encoding: 'utf8',
+    windowsHide: true
+  });
+
+  assert.equal(result.status, 0, result.stderr);
+  const html = await fs.readFile(output, 'utf8');
+  assert.match(html, /Action Panel/);
+  assert.match(html, /SetupLens Doctor/);
 });
 
 test('doctor command shows terminal fix plan only when requested', async (t) => {
@@ -187,6 +234,11 @@ test('error classifier recognizes broad setup failure families', () => {
   assert.equal(classifyLog('SELF_SIGNED_CERT_IN_CHAIN certificate verify failed').type, 'tls_certificate');
   assert.equal(classifyLog('gyp ERR! stack Error: not found: make').type, 'native_build_tools_missing');
   assert.equal(classifyLog('NETSDK1045: The current .NET SDK does not support targeting .NET 9.0').type, 'unsupported_runtime_version');
+  assert.equal(classifyLog("Error: Couldn't find any `pages` or `app` directory.").type, 'next_missing_routes');
+  assert.equal(classifyLog('Prisma error P1001: Cannot reach database server at localhost:5432').type, 'prisma_database_unreachable');
+  assert.equal(classifyLog('django.core.exceptions.ImproperlyConfigured: Requested setting INSTALLED_APPS, but settings are not configured').type, 'django_settings_error');
+  assert.equal(classifyLog('APPLICATION FAILED TO START\nFailed to configure a DataSource').type, 'spring_datasource_config');
+  assert.equal(classifyLog('error: package demo does not have feature postgres').type, 'rust_feature_mismatch');
 });
 
 test('doctor adds deep Next, Vite, Prisma, and TypeScript rules', async (t) => {
@@ -255,6 +307,25 @@ test('safe fix plan can create local env files and compose env placeholders', as
   assert.ok(applied.diagnosis.fixPlan.applied.some((item) => item.id.startsWith('safe.laravel.copy-env') && item.status === 'applied'));
   assert.equal(await fs.readFile(path.join(root, '.env'), 'utf8'), 'APP_KEY=\nDB_DATABASE=local\n');
   assert.equal(await fs.readFile(path.join(root, '.env.compose'), 'utf8'), '# Local Compose environment values\n');
+});
+
+test('safe fix recipes create tsconfig and Vite index without overwriting', async (t) => {
+  const root = await fixture({
+    'package.json': JSON.stringify({
+      scripts: { dev: 'vite' },
+      dependencies: { vite: '^7.0.0', typescript: '^5.0.0' }
+    }),
+    'src/main.ts': 'console.log("boot");\n'
+  });
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+
+  const planned = await doctor(root);
+  assert.ok(planned.diagnosis.fixPlan.fixes.some((item) => item.id === 'safe.typescript.create-tsconfig'));
+  assert.ok(planned.diagnosis.fixPlan.fixes.some((item) => item.id === 'safe.vite.create-index-html'));
+
+  await doctor(root, { apply: 'safe' });
+  assert.match(await fs.readFile(path.join(root, 'tsconfig.json'), 'utf8'), /"moduleResolution": "Bundler"/);
+  assert.match(await fs.readFile(path.join(root, 'index.html'), 'utf8'), /src\/main\.ts/);
 });
 
 test('doctor adds deep Laravel, Rails, Spring, and .NET web rules', async (t) => {
@@ -337,4 +408,35 @@ test('doctor deepens Go service and Rust binary signals', async (t) => {
   assert.deepEqual(rust.signals.binTargets, ['src/bin/worker.rs']);
   assert.ok(rust.signals.serviceSignals.envKeys.includes('DATABASE_URL'));
   assert.ok(report.diagnosis.nextActions.some((item) => item.command === 'cargo run --bin worker'));
+});
+
+test('doctor-suite summarizes repositories, ecosystems, and failure types', async (t) => {
+  const root = await fixture({
+    'app-one/package.json': JSON.stringify({
+      scripts: { dev: 'vite' },
+      dependencies: { vite: '^7.0.0', typescript: '^5.0.0' }
+    }),
+    'app-one/src/main.ts': 'console.log("one");\n',
+    'app-two/go.mod': 'module example.com/service\n\ngo 1.22\n',
+    'app-two/internal/server/server.go': 'package server\nimport "net/http"\nfunc Run() { _ = http.ListenAndServe(":8080", nil) }\n'
+  });
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+
+  const report = await doctorSuite(root);
+  const failureTypes = report.summary.failureTypeDistribution.map((item) => item.name);
+  const ecosystems = report.summary.ecosystemCoverage.map((item) => item.name);
+
+  assert.equal(report.schemaVersion, '1.0-doctor-suite');
+  assert.equal(report.summary.total, 2);
+  assert.ok(ecosystems.includes('Vite'));
+  assert.ok(ecosystems.includes('go'));
+  assert.ok(failureTypes.includes('vite_missing_index_html'));
+  assert.ok(failureTypes.includes('go_service_missing_cmd_entry'));
+
+  const cli = spawnSync(process.execPath, [cliPath, 'doctor-suite', root, '--format', 'json', '--timeout', '3000'], {
+    encoding: 'utf8',
+    windowsHide: true
+  });
+  assert.equal(cli.status, 0, cli.stderr);
+  assert.equal(JSON.parse(cli.stdout).summary.total, 2);
 });
