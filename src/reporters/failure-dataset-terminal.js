@@ -41,6 +41,10 @@ function renderCollection(report, paint) {
     countLines('Clone statuses', report.summary.cloneStatuses, lines, paint);
     lines.push('');
   }
+  if (report.summary.cloneFailureTypes?.length > 0) {
+    countLines('Clone failure types', report.summary.cloneFailureTypes, lines, paint);
+    lines.push('');
+  }
   if (report.summary.scanStatuses.length > 0) {
     countLines('Scan statuses', report.summary.scanStatuses, lines, paint);
     lines.push('');

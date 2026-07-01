@@ -89,9 +89,11 @@ The 50-source manifest covers 12 discovery buckets:
 
 ## Follow-Up Backlog
 
+- Completed after this review: aggregate high-volume `missing_env_reference` causes so reports show one evidence-rich env conclusion instead of hundreds of repeated warnings.
+- Completed after this review: aggregate repeated Compose `env_file` blockers by target path while preserving examples and safe-fix opportunities.
+- Completed after this review: classify Windows path-length clone failures as `windows_path_too_long` instead of a generic collection error.
 - Add a `--from-manifest` mode so clone and scan can resume from an existing committed source manifest instead of rediscovering.
 - Add repository size and path-risk filters to avoid very large or Windows-hostile repositories when the goal is fast corpus growth.
 - Add optional parallel clone/scan workers with bounded concurrency.
 - Promote the best blocked candidates into sanitized minimal fixtures in `docs/failure-corpus/cases.json`.
 - Run a second pass with `--probe` on the promotion queue only, not on all 50 repositories.
-
