@@ -74,3 +74,4 @@ The review separates:
 
 Only sanitized, minimal reproductions should be promoted into the committed failure corpus. The manifest and per-repository reports provide the evidence needed to recreate the source failure before reducing it into a fixture.
 
+The first 50-source scan review is recorded in [scan-review-2026-07-01.md](scan-review-2026-07-01.md). It keeps the public aggregate evidence and follow-up backlog without committing third-party repository contents or local absolute report paths.
