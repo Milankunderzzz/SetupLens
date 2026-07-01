@@ -106,6 +106,9 @@ setuplens doctor . --apply safe
 setuplens doctor . --format html --output setuplens-doctor.html
 setuplens doctor . --format json --output setuplens-doctor.json
 setuplens doctor-suite ./repos --format json
+setuplens failure-dataset collect --limit 50 --format json
+setuplens failure-dataset collect --limit 50 --clone --scan
+setuplens failure-dataset review --input .setuplens/failure-dataset/sources.json
 setuplens scan .
 setuplens scan . --show-all
 setuplens scan . --format json --output setuplens-report.json
@@ -131,19 +134,44 @@ SetupLens 不想替代 IDE、Docker、包管理器或漏洞扫描器。它的定
 
 仓库规范检查依然有用，但它们不应该压过真正影响启动的问题。所以默认输出会隐藏大量 PASS 和低影响 hygiene 项，只在 `--show-all` 中完整展示。
 
+## 真实失败数据集闭环
+
+README 演示不应该只停留在一次 benchmark。现在 SetupLens 有一条更可复现的证据闭环：自动收集公开候选项目、记录来源证据、可选克隆和扫描、再把扫描结果变成 corpus 候选与 classifier backlog。
+
+先拉取 50 个公开候选项目的来源清单：
+
+```bash
+setuplens failure-dataset collect --limit 50 --format json --output docs/failure-dataset/sources.json
+```
+
+再把第三方仓库克隆到 `.setuplens/` 并运行 doctor 扫描：
+
+```bash
+setuplens failure-dataset collect --limit 50 --clone --scan --format json --output .setuplens/failure-dataset/sources.json
+```
+
+最后生成审核反馈：
+
+```bash
+setuplens failure-dataset review --input .setuplens/failure-dataset/sources.json
+```
+
+manifest 会保留仓库 URL、clone URL、默认分支、license、topics、GitHub Search query、采集时间、可选 commit、doctor 报告路径、root cause 排名、safe fix 数量、未分类日志和 unknowns。第三方源码默认只放在 `.setuplens/`，不提交进本仓库。详细流程见 [docs/failure-dataset/README.md](docs/failure-dataset/README.md)。
+
 ## 当前状态
 
 详细的版本进入条件和暂缓方向记录在[版本路线](ROADMAP.zh-CN.md)中。当前 `0.2.0-alpha.1` 方向会继续把 `doctor` 做成更强的仓库启动医生：adapter、启动计划、probe、日志分类和下一步行动会优先于单纯的速度承诺。
 
 SetupLens 仍然是早期产品预览版，不是成熟稳定工具。当前已经具备：
 
-- 69 项自动化测试
+- 72 项自动化测试
 - Windows、Linux、macOS CI
 - setup 与 hygiene 分离
 - 不支持技术栈不打分
 - 启动诊断、准备命令、运行命令和阻塞项展示
 - 面向 Next/Vite/Prisma、Django/FastAPI、Laravel、Rails、Spring、.NET Web、Go service、Rust binary、Turbo/Nx 的深度 doctor 规则
 - failure corpus：把真实坏项目和提炼后的失败模式沉淀成可复现 fixture 与回归测试
+- failure dataset intake：自动拉取 50 个公开候选项目、备案来源证据、可选扫描，并产出 corpus/classifier 审核反馈
 - corpus metrics：诊断命中率、首因命中率、safe-fix 命中率、误报 blocker、生态覆盖
 - 默认安全 probe、显式 `--probe-startup`、probe trace、ready output 识别
 - terminal、JSON、HTML action panel 报告
@@ -161,9 +189,12 @@ npm ci
 npm run check
 npm test
 npm run corpus
+npm run dataset:collect -- --limit 50 --format json
+npm run dataset:review -- --input .setuplens/failure-dataset/sources.json
 node ./bin/setuplens.js scan .
 node ./bin/setuplens.js doctor . --probe
 node ./bin/setuplens.js doctor-suite ./repos --format json
+node ./bin/setuplens.js failure-dataset collect --limit 50 --clone --scan
 ```
 
 ## License

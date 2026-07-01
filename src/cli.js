@@ -3,10 +3,12 @@ import path from 'node:path';
 import { VERSION } from './constants.js';
 import { doctor } from './doctor.js';
 import { doctorSuite } from './doctor-suite.js';
+import { collectFailureDataset, reviewFailureDataset } from './failure-dataset.js';
 import { scan } from './scan.js';
 import { renderDoctorTerminal } from './reporters/doctor-terminal.js';
 import { renderDoctorHtml } from './reporters/doctor-html.js';
 import { renderDoctorSuiteTerminal } from './reporters/doctor-suite-terminal.js';
+import { renderFailureDatasetTerminal } from './reporters/failure-dataset-terminal.js';
 import { renderHtml } from './reporters/html.js';
 import { renderJson } from './reporters/json.js';
 import { renderTerminal } from './reporters/terminal.js';
@@ -17,6 +19,8 @@ Diagnose why unfamiliar repositories fail to install, configure, or start.
 Usage:
   setuplens doctor [path] [options]
   setuplens doctor-suite [path] [options]
+  setuplens failure-dataset collect [options]
+  setuplens failure-dataset review [options]
   setuplens scan [path] [options]
   setuplens [path] [options]
 
@@ -28,6 +32,12 @@ Options:
   --timeout <ms>                Probe timeout in milliseconds (default: 8000)
   --fix-plan                    Show safe and manual repair candidates
   --apply <safe>                Apply only whitelisted safe local fixes
+  --limit <n>                   Failure dataset source limit (default: 50)
+  --clone                       Clone collected failure dataset candidates
+  --scan                        Run doctor on cloned failure dataset candidates
+  --input <file>                Read a failure dataset manifest for review
+  --repos-dir <dir>             Directory for cloned dataset repositories
+  --reports-dir <dir>           Directory for per-repository doctor reports
   --threshold <0-100>           Exit 1 when lower, 2 when not scorable
   --plugin <file>               Load a trusted local plugin (repeatable)
   --no-color                    Disable terminal colors
@@ -39,6 +49,9 @@ Examples:
   setuplens doctor .
   setuplens doctor . --probe
   setuplens doctor-suite ./repos --format json
+  setuplens failure-dataset collect --limit 50 --format json
+  setuplens failure-dataset collect --limit 50 --clone --scan
+  setuplens failure-dataset review --input .setuplens/failure-dataset/sources.json
   setuplens scan .
   setuplens scan . --format html -o setuplens-report.html
   setuplens scan . --format json --threshold 80
@@ -52,7 +65,8 @@ function valueAfter(args, index, option) {
 
 function parseArguments(argv) {
   const args = [...argv];
-  const command = ['doctor', 'doctor-suite', 'scan'].includes(args[0]) ? args.shift() : 'scan';
+  const command = ['doctor', 'doctor-suite', 'failure-dataset', 'scan'].includes(args[0]) ? args.shift() : 'scan';
+  if (command === 'failure-dataset') return parseFailureDatasetArguments(args);
   const options = {
     command,
     format: 'terminal',
@@ -122,6 +136,61 @@ function parseArguments(argv) {
   return options;
 }
 
+function parseFailureDatasetArguments(args) {
+  const action = ['collect', 'review'].includes(args[0]) ? args.shift() : 'collect';
+  const options = {
+    command: 'failure-dataset',
+    action,
+    format: action === 'collect' ? 'json' : 'terminal',
+    output: null,
+    outputSet: false,
+    input: null,
+    inputSet: false,
+    color: true,
+    limit: 50,
+    clone: false,
+    scan: false,
+    probe: false,
+    probeStartup: false,
+    timeoutMs: 8000,
+    timeoutSet: false,
+    reposDir: '.setuplens/failure-dataset/repos',
+    reportsDir: '.setuplens/failure-dataset/reports'
+  };
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+    if (arg === '-h' || arg === '--help') return { help: true };
+    if (arg === '-v' || arg === '--version') return { version: true };
+    if (arg === '--no-color') { options.color = false; continue; }
+    if (arg === '--clone') { options.clone = true; continue; }
+    if (arg === '--scan') { options.scan = true; options.clone = true; continue; }
+    if (arg === '--probe') { options.probe = true; continue; }
+    if (arg === '--probe-startup') { options.probe = true; options.probeStartup = true; continue; }
+    if (arg === '--format') { options.format = valueAfter(args, index, arg); index += 1; continue; }
+    if (arg === '-o' || arg === '--output') { options.output = valueAfter(args, index, arg); options.outputSet = true; index += 1; continue; }
+    if (arg === '--input') { options.input = valueAfter(args, index, arg); options.inputSet = true; index += 1; continue; }
+    if (arg === '--limit') { options.limit = Number(valueAfter(args, index, arg)); index += 1; continue; }
+    if (arg === '--timeout') { options.timeoutMs = Number(valueAfter(args, index, arg)); options.timeoutSet = true; index += 1; continue; }
+    if (arg === '--repos-dir') { options.reposDir = valueAfter(args, index, arg); index += 1; continue; }
+    if (arg === '--reports-dir') { options.reportsDir = valueAfter(args, index, arg); index += 1; continue; }
+    if (arg.startsWith('-')) throw new Error(`Unknown option: ${arg}`);
+    throw new Error(`Unexpected argument: ${arg}`);
+  }
+
+  if (!['terminal', 'json'].includes(options.format)) throw new Error(`Unsupported format: ${options.format}`);
+  if (!Number.isInteger(options.limit) || options.limit < 1 || options.limit > 500) throw new Error('--limit must be an integer between 1 and 500.');
+  if (!Number.isFinite(options.timeoutMs) || options.timeoutMs < 1000 || options.timeoutMs > 120000) {
+    throw new Error('--timeout must be between 1000 and 120000 milliseconds.');
+  }
+  if (options.probe && !options.scan) throw new Error('--probe requires --scan for failure-dataset collect.');
+  if (action === 'review' && options.scan) throw new Error('--scan is only available with failure-dataset collect.');
+  if (action === 'collect' && options.inputSet) throw new Error('--input is only available with failure-dataset review.');
+  if (action === 'review' && !options.input) options.input = '.setuplens/failure-dataset/sources.json';
+  if (action === 'collect' && !options.outputSet && options.format === 'json') options.output = '.setuplens/failure-dataset/sources.json';
+  return options;
+}
+
 async function runCommand(options) {
   if (options.command === 'doctor') {
     return doctor(options.target, {
@@ -140,6 +209,19 @@ async function runCommand(options) {
       timeoutMs: options.timeoutMs
     });
   }
+  if (options.command === 'failure-dataset') {
+    if (options.action === 'review') return reviewFailureDataset({ input: options.input });
+    return collectFailureDataset({
+      limit: options.limit,
+      clone: options.clone,
+      scan: options.scan,
+      probe: options.probe,
+      probeStartup: options.probeStartup,
+      timeoutMs: options.timeoutMs,
+      reposDir: options.reposDir,
+      reportsDir: options.reportsDir
+    });
+  }
   return scan(options.target, { plugins: options.plugins });
 }
 
@@ -147,6 +229,7 @@ function renderReport(report, options) {
   if (options.format === 'json') return renderJson(report);
   if (options.format === 'html' && options.command === 'doctor') return renderDoctorHtml(report);
   if (options.format === 'html') return renderHtml(report);
+  if (options.command === 'failure-dataset') return renderFailureDatasetTerminal(report, { color: options.color });
   if (options.command === 'doctor') {
     return renderDoctorTerminal(report, { color: options.color, showFixPlan: options.fixPlan || options.apply === 'safe' });
   }
