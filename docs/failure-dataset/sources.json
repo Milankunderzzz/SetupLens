@@ -1,0 +1,3619 @@
+{
+  "schemaVersion": "1.0-failure-dataset",
+  "tool": {
+    "name": "SetupLens",
+    "version": "0.2.0-alpha.1"
+  },
+  "generatedAt": "2026-07-01T06:51:41.160Z",
+  "durationMs": 9693,
+  "policy": {
+    "purpose": "Collect public repository candidates for reproducible setup-failure validation.",
+    "defaultLimit": 50,
+    "contentRetention": "The manifest stores repository metadata, provenance, clone pins, and scan summaries. Third-party repository contents stay outside git by default.",
+    "scanSafety": "metadata-only collection; no repository code executed"
+  },
+  "options": {
+    "limit": 50,
+    "clone": false,
+    "scan": false,
+    "probe": false,
+    "probeStartup": false,
+    "timeoutMs": 8000,
+    "reposDir": null,
+    "reportsDir": null
+  },
+  "queries": [
+    {
+      "ecosystem": "next",
+      "query": "topic:nextjs language:TypeScript archived:false pushed:>2024-01-01"
+    },
+    {
+      "ecosystem": "vite",
+      "query": "topic:vite language:TypeScript archived:false pushed:>2024-01-01"
+    },
+    {
+      "ecosystem": "prisma",
+      "query": "topic:prisma archived:false pushed:>2024-01-01"
+    },
+    {
+      "ecosystem": "django",
+      "query": "topic:django language:Python archived:false pushed:>2024-01-01"
+    },
+    {
+      "ecosystem": "fastapi",
+      "query": "topic:fastapi language:Python archived:false pushed:>2024-01-01"
+    },
+    {
+      "ecosystem": "laravel",
+      "query": "topic:laravel language:PHP archived:false pushed:>2024-01-01"
+    },
+    {
+      "ecosystem": "rails",
+      "query": "topic:rails language:Ruby archived:false pushed:>2024-01-01"
+    },
+    {
+      "ecosystem": "spring",
+      "query": "topic:spring-boot language:Java archived:false pushed:>2024-01-01"
+    },
+    {
+      "ecosystem": "dotnet",
+      "query": "topic:aspnet-core language:C# archived:false pushed:>2024-01-01"
+    },
+    {
+      "ecosystem": "go",
+      "query": "topic:golang language:Go archived:false pushed:>2024-01-01"
+    },
+    {
+      "ecosystem": "rust",
+      "query": "topic:rust language:Rust archived:false pushed:>2024-01-01"
+    },
+    {
+      "ecosystem": "monorepo",
+      "query": "topic:monorepo archived:false pushed:>2024-01-01"
+    }
+  ],
+  "summary": {
+    "sources": 50,
+    "cloned": 0,
+    "scanned": 0,
+    "discoveryErrors": 0,
+    "sourceEcosystems": [
+      {
+        "name": "next",
+        "count": 5
+      },
+      {
+        "name": "vite",
+        "count": 5
+      },
+      {
+        "name": "django",
+        "count": 4
+      },
+      {
+        "name": "dotnet",
+        "count": 4
+      },
+      {
+        "name": "fastapi",
+        "count": 4
+      },
+      {
+        "name": "go",
+        "count": 4
+      },
+      {
+        "name": "laravel",
+        "count": 4
+      },
+      {
+        "name": "monorepo",
+        "count": 4
+      },
+      {
+        "name": "prisma",
+        "count": 4
+      },
+      {
+        "name": "rails",
+        "count": 4
+      },
+      {
+        "name": "rust",
+        "count": 4
+      },
+      {
+        "name": "spring",
+        "count": 4
+      }
+    ],
+    "sourceLicenses": [
+      {
+        "name": "MIT",
+        "count": 20
+      },
+      {
+        "name": "unknown",
+        "count": 16
+      },
+      {
+        "name": "NOASSERTION",
+        "count": 5
+      },
+      {
+        "name": "AGPL-3.0",
+        "count": 2
+      },
+      {
+        "name": "Apache-2.0",
+        "count": 2
+      },
+      {
+        "name": "BSD-3-Clause",
+        "count": 2
+      },
+      {
+        "name": "GPL-3.0",
+        "count": 2
+      },
+      {
+        "name": "ISC",
+        "count": 1
+      }
+    ],
+    "cloneStatuses": [
+      {
+        "name": "candidate",
+        "count": 50
+      }
+    ],
+    "scanStatuses": [],
+    "failureTypeDistribution": []
+  },
+  "sources": [
+    {
+      "id": "github-xevrion-v2--agent-playground",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "xevrion-v2/agent-playground",
+        "owner": "xevrion-v2",
+        "name": "agent-playground",
+        "htmlUrl": "https://github.com/xevrion-v2/agent-playground",
+        "cloneUrl": "https://github.com/xevrion-v2/agent-playground.git",
+        "apiUrl": "https://api.github.com/repos/xevrion-v2/agent-playground",
+        "defaultBranch": "main",
+        "description": "",
+        "license": null,
+        "topics": [
+          "ai-agent",
+          "bounty",
+          "contributions-welcome",
+          "good-first-issue",
+          "hacktoberfest",
+          "nextjs",
+          "open-source",
+          "typescript"
+        ],
+        "primaryLanguage": "TypeScript",
+        "stars": 221,
+        "forks": 368,
+        "openIssues": 2848,
+        "sizeKb": 598,
+        "createdAt": "2026-06-03T05:43:37Z",
+        "updatedAt": "2026-07-01T06:51:21Z",
+        "pushedAt": "2026-07-01T06:51:17Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "next",
+          "query": "topic:nextjs language:TypeScript archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 1,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/xevrion-v2/agent-playground.git xevrion-v2--agent-playground",
+          "pinCommand": "git -C xevrion-v2--agent-playground rev-parse main",
+          "scanCommand": "setuplens doctor xevrion-v2--agent-playground --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-noahtwitsch--webcheker",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "noahtwitsch/WebCheker",
+        "owner": "noahtwitsch",
+        "name": "WebCheker",
+        "htmlUrl": "https://github.com/noahtwitsch/WebCheker",
+        "cloneUrl": "https://github.com/noahtwitsch/WebCheker.git",
+        "apiUrl": "https://api.github.com/repos/noahtwitsch/WebCheker",
+        "defaultBranch": "main",
+        "description": "🌐 Explore websites with WebChecker, your go-to tool for comprehensive, on-demand open source intelligence. Gain insights and enhance your online presence.",
+        "license": "MIT",
+        "topics": [
+          "astro",
+          "docker",
+          "html",
+          "javascript",
+          "serverjs",
+          "svelte",
+          "toml",
+          "typescript",
+          "vercel",
+          "vite"
+        ],
+        "primaryLanguage": "TypeScript",
+        "stars": 1,
+        "forks": 0,
+        "openIssues": 0,
+        "sizeKb": 27182,
+        "createdAt": "2026-01-03T01:57:59Z",
+        "updatedAt": "2026-07-01T06:51:16Z",
+        "pushedAt": "2026-07-01T06:51:13Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "vite",
+          "query": "topic:vite language:TypeScript archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 1,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/noahtwitsch/WebCheker.git noahtwitsch--WebCheker",
+          "pinCommand": "git -C noahtwitsch--WebCheker rev-parse main",
+          "scanCommand": "setuplens doctor noahtwitsch--WebCheker --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-sairam236--kickpress",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "sairam236/kickpress",
+        "owner": "sairam236",
+        "name": "kickpress",
+        "htmlUrl": "https://github.com/sairam236/kickpress",
+        "cloneUrl": "https://github.com/sairam236/kickpress.git",
+        "apiUrl": "https://api.github.com/repos/sairam236/kickpress",
+        "defaultBranch": "main",
+        "description": "☕ Scaffold Express.js APIs swiftly with Kickpress CLI, featuring TypeScript, Prisma, and built-in security for production-ready applications.",
+        "license": null,
+        "topics": [
+          "api-generator",
+          "backend",
+          "boilerplate",
+          "cli",
+          "crud",
+          "express",
+          "generator",
+          "javascript",
+          "mvc",
+          "nodejs",
+          "orm",
+          "prisma",
+          "rest-api",
+          "scaffold",
+          "server",
+          "starter",
+          "template",
+          "typescript"
+        ],
+        "primaryLanguage": "HTML",
+        "stars": 0,
+        "forks": 0,
+        "openIssues": 0,
+        "sizeKb": 2014,
+        "createdAt": "2024-05-31T01:37:31Z",
+        "updatedAt": "2026-07-01T06:48:38Z",
+        "pushedAt": "2026-07-01T06:48:35Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "prisma",
+          "query": "topic:prisma archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 1,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/sairam236/kickpress.git sairam236--kickpress",
+          "pinCommand": "git -C sairam236--kickpress rev-parse main",
+          "scanCommand": "setuplens doctor sairam236--kickpress --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-mukesh123-ghb--course-management-system",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "mukesh123-ghb/course-management-system",
+        "owner": "mukesh123-ghb",
+        "name": "course-management-system",
+        "htmlUrl": "https://github.com/mukesh123-ghb/course-management-system",
+        "cloneUrl": "https://github.com/mukesh123-ghb/course-management-system.git",
+        "apiUrl": "https://api.github.com/repos/mukesh123-ghb/course-management-system",
+        "defaultBranch": "main",
+        "description": "📚 Manage courses efficiently with this FastAPI-based Course Management System, featuring user roles, content delivery, assessments, and progress tracking tools.",
+        "license": null,
+        "topics": [
+          "chartjs",
+          "course-management-system",
+          "course-materials",
+          "django",
+          "django-project",
+          "exam-management",
+          "grade-calculator",
+          "learning-management-system",
+          "lms",
+          "mysql",
+          "online-quiz",
+          "php",
+          "postgresql",
+          "python",
+          "quizzapp",
+          "report-generation",
+          "school-management-system",
+          "student",
+          "student-management-system"
+        ],
+        "primaryLanguage": "Python",
+        "stars": 0,
+        "forks": 0,
+        "openIssues": 0,
+        "sizeKb": 1912,
+        "createdAt": "2025-06-09T20:24:47Z",
+        "updatedAt": "2026-07-01T06:50:14Z",
+        "pushedAt": "2026-07-01T06:50:11Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "django",
+          "query": "topic:django language:Python archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 1,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/mukesh123-ghb/course-management-system.git mukesh123-ghb--course-management-system",
+          "pinCommand": "git -C mukesh123-ghb--course-management-system rev-parse main",
+          "scanCommand": "setuplens doctor mukesh123-ghb--course-management-system --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-ntatemothobi--dscientia-core",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "ntateMothobi/dscientia-core",
+        "owner": "ntateMothobi",
+        "name": "dscientia-core",
+        "htmlUrl": "https://github.com/ntateMothobi/dscientia-core",
+        "cloneUrl": "https://github.com/ntateMothobi/dscientia-core.git",
+        "apiUrl": "https://api.github.com/repos/ntateMothobi/dscientia-core",
+        "defaultBranch": "main",
+        "description": "🌟 Drive ethical decision-making with DscienTia Core, a platform transforming data into explainable and auditable insights for Property Sales.",
+        "license": null,
+        "topics": [
+          "backend",
+          "clean-architecture",
+          "community-systemswift",
+          "crm",
+          "decision-intelligence",
+          "ethical-ai",
+          "fastapi",
+          "mvp",
+          "rest-api",
+          "social-data-science",
+          "sqlalchemy"
+        ],
+        "primaryLanguage": "Python",
+        "stars": 2,
+        "forks": 0,
+        "openIssues": 0,
+        "sizeKb": 2776,
+        "createdAt": "2026-01-03T08:44:04Z",
+        "updatedAt": "2026-07-01T06:51:28Z",
+        "pushedAt": "2026-07-01T06:51:24Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "fastapi",
+          "query": "topic:fastapi language:Python archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 1,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/ntateMothobi/dscientia-core.git ntateMothobi--dscientia-core",
+          "pinCommand": "git -C ntateMothobi--dscientia-core rev-parse main",
+          "scanCommand": "setuplens doctor ntateMothobi--dscientia-core --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-sma-uii-yogyakarta--core",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "SMA-UII-Yogyakarta/core",
+        "owner": "SMA-UII-Yogyakarta",
+        "name": "core",
+        "htmlUrl": "https://github.com/SMA-UII-Yogyakarta/core",
+        "cloneUrl": "https://github.com/SMA-UII-Yogyakarta/core.git",
+        "apiUrl": "https://api.github.com/repos/SMA-UII-Yogyakarta/core",
+        "defaultBranch": "main",
+        "description": "Backend API — SMART Absen SMA UII. Presensi digital: selfie + GPS, SSO Identity Provider, manajemen izin, monitoring real-time. Laravel 13, MySQL 8, Redis.",
+        "license": null,
+        "topics": [
+          "absensi",
+          "api",
+          "attendance",
+          "geolocation",
+          "laragon",
+          "laravel",
+          "php",
+          "presensi",
+          "sma-uii",
+          "sso"
+        ],
+        "primaryLanguage": "PHP",
+        "stars": 0,
+        "forks": 3,
+        "openIssues": 1,
+        "sizeKb": 203,
+        "createdAt": "2026-06-22T04:03:10Z",
+        "updatedAt": "2026-07-01T06:51:20Z",
+        "pushedAt": "2026-07-01T06:51:16Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "laravel",
+          "query": "topic:laravel language:PHP archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 1,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/SMA-UII-Yogyakarta/core.git SMA-UII-Yogyakarta--core",
+          "pinCommand": "git -C SMA-UII-Yogyakarta--core rev-parse main",
+          "scanCommand": "setuplens doctor SMA-UII-Yogyakarta--core --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-yugabharathi91--activerecord-health",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "Yugabharathi91/activerecord-health",
+        "owner": "Yugabharathi91",
+        "name": "activerecord-health",
+        "htmlUrl": "https://github.com/Yugabharathi91/activerecord-health",
+        "cloneUrl": "https://github.com/Yugabharathi91/activerecord-health.git",
+        "apiUrl": "https://api.github.com/repos/Yugabharathi91/activerecord-health",
+        "defaultBranch": "main",
+        "description": "🔍 Monitor database health by tracking active sessions to manage load, ensuring your app runs smoothly and prioritizes critical tasks.",
+        "license": "MIT",
+        "topics": [
+          "activerecord",
+          "ar-jdbc",
+          "cron",
+          "database",
+          "devops",
+          "django",
+          "docker",
+          "freetds",
+          "hacktoberfest",
+          "jruby",
+          "laravel",
+          "ops",
+          "php",
+          "rails",
+          "ruby",
+          "search",
+          "server",
+          "sql-server",
+          "tinytds"
+        ],
+        "primaryLanguage": "Ruby",
+        "stars": 0,
+        "forks": 0,
+        "openIssues": 0,
+        "sizeKb": 1986,
+        "createdAt": "2025-12-31T16:27:03Z",
+        "updatedAt": "2026-07-01T06:50:26Z",
+        "pushedAt": "2026-07-01T06:50:22Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "rails",
+          "query": "topic:rails language:Ruby archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 1,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/Yugabharathi91/activerecord-health.git Yugabharathi91--activerecord-health",
+          "pinCommand": "git -C Yugabharathi91--activerecord-health rev-parse main",
+          "scanCommand": "setuplens doctor Yugabharathi91--activerecord-health --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-gavlyukovskiy--spring-boot-data-source-decorator",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "gavlyukovskiy/spring-boot-data-source-decorator",
+        "owner": "gavlyukovskiy",
+        "name": "spring-boot-data-source-decorator",
+        "htmlUrl": "https://github.com/gavlyukovskiy/spring-boot-data-source-decorator",
+        "cloneUrl": "https://github.com/gavlyukovskiy/spring-boot-data-source-decorator.git",
+        "apiUrl": "https://api.github.com/repos/gavlyukovskiy/spring-boot-data-source-decorator",
+        "defaultBranch": "master",
+        "description": "Spring Boot integration with p6spy, datasource-proxy, flexy-pool and spring-cloud-sleuth",
+        "license": "Apache-2.0",
+        "topics": [
+          "connection-pool",
+          "datasource",
+          "datasource-proxy",
+          "flexy-pool",
+          "jdbc",
+          "micrometer",
+          "p6spy",
+          "spring-boot",
+          "spring-boot-starters",
+          "spring-cloud-sleuth",
+          "sql-queries"
+        ],
+        "primaryLanguage": "Java",
+        "stars": 1055,
+        "forks": 98,
+        "openIssues": 10,
+        "sizeKb": 3262,
+        "createdAt": "2017-04-18T22:39:27Z",
+        "updatedAt": "2026-07-01T06:50:58Z",
+        "pushedAt": "2026-07-01T06:50:55Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "spring",
+          "query": "topic:spring-boot language:Java archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 1,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/gavlyukovskiy/spring-boot-data-source-decorator.git gavlyukovskiy--spring-boot-data-source-decorator",
+          "pinCommand": "git -C gavlyukovskiy--spring-boot-data-source-decorator rev-parse master",
+          "scanCommand": "setuplens doctor gavlyukovskiy--spring-boot-data-source-decorator --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-tinymad--speedrunnerslab",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "TinyMaD/SpeedRunnersLab",
+        "owner": "TinyMaD",
+        "name": "SpeedRunnersLab",
+        "htmlUrl": "https://github.com/TinyMaD/SpeedRunnersLab",
+        "cloneUrl": "https://github.com/TinyMaD/SpeedRunnersLab.git",
+        "apiUrl": "https://api.github.com/repos/TinyMaD/SpeedRunnersLab",
+        "defaultBranch": "master",
+        "description": "The main framework and tech stacks： Vuetify + vue-admin-template + ASP.NET Core + Steam open API",
+        "license": "MIT",
+        "topics": [
+          "aspnet-core",
+          "steam-api",
+          "vue-admin-template",
+          "vuetify"
+        ],
+        "primaryLanguage": "C#",
+        "stars": 3,
+        "forks": 1,
+        "openIssues": 0,
+        "sizeKb": 5271,
+        "createdAt": "2020-08-31T08:58:45Z",
+        "updatedAt": "2026-07-01T06:43:54Z",
+        "pushedAt": "2026-07-01T06:43:50Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "dotnet",
+          "query": "topic:aspnet-core language:C# archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 1,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/TinyMaD/SpeedRunnersLab.git TinyMaD--SpeedRunnersLab",
+          "pinCommand": "git -C TinyMaD--SpeedRunnersLab rev-parse master",
+          "scanCommand": "setuplens doctor TinyMaD--SpeedRunnersLab --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-strukturag--nextcloud-spreed-signaling",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "strukturag/nextcloud-spreed-signaling",
+        "owner": "strukturag",
+        "name": "nextcloud-spreed-signaling",
+        "htmlUrl": "https://github.com/strukturag/nextcloud-spreed-signaling",
+        "cloneUrl": "https://github.com/strukturag/nextcloud-spreed-signaling.git",
+        "apiUrl": "https://api.github.com/repos/strukturag/nextcloud-spreed-signaling",
+        "defaultBranch": "master",
+        "description": "Standalone signaling server for Nextcloud Talk.",
+        "license": "AGPL-3.0",
+        "topics": [
+          "call",
+          "clustering",
+          "etcd",
+          "go",
+          "golang",
+          "grpc",
+          "nextcloud",
+          "open-source",
+          "screensharing",
+          "spreed",
+          "talk",
+          "video",
+          "webrtc"
+        ],
+        "primaryLanguage": "Go",
+        "stars": 515,
+        "forks": 85,
+        "openIssues": 42,
+        "sizeKb": 5612,
+        "createdAt": "2020-05-12T07:47:23Z",
+        "updatedAt": "2026-07-01T06:51:29Z",
+        "pushedAt": "2026-07-01T06:51:33Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "go",
+          "query": "topic:golang language:Go archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 1,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/strukturag/nextcloud-spreed-signaling.git strukturag--nextcloud-spreed-signaling",
+          "pinCommand": "git -C strukturag--nextcloud-spreed-signaling rev-parse master",
+          "scanCommand": "setuplens doctor strukturag--nextcloud-spreed-signaling --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-hypersecuritylabs--oxide-communityedition-v8.6.9",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "HyperSecurityLabs/oxide-communityedition-v8.6.9",
+        "owner": "HyperSecurityLabs",
+        "name": "oxide-communityedition-v8.6.9",
+        "htmlUrl": "https://github.com/HyperSecurityLabs/oxide-communityedition-v8.6.9",
+        "cloneUrl": "https://github.com/HyperSecurityLabs/oxide-communityedition-v8.6.9.git",
+        "apiUrl": "https://api.github.com/repos/HyperSecurityLabs/oxide-communityedition-v8.6.9",
+        "defaultBranch": "main",
+        "description": "OXIDEv8.6 a Rust-powered security scanner that fuses AI/ML anomaly detection, multi‑vector fuzzing, TLS/CORS misconfiguration auditing, Recon, and Zero‑day discovery into a single portable executable.",
+        "license": "NOASSERTION",
+        "topics": [
+          "offensive-security",
+          "rule-based-engine",
+          "rust",
+          "web-scanner"
+        ],
+        "primaryLanguage": "Rust",
+        "stars": 7,
+        "forks": 1,
+        "openIssues": 0,
+        "sizeKb": 27606,
+        "createdAt": "2026-06-09T14:56:03Z",
+        "updatedAt": "2026-07-01T06:51:19Z",
+        "pushedAt": "2026-07-01T06:51:15Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "rust",
+          "query": "topic:rust language:Rust archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 1,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/HyperSecurityLabs/oxide-communityedition-v8.6.9.git HyperSecurityLabs--oxide-communityedition-v8.6.9",
+          "pinCommand": "git -C HyperSecurityLabs--oxide-communityedition-v8.6.9 rev-parse main",
+          "scanCommand": "setuplens doctor HyperSecurityLabs--oxide-communityedition-v8.6.9 --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-uttamkumar93--svalinn",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "uttamkumar93/svalinn",
+        "owner": "uttamkumar93",
+        "name": "svalinn",
+        "htmlUrl": "https://github.com/uttamkumar93/svalinn",
+        "cloneUrl": "https://github.com/uttamkumar93/svalinn.git",
+        "apiUrl": "https://api.github.com/repos/uttamkumar93/svalinn",
+        "defaultBranch": "master",
+        "description": "🛡️ Shield container operations with Svalinn, a ReScript-powered gateway that ensures secure requests and orchestrates AI-driven validation.",
+        "license": null,
+        "topics": [
+          "android",
+          "arangodb",
+          "arduino-sketch",
+          "blockies",
+          "devops",
+          "go",
+          "iconation",
+          "linux",
+          "mnemonic",
+          "monorepo",
+          "password",
+          "rescript",
+          "signing",
+          "wallet",
+          "wifi",
+          "yugabyte"
+        ],
+        "primaryLanguage": null,
+        "stars": 0,
+        "forks": 1,
+        "openIssues": 0,
+        "sizeKb": 2153,
+        "createdAt": "2019-09-28T09:12:12Z",
+        "updatedAt": "2026-07-01T06:51:37Z",
+        "pushedAt": "2026-07-01T06:51:34Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "monorepo",
+          "query": "topic:monorepo archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 1,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/uttamkumar93/svalinn.git uttamkumar93--svalinn",
+          "pinCommand": "git -C uttamkumar93--svalinn rev-parse master",
+          "scanCommand": "setuplens doctor uttamkumar93--svalinn --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-clayuremir--casino-game-smart-contract",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "Clayuremir/Casino-Game-Smart-Contract",
+        "owner": "Clayuremir",
+        "name": "Casino-Game-Smart-Contract",
+        "htmlUrl": "https://github.com/Clayuremir/Casino-Game-Smart-Contract",
+        "cloneUrl": "https://github.com/Clayuremir/Casino-Game-Smart-Contract.git",
+        "apiUrl": "https://api.github.com/repos/Clayuremir/Casino-Game-Smart-Contract",
+        "defaultBranch": "main",
+        "description": "🎰 Build a fair and secure jackpot system on the Solana blockchain with our decentralized smart contract, utilizing ORAO Network's VRF for random number generation.",
+        "license": "ISC",
+        "topics": [
+          "abstract",
+          "blackjack",
+          "casino",
+          "casino-games",
+          "casino-smart-contract",
+          "casinogame",
+          "crash",
+          "game",
+          "gamefi",
+          "jackpot",
+          "nextjs",
+          "onchain-game",
+          "poker-game",
+          "prediction",
+          "ronin",
+          "roulette",
+          "rust",
+          "soalan",
+          "typescript",
+          "vrf"
+        ],
+        "primaryLanguage": "TypeScript",
+        "stars": 1,
+        "forks": 0,
+        "openIssues": 0,
+        "sizeKb": 2007,
+        "createdAt": "2025-05-15T18:52:05Z",
+        "updatedAt": "2026-07-01T06:51:18Z",
+        "pushedAt": "2026-07-01T06:51:14Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "next",
+          "query": "topic:nextjs language:TypeScript archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 2,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/Clayuremir/Casino-Game-Smart-Contract.git Clayuremir--Casino-Game-Smart-Contract",
+          "pinCommand": "git -C Clayuremir--Casino-Game-Smart-Contract rev-parse main",
+          "scanCommand": "setuplens doctor Clayuremir--Casino-Game-Smart-Contract --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-leo0331--taipei-civic-groups-map",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "LEO0331/taipei-civic-groups-map",
+        "owner": "LEO0331",
+        "name": "taipei-civic-groups-map",
+        "htmlUrl": "https://github.com/LEO0331/taipei-civic-groups-map",
+        "cloneUrl": "https://github.com/LEO0331/taipei-civic-groups-map.git",
+        "apiUrl": "https://api.github.com/repos/LEO0331/taipei-civic-groups-map",
+        "defaultBranch": "main",
+        "description": "Mobile-first bilingual directory and district map for exploring Taipei civic group public records.",
+        "license": "MIT",
+        "topics": [
+          "typescript",
+          "vite"
+        ],
+        "primaryLanguage": "TypeScript",
+        "stars": 0,
+        "forks": 0,
+        "openIssues": 0,
+        "sizeKb": 5384,
+        "createdAt": "2026-06-18T01:05:53Z",
+        "updatedAt": "2026-07-01T06:51:15Z",
+        "pushedAt": "2026-07-01T06:51:11Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "vite",
+          "query": "topic:vite language:TypeScript archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 2,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/LEO0331/taipei-civic-groups-map.git LEO0331--taipei-civic-groups-map",
+          "pinCommand": "git -C LEO0331--taipei-civic-groups-map rev-parse main",
+          "scanCommand": "setuplens doctor LEO0331--taipei-civic-groups-map --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-anmolsansi--ired-propertyos-monorepo",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "anmolsansi/IRED-PropertyOS-Monorepo",
+        "owner": "anmolsansi",
+        "name": "IRED-PropertyOS-Monorepo",
+        "htmlUrl": "https://github.com/anmolsansi/IRED-PropertyOS-Monorepo",
+        "cloneUrl": "https://github.com/anmolsansi/IRED-PropertyOS-Monorepo.git",
+        "apiUrl": "https://api.github.com/repos/anmolsansi/IRED-PropertyOS-Monorepo",
+        "defaultBranch": "main",
+        "description": "Unified monorepo for IRED PropertyOS backend, frontend, and delivery plan",
+        "license": null,
+        "topics": [
+          "nestjs",
+          "nextjs",
+          "prisma",
+          "property-management",
+          "real-estate",
+          "typescript"
+        ],
+        "primaryLanguage": "TypeScript",
+        "stars": 0,
+        "forks": 0,
+        "openIssues": 0,
+        "sizeKb": 1078,
+        "createdAt": "2026-06-23T12:42:26Z",
+        "updatedAt": "2026-07-01T06:47:01Z",
+        "pushedAt": "2026-07-01T06:47:00Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "prisma",
+          "query": "topic:prisma archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 2,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/anmolsansi/IRED-PropertyOS-Monorepo.git anmolsansi--IRED-PropertyOS-Monorepo",
+          "pinCommand": "git -C anmolsansi--IRED-PropertyOS-Monorepo rev-parse main",
+          "scanCommand": "setuplens doctor anmolsansi--IRED-PropertyOS-Monorepo --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-cookiecutter--cookiecutter-django",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "cookiecutter/cookiecutter-django",
+        "owner": "cookiecutter",
+        "name": "cookiecutter-django",
+        "htmlUrl": "https://github.com/cookiecutter/cookiecutter-django",
+        "cloneUrl": "https://github.com/cookiecutter/cookiecutter-django.git",
+        "apiUrl": "https://api.github.com/repos/cookiecutter/cookiecutter-django",
+        "defaultBranch": "main",
+        "description": "Cookiecutter Django is a framework for jumpstarting production-ready Django projects quickly.",
+        "license": "BSD-3-Clause",
+        "topics": [
+          "boilerplate",
+          "celery",
+          "cookiecutter",
+          "cookiecutter-django",
+          "django",
+          "django-cookiecutter",
+          "docker",
+          "hacktoberfest",
+          "heroku",
+          "project-template",
+          "python"
+        ],
+        "primaryLanguage": "Python",
+        "stars": 13560,
+        "forks": 3066,
+        "openIssues": 100,
+        "sizeKb": 12053,
+        "createdAt": "2013-08-14T17:43:31Z",
+        "updatedAt": "2026-07-01T06:49:34Z",
+        "pushedAt": "2026-07-01T06:49:31Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "django",
+          "query": "topic:django language:Python archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 2,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/cookiecutter/cookiecutter-django.git cookiecutter--cookiecutter-django",
+          "pinCommand": "git -C cookiecutter--cookiecutter-django rev-parse main",
+          "scanCommand": "setuplens doctor cookiecutter--cookiecutter-django --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-alagarsamy-m--goldsense",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "alagarsamy-m/GoldSense",
+        "owner": "alagarsamy-m",
+        "name": "GoldSense",
+        "htmlUrl": "https://github.com/alagarsamy-m/GoldSense",
+        "cloneUrl": "https://github.com/alagarsamy-m/GoldSense.git",
+        "apiUrl": "https://api.github.com/repos/alagarsamy-m/GoldSense",
+        "defaultBranch": "main",
+        "description": "AI-Powered Gold Price Forecasting Intelligence System & Personalized Decision Engine",
+        "license": "MIT",
+        "topics": [
+          "docker",
+          "fastapi",
+          "github-actions",
+          "groq",
+          "machine-learning",
+          "python",
+          "react",
+          "render",
+          "supabase",
+          "xgboost"
+        ],
+        "primaryLanguage": "Python",
+        "stars": 1,
+        "forks": 0,
+        "openIssues": 0,
+        "sizeKb": 14095,
+        "createdAt": "2026-02-28T09:11:57Z",
+        "updatedAt": "2026-07-01T06:50:52Z",
+        "pushedAt": "2026-07-01T06:50:49Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "fastapi",
+          "query": "topic:fastapi language:Python archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 2,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/alagarsamy-m/GoldSense.git alagarsamy-m--GoldSense",
+          "pinCommand": "git -C alagarsamy-m--GoldSense rev-parse main",
+          "scanCommand": "setuplens doctor alagarsamy-m--GoldSense --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-iwerieborstan--emby-panel",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "iwerieborstan/emby-panel",
+        "owner": "iwerieborstan",
+        "name": "emby-panel",
+        "htmlUrl": "https://github.com/iwerieborstan/emby-panel",
+        "cloneUrl": "https://github.com/iwerieborstan/emby-panel.git",
+        "apiUrl": "https://api.github.com/repos/iwerieborstan/emby-panel",
+        "defaultBranch": "main",
+        "description": "🖥️ Manage your Emby server effortlessly with Emby Panel, a user-friendly tool for configuration and user management.",
+        "license": null,
+        "topics": [
+          "contabo",
+          "control-panels",
+          "corn",
+          "fanart-poster",
+          "free",
+          "html-css-javascript",
+          "japanese",
+          "javbus",
+          "jellyfin-plugin",
+          "jwt",
+          "laravel",
+          "management-system",
+          "metatube",
+          "mysql",
+          "panel",
+          "php",
+          "react",
+          "react-toastify",
+          "synology"
+        ],
+        "primaryLanguage": "PHP",
+        "stars": 0,
+        "forks": 1,
+        "openIssues": 0,
+        "sizeKb": 20046,
+        "createdAt": "2023-04-01T10:42:46Z",
+        "updatedAt": "2026-07-01T06:49:12Z",
+        "pushedAt": "2026-07-01T06:49:09Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "laravel",
+          "query": "topic:laravel language:PHP archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 2,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/iwerieborstan/emby-panel.git iwerieborstan--emby-panel",
+          "pinCommand": "git -C iwerieborstan--emby-panel rev-parse main",
+          "scanCommand": "setuplens doctor iwerieborstan--emby-panel --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-nodealchemy--powernode-platform",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "nodealchemy/powernode-platform",
+        "owner": "nodealchemy",
+        "name": "powernode-platform",
+        "htmlUrl": "https://github.com/nodealchemy/powernode-platform",
+        "cloneUrl": "https://github.com/nodealchemy/powernode-platform.git",
+        "apiUrl": "https://api.github.com/repos/nodealchemy/powernode-platform",
+        "defaultBranch": "develop",
+        "description": "Open-source mission control for AI agent fleets — chat to provision, agents to operate, humans to approve.",
+        "license": "MIT",
+        "topics": [
+          "agent-orchestration",
+          "ai",
+          "ai-agents",
+          "control-plane",
+          "knowledge-graph",
+          "llm",
+          "mcp",
+          "model-context-protocol",
+          "multi-agent",
+          "pgvector",
+          "postgresql",
+          "powernode",
+          "rails",
+          "react",
+          "ruby",
+          "self-hosted",
+          "typescript"
+        ],
+        "primaryLanguage": "Ruby",
+        "stars": 0,
+        "forks": 0,
+        "openIssues": 0,
+        "sizeKb": 39523,
+        "createdAt": "2025-08-15T05:26:15Z",
+        "updatedAt": "2026-07-01T06:41:03Z",
+        "pushedAt": "2026-07-01T06:40:59Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "rails",
+          "query": "topic:rails language:Ruby archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 2,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/nodealchemy/powernode-platform.git nodealchemy--powernode-platform",
+          "pinCommand": "git -C nodealchemy--powernode-platform rev-parse develop",
+          "scanCommand": "setuplens doctor nodealchemy--powernode-platform --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-soufianeharzi--java-spring-tutorials",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "soufianeharzi/java-spring-tutorials",
+        "owner": "soufianeharzi",
+        "name": "java-spring-tutorials",
+        "htmlUrl": "https://github.com/soufianeharzi/java-spring-tutorials",
+        "cloneUrl": "https://github.com/soufianeharzi/java-spring-tutorials.git",
+        "apiUrl": "https://api.github.com/repos/soufianeharzi/java-spring-tutorials",
+        "defaultBranch": "main",
+        "description": "🚀 Explore hands-on Java Spring implementations with clear explanations, helping you understand the core concepts and enhance your coding skills.",
+        "license": null,
+        "topics": [
+          "angular",
+          "corejava",
+          "guava",
+          "java-enterprise-edition",
+          "java-guru",
+          "java-tutorial",
+          "jpa",
+          "kotlin",
+          "login",
+          "maven",
+          "spring-boot",
+          "spring-security",
+          "stud-java",
+          "stud-projects",
+          "swing",
+          "testcontainers",
+          "tutorial"
+        ],
+        "primaryLanguage": "Java",
+        "stars": 0,
+        "forks": 0,
+        "openIssues": 0,
+        "sizeKb": 5827,
+        "createdAt": "2025-05-13T17:17:31Z",
+        "updatedAt": "2026-07-01T06:50:26Z",
+        "pushedAt": "2026-07-01T06:50:22Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "spring",
+          "query": "topic:spring-boot language:Java archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 2,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/soufianeharzi/java-spring-tutorials.git soufianeharzi--java-spring-tutorials",
+          "pinCommand": "git -C soufianeharzi--java-spring-tutorials rev-parse main",
+          "scanCommand": "setuplens doctor soufianeharzi--java-spring-tutorials --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-sano-suguru--slicefx",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "sano-suguru/slicefx",
+        "owner": "sano-suguru",
+        "name": "slicefx",
+        "htmlUrl": "https://github.com/sano-suguru/slicefx",
+        "cloneUrl": "https://github.com/sano-suguru/slicefx.git",
+        "apiUrl": "https://api.github.com/repos/sano-suguru/slicefx",
+        "defaultBranch": "main",
+        "description": "Feature files for ASP.NET Core Minimal APIs with generated registrations, clients, and portability checks.",
+        "license": "MIT",
+        "topics": [
+          "aot",
+          "aspnet-core",
+          "dotnet",
+          "minimal-api",
+          "native-aot",
+          "serverless",
+          "source-generator",
+          "vertical-slice-architecture",
+          "wasi"
+        ],
+        "primaryLanguage": "C#",
+        "stars": 2,
+        "forks": 0,
+        "openIssues": 9,
+        "sizeKb": 1330,
+        "createdAt": "2026-05-20T15:09:06Z",
+        "updatedAt": "2026-07-01T06:40:20Z",
+        "pushedAt": "2026-07-01T06:40:17Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "dotnet",
+          "query": "topic:aspnet-core language:C# archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 2,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/sano-suguru/slicefx.git sano-suguru--slicefx",
+          "pinCommand": "git -C sano-suguru--slicefx rev-parse main",
+          "scanCommand": "setuplens doctor sano-suguru--slicefx --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-antonboom--errname",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "Antonboom/errname",
+        "owner": "Antonboom",
+        "name": "errname",
+        "htmlUrl": "https://github.com/Antonboom/errname",
+        "cloneUrl": "https://github.com/Antonboom/errname.git",
+        "apiUrl": "https://api.github.com/repos/Antonboom/errname",
+        "defaultBranch": "master",
+        "description": "The Golang linter that checks that sentinel errors are prefixed with the `Err` and error types are suffixed with the `Error` or `Errors`.",
+        "license": "MIT",
+        "topics": [
+          "go",
+          "golang",
+          "linter",
+          "static-analysis"
+        ],
+        "primaryLanguage": "Go",
+        "stars": 26,
+        "forks": 2,
+        "openIssues": 1,
+        "sizeKb": 151,
+        "createdAt": "2021-07-21T12:21:45Z",
+        "updatedAt": "2026-07-01T06:51:28Z",
+        "pushedAt": "2026-07-01T06:51:30Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "go",
+          "query": "topic:golang language:Go archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 2,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/Antonboom/errname.git Antonboom--errname",
+          "pinCommand": "git -C Antonboom--errname rev-parse master",
+          "scanCommand": "setuplens doctor Antonboom--errname --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-charliedance--codex-switch",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "ChArLiEdance/codex-switch",
+        "owner": "ChArLiEdance",
+        "name": "codex-switch",
+        "htmlUrl": "https://github.com/ChArLiEdance/codex-switch",
+        "cloneUrl": "https://github.com/ChArLiEdance/codex-switch.git",
+        "apiUrl": "https://api.github.com/repos/ChArLiEdance/codex-switch",
+        "defaultBranch": "main",
+        "description": "Tauri desktop app for managing multiple local OpenAI Codex login profiles, quota metadata, and safe account switching.",
+        "license": "MIT",
+        "topics": [
+          "account-switcher",
+          "codex-cli",
+          "desktop-app",
+          "macos",
+          "openai-codex",
+          "react",
+          "rust",
+          "tauri",
+          "typescript",
+          "windows"
+        ],
+        "primaryLanguage": "Rust",
+        "stars": 1,
+        "forks": 0,
+        "openIssues": 0,
+        "sizeKb": 27324,
+        "createdAt": "2026-06-23T09:20:27Z",
+        "updatedAt": "2026-07-01T06:51:00Z",
+        "pushedAt": "2026-07-01T06:50:56Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "rust",
+          "query": "topic:rust language:Rust archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 2,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/ChArLiEdance/codex-switch.git ChArLiEdance--codex-switch",
+          "pinCommand": "git -C ChArLiEdance--codex-switch rev-parse main",
+          "scanCommand": "setuplens doctor ChArLiEdance--codex-switch --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-gopichand95--platform-django-template",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "Gopichand95/platform-django-template",
+        "owner": "Gopichand95",
+        "name": "platform-django-template",
+        "htmlUrl": "https://github.com/Gopichand95/platform-django-template",
+        "cloneUrl": "https://github.com/Gopichand95/platform-django-template.git",
+        "apiUrl": "https://api.github.com/repos/Gopichand95/platform-django-template",
+        "defaultBranch": "master",
+        "description": "🔧 Build modular monolith Django applications with this Copier template for streamlined deployment and clear domain organization.",
+        "license": null,
+        "topics": [
+          "academic-support",
+          "all-auth",
+          "bloome",
+          "django-rest-framework",
+          "django-website",
+          "ecommerce-application",
+          "monorepo",
+          "mvc-architecture",
+          "not-finished",
+          "orm",
+          "social-media",
+          "social-media-app",
+          "social-network",
+          "template",
+          "websocket"
+        ],
+        "primaryLanguage": null,
+        "stars": 0,
+        "forks": 0,
+        "openIssues": 0,
+        "sizeKb": 2418,
+        "createdAt": "2020-03-08T14:31:49Z",
+        "updatedAt": "2026-07-01T06:49:44Z",
+        "pushedAt": "2026-07-01T06:49:40Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "monorepo",
+          "query": "topic:monorepo archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 2,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/Gopichand95/platform-django-template.git Gopichand95--platform-django-template",
+          "pinCommand": "git -C Gopichand95--platform-django-template rev-parse master",
+          "scanCommand": "setuplens doctor Gopichand95--platform-django-template --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-frontendbootcamp-17th--cookeat",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "FRONTENDBOOTCAMP-17th/Cookeat",
+        "owner": "FRONTENDBOOTCAMP-17th",
+        "name": "Cookeat",
+        "htmlUrl": "https://github.com/FRONTENDBOOTCAMP-17th/Cookeat",
+        "cloneUrl": "https://github.com/FRONTENDBOOTCAMP-17th/Cookeat.git",
+        "apiUrl": "https://api.github.com/repos/FRONTENDBOOTCAMP-17th/Cookeat",
+        "defaultBranch": "develop",
+        "description": "Cook부터 Eat까지 단 한 번의 터치로 — 레시피 탐색, 재료 커스텀, 묶음 배송을 하나로 잇는 편리한 식생활 플랫폼",
+        "license": "NOASSERTION",
+        "topics": [
+          "axios",
+          "next-api-routes",
+          "nextjs",
+          "reactjs",
+          "tailwindcss",
+          "typescript",
+          "vercel",
+          "zustand"
+        ],
+        "primaryLanguage": "TypeScript",
+        "stars": 1,
+        "forks": 0,
+        "openIssues": 0,
+        "sizeKb": 43895,
+        "createdAt": "2026-06-01T00:32:28Z",
+        "updatedAt": "2026-07-01T06:51:18Z",
+        "pushedAt": "2026-07-01T06:51:14Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "next",
+          "query": "topic:nextjs language:TypeScript archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 3,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/FRONTENDBOOTCAMP-17th/Cookeat.git FRONTENDBOOTCAMP-17th--Cookeat",
+          "pinCommand": "git -C FRONTENDBOOTCAMP-17th--Cookeat rev-parse develop",
+          "scanCommand": "setuplens doctor FRONTENDBOOTCAMP-17th--Cookeat --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-marcosmvm--wryko",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "marcosmvm/Wryko",
+        "owner": "marcosmvm",
+        "name": "Wryko",
+        "htmlUrl": "https://github.com/marcosmvm/Wryko",
+        "cloneUrl": "https://github.com/marcosmvm/Wryko.git",
+        "apiUrl": "https://api.github.com/repos/marcosmvm/Wryko",
+        "defaultBranch": "main",
+        "description": "Wryko — the done-for-you AI growth agency. A black-box platform that runs cold email, SEO, and social media for you end to end: it finds the right people, writes every message, page, and post, answers replies in your voice, and books meetings on your calendar — all from the accounts you already use. Vite + React + Supabase Edge Functions + Stripe.",
+        "license": null,
+        "topics": [
+          "ai",
+          "ai-agents",
+          "b2b",
+          "cold-email",
+          "outreach",
+          "react",
+          "saas",
+          "seo",
+          "stripe",
+          "supabase",
+          "typescript",
+          "vite",
+          "wryko",
+          "xgrowthos"
+        ],
+        "primaryLanguage": "TypeScript",
+        "stars": 0,
+        "forks": 0,
+        "openIssues": 106,
+        "sizeKb": 219494,
+        "createdAt": "2026-01-26T04:36:26Z",
+        "updatedAt": "2026-07-01T06:51:04Z",
+        "pushedAt": "2026-07-01T06:51:00Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "vite",
+          "query": "topic:vite language:TypeScript archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 3,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/marcosmvm/Wryko.git marcosmvm--Wryko",
+          "pinCommand": "git -C marcosmvm--Wryko rev-parse main",
+          "scanCommand": "setuplens doctor marcosmvm--Wryko --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-mahipalsingh2011--halolight-api-nestjs",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "mahipalsingh2011/halolight-api-nestjs",
+        "owner": "mahipalsingh2011",
+        "name": "halolight-api-nestjs",
+        "htmlUrl": "https://github.com/mahipalsingh2011/halolight-api-nestjs",
+        "cloneUrl": "https://github.com/mahipalsingh2011/halolight-api-nestjs.git",
+        "apiUrl": "https://api.github.com/repos/mahipalsingh2011/halolight-api-nestjs",
+        "defaultBranch": "main",
+        "description": "🚀 Build scalable, enterprise-level back-end APIs with Halolight, featuring JWT authentication, RBAC, Prisma ORM, and Swagger documentation for seamless management.",
+        "license": "MIT",
+        "topics": [
+          "api",
+          "backend",
+          "fastify",
+          "github-config",
+          "graphql",
+          "halolight",
+          "jwt",
+          "nestjs",
+          "nodejs",
+          "postgresql",
+          "prisma",
+          "rbac",
+          "swagger",
+          "typescript"
+        ],
+        "primaryLanguage": "TypeScript",
+        "stars": 0,
+        "forks": 0,
+        "openIssues": 0,
+        "sizeKb": 2126,
+        "createdAt": "2022-01-20T12:26:38Z",
+        "updatedAt": "2026-07-01T06:46:54Z",
+        "pushedAt": "2026-07-01T06:46:50Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "prisma",
+          "query": "topic:prisma archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 3,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/mahipalsingh2011/halolight-api-nestjs.git mahipalsingh2011--halolight-api-nestjs",
+          "pinCommand": "git -C mahipalsingh2011--halolight-api-nestjs rev-parse main",
+          "scanCommand": "setuplens doctor mahipalsingh2011--halolight-api-nestjs --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-mobdudeedits--django-crontask",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "mobdudeedits/django-crontask",
+        "owner": "mobdudeedits",
+        "name": "django-crontask",
+        "htmlUrl": "https://github.com/mobdudeedits/django-crontask",
+        "cloneUrl": "https://github.com/mobdudeedits/django-crontask.git",
+        "apiUrl": "https://api.github.com/repos/mobdudeedits/django-crontask",
+        "defaultBranch": "main",
+        "description": "🕒 Schedule recurring asynchronous tasks in Django easily with crontab syntax, utilizing lightweight helpers and Sentry support for monitoring.",
+        "license": "BSD-3-Clause",
+        "topics": [
+          "apps",
+          "automation",
+          "boilerplate",
+          "celery",
+          "cron",
+          "cron-script",
+          "crontask",
+          "django",
+          "heroku",
+          "javascript",
+          "nodejs",
+          "orm",
+          "php",
+          "redbubble",
+          "scheduler",
+          "tasks",
+          "web",
+          "zapier"
+        ],
+        "primaryLanguage": "Python",
+        "stars": 0,
+        "forks": 0,
+        "openIssues": 0,
+        "sizeKb": 2582,
+        "createdAt": "2025-12-28T19:44:54Z",
+        "updatedAt": "2026-07-01T06:48:50Z",
+        "pushedAt": "2026-07-01T06:48:45Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "django",
+          "query": "topic:django language:Python archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 3,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/mobdudeedits/django-crontask.git mobdudeedits--django-crontask",
+          "pinCommand": "git -C mobdudeedits--django-crontask rev-parse main",
+          "scanCommand": "setuplens doctor mobdudeedits--django-crontask --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-khn0x-khn0x--emdca",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "khn0x-khn0x/emdca",
+        "owner": "khn0x-khn0x",
+        "name": "emdca",
+        "htmlUrl": "https://github.com/khn0x-khn0x/emdca",
+        "cloneUrl": "https://github.com/khn0x-khn0x/emdca.git",
+        "apiUrl": "https://api.github.com/repos/khn0x-khn0x/emdca",
+        "defaultBranch": "main",
+        "description": "🎯 Simplify AI software development with EMDCA, a framework that integrates Logic, Data, and Capability for clear, consistent architecture.",
+        "license": "MIT",
+        "topics": [
+          "ai-agents",
+          "architecture",
+          "clean-architecture",
+          "design-patterns",
+          "domain-driven-design",
+          "fastapi",
+          "functional-programming",
+          "pydantic",
+          "python",
+          "railway-oriented-programming",
+          "vertical-slices"
+        ],
+        "primaryLanguage": "Python",
+        "stars": 1,
+        "forks": 0,
+        "openIssues": 0,
+        "sizeKb": 1566,
+        "createdAt": "2026-01-01T19:25:34Z",
+        "updatedAt": "2026-07-01T06:50:49Z",
+        "pushedAt": "2026-07-01T06:50:46Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "fastapi",
+          "query": "topic:fastapi language:Python archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 3,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/khn0x-khn0x/emdca.git khn0x-khn0x--emdca",
+          "pinCommand": "git -C khn0x-khn0x--emdca rev-parse main",
+          "scanCommand": "setuplens doctor khn0x-khn0x--emdca --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-inikoo-ltd--aiku",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "Inikoo-Ltd/aiku",
+        "owner": "Inikoo-Ltd",
+        "name": "aiku",
+        "htmlUrl": "https://github.com/Inikoo-Ltd/aiku",
+        "cloneUrl": "https://github.com/Inikoo-Ltd/aiku.git",
+        "apiUrl": "https://api.github.com/repos/Inikoo-Ltd/aiku",
+        "defaultBranch": "main",
+        "description": "Open Source White-label opinionated ERP web app",
+        "license": "AGPL-3.0",
+        "topics": [
+          "crm",
+          "dropshipping",
+          "fulfillment",
+          "human-resource-managment",
+          "laravel",
+          "stock-control"
+        ],
+        "primaryLanguage": "PHP",
+        "stars": 45,
+        "forks": 5,
+        "openIssues": 478,
+        "sizeKb": 243620,
+        "createdAt": "2022-08-09T09:07:57Z",
+        "updatedAt": "2026-07-01T06:48:57Z",
+        "pushedAt": "2026-07-01T06:48:53Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "laravel",
+          "query": "topic:laravel language:PHP archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 3,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/Inikoo-Ltd/aiku.git Inikoo-Ltd--aiku",
+          "pinCommand": "git -C Inikoo-Ltd--aiku rev-parse main",
+          "scanCommand": "setuplens doctor Inikoo-Ltd--aiku --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-24pullrequests--24pullrequests",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "24pullrequests/24pullrequests",
+        "owner": "24pullrequests",
+        "name": "24pullrequests",
+        "htmlUrl": "https://github.com/24pullrequests/24pullrequests",
+        "cloneUrl": "https://github.com/24pullrequests/24pullrequests.git",
+        "apiUrl": "https://api.github.com/repos/24pullrequests/24pullrequests",
+        "defaultBranch": "main",
+        "description": ":christmas_tree: Giving back to open source for the holidays",
+        "license": "MIT",
+        "topics": [
+          "community",
+          "holidays",
+          "open-source",
+          "opensource",
+          "pull-requests",
+          "rails",
+          "ruby"
+        ],
+        "primaryLanguage": "Ruby",
+        "stars": 1707,
+        "forks": 534,
+        "openIssues": 15,
+        "sizeKb": 14943,
+        "createdAt": "2012-11-13T16:32:05Z",
+        "updatedAt": "2026-07-01T06:39:56Z",
+        "pushedAt": "2026-07-01T06:39:53Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "rails",
+          "query": "topic:rails language:Ruby archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 3,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/24pullrequests/24pullrequests.git 24pullrequests--24pullrequests",
+          "pinCommand": "git -C 24pullrequests--24pullrequests rev-parse main",
+          "scanCommand": "setuplens doctor 24pullrequests--24pullrequests --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-fhurau--securetask",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "fhurau/securetask",
+        "owner": "fhurau",
+        "name": "securetask",
+        "htmlUrl": "https://github.com/fhurau/securetask",
+        "cloneUrl": "https://github.com/fhurau/securetask.git",
+        "apiUrl": "https://api.github.com/repos/fhurau/securetask",
+        "defaultBranch": "main",
+        "description": "Local AppSec demo with Spring Boot, Next.js, Keycloak OIDC, object-level authorization, audit logs, secure uploads, Swagger, CI, and reviewer smoke tests.",
+        "license": null,
+        "topics": [
+          "appsec",
+          "audit-logging",
+          "docker",
+          "github-actions",
+          "gitleaks",
+          "keycloak",
+          "nextjs",
+          "oauth2",
+          "oidc",
+          "owasp",
+          "postgresql",
+          "secure-upload",
+          "security",
+          "spring-boot",
+          "trivy"
+        ],
+        "primaryLanguage": "Java",
+        "stars": 0,
+        "forks": 0,
+        "openIssues": 0,
+        "sizeKb": 386,
+        "createdAt": "2026-06-15T04:20:22Z",
+        "updatedAt": "2026-07-01T06:49:38Z",
+        "pushedAt": "2026-07-01T06:49:36Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "spring",
+          "query": "topic:spring-boot language:Java archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 3,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/fhurau/securetask.git fhurau--securetask",
+          "pinCommand": "git -C fhurau--securetask rev-parse main",
+          "scanCommand": "setuplens doctor fhurau--securetask --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-frasermolyneux--portal-web",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "frasermolyneux/portal-web",
+        "owner": "frasermolyneux",
+        "name": "portal-web",
+        "htmlUrl": "https://github.com/frasermolyneux/portal-web",
+        "cloneUrl": "https://github.com/frasermolyneux/portal-web.git",
+        "apiUrl": "https://api.github.com/repos/frasermolyneux/portal-web",
+        "defaultBranch": "main",
+        "description": "XtremeIdiots portal web app (ASP.NET Core MVC) with Azure resources defined in Bicep and deployed via Azure DevOps.",
+        "license": "GPL-3.0",
+        "topics": [
+          "app-insights",
+          "app-service",
+          "aspnet-core",
+          "azure",
+          "azure-devops-pipelines",
+          "bicep",
+          "key-vault"
+        ],
+        "primaryLanguage": "C#",
+        "stars": 1,
+        "forks": 0,
+        "openIssues": 0,
+        "sizeKb": 12086,
+        "createdAt": "2026-01-12T18:07:37Z",
+        "updatedAt": "2026-07-01T06:13:30Z",
+        "pushedAt": "2026-07-01T06:13:26Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "dotnet",
+          "query": "topic:aspnet-core language:C# archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 3,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/frasermolyneux/portal-web.git frasermolyneux--portal-web",
+          "pinCommand": "git -C frasermolyneux--portal-web rev-parse main",
+          "scanCommand": "setuplens doctor frasermolyneux--portal-web --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-heptau--pg_procrustes",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "heptau/pg_procrustes",
+        "owner": "heptau",
+        "name": "pg_procrustes",
+        "htmlUrl": "https://github.com/heptau/pg_procrustes",
+        "cloneUrl": "https://github.com/heptau/pg_procrustes.git",
+        "apiUrl": "https://api.github.com/repos/heptau/pg_procrustes",
+        "defaultBranch": "main",
+        "description": "🪚 A fast, flexible PG formatter in Go. Driven by the native PostgreSQL parser, it understands your code like the DB itself. You design the Procrustean bed via rich config, and it shapes your queries with flawless precision. 🛏️📐",
+        "license": "MIT",
+        "topics": [
+          "ast",
+          "cli",
+          "configurable",
+          "developer-tools",
+          "formatter",
+          "go",
+          "golang",
+          "linter",
+          "opinionated",
+          "pg-query",
+          "postgres",
+          "postgresql",
+          "sql",
+          "sql-formatter",
+          "sql-parser"
+        ],
+        "primaryLanguage": "Go",
+        "stars": 3,
+        "forks": 0,
+        "openIssues": 0,
+        "sizeKb": 254,
+        "createdAt": "2026-06-22T06:52:14Z",
+        "updatedAt": "2026-07-01T06:51:27Z",
+        "pushedAt": "2026-07-01T06:51:23Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "go",
+          "query": "topic:golang language:Go archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 3,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/heptau/pg_procrustes.git heptau--pg_procrustes",
+          "pinCommand": "git -C heptau--pg_procrustes rev-parse main",
+          "scanCommand": "setuplens doctor heptau--pg_procrustes --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-yasirrandhawa--eth-vanity-metal",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "yasirrandhawa/eth-vanity-metal",
+        "owner": "yasirrandhawa",
+        "name": "eth-vanity-metal",
+        "htmlUrl": "https://github.com/yasirrandhawa/eth-vanity-metal",
+        "cloneUrl": "https://github.com/yasirrandhawa/eth-vanity-metal.git",
+        "apiUrl": "https://api.github.com/repos/yasirrandhawa/eth-vanity-metal",
+        "defaultBranch": "main",
+        "description": "🔧 Generate custom Ethereum vanity addresses quickly and efficiently using Metal GPU acceleration on Apple Silicon.",
+        "license": "MIT",
+        "topics": [
+          "address-generator",
+          "apple-silicon",
+          "cryptocurrency",
+          "ethereum",
+          "gpu",
+          "gpu-acceleration",
+          "keccak256",
+          "m1",
+          "m2",
+          "m3",
+          "m4",
+          "macos",
+          "metal",
+          "rust",
+          "secp256k1",
+          "vanity-address"
+        ],
+        "primaryLanguage": "Rust",
+        "stars": 0,
+        "forks": 0,
+        "openIssues": 0,
+        "sizeKb": 1994,
+        "createdAt": "2026-01-01T19:28:41Z",
+        "updatedAt": "2026-07-01T06:50:52Z",
+        "pushedAt": "2026-07-01T06:50:49Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "rust",
+          "query": "topic:rust language:Rust archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 3,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/yasirrandhawa/eth-vanity-metal.git yasirrandhawa--eth-vanity-metal",
+          "pinCommand": "git -C yasirrandhawa--eth-vanity-metal rev-parse main",
+          "scanCommand": "setuplens doctor yasirrandhawa--eth-vanity-metal --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-martofine4u--next-platform-starter",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "martofine4u/next-platform-starter",
+        "owner": "martofine4u",
+        "name": "next-platform-starter",
+        "htmlUrl": "https://github.com/martofine4u/next-platform-starter",
+        "cloneUrl": "https://github.com/martofine4u/next-platform-starter.git",
+        "apiUrl": "https://api.github.com/repos/martofine4u/next-platform-starter",
+        "defaultBranch": "main",
+        "description": "🌐 Build powerful apps with Next.js 16 and Netlify Core Primitives for seamless deployments and optimal performance.",
+        "license": null,
+        "topics": [
+          "analytics",
+          "digitalocean",
+          "electron",
+          "email",
+          "mobile-development",
+          "monorepo",
+          "multi-tenancy",
+          "next-auth",
+          "nextjs",
+          "nextjs-template",
+          "react",
+          "react-native",
+          "resend-email",
+          "saas",
+          "seo",
+          "starter-kit",
+          "template",
+          "turborepo",
+          "turborepo-starter",
+          "vercel"
+        ],
+        "primaryLanguage": "JavaScript",
+        "stars": 2,
+        "forks": 0,
+        "openIssues": 0,
+        "sizeKb": 3659,
+        "createdAt": "2025-12-29T00:07:18Z",
+        "updatedAt": "2026-07-01T06:48:56Z",
+        "pushedAt": "2026-07-01T06:48:53Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "monorepo",
+          "query": "topic:monorepo archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 3,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/martofine4u/next-platform-starter.git martofine4u--next-platform-starter",
+          "pinCommand": "git -C martofine4u--next-platform-starter rev-parse main",
+          "scanCommand": "setuplens doctor martofine4u--next-platform-starter --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-mughriah--omni-sketch",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "mughriah/omni-sketch",
+        "owner": "mughriah",
+        "name": "omni-sketch",
+        "htmlUrl": "https://github.com/mughriah/omni-sketch",
+        "cloneUrl": "https://github.com/mughriah/omni-sketch.git",
+        "apiUrl": "https://api.github.com/repos/mughriah/omni-sketch",
+        "defaultBranch": "master",
+        "description": "🎨 Create stunning art with OmniSketch, a modern, minimalist drawing app featuring intuitive tools and a simple interface for all skill levels.",
+        "license": "MIT",
+        "topics": [
+          "javascript",
+          "mit",
+          "nextjs",
+          "omni",
+          "omnisketch",
+          "pencil",
+          "site",
+          "sketch",
+          "typescript",
+          "web",
+          "zutstand"
+        ],
+        "primaryLanguage": "TypeScript",
+        "stars": 1,
+        "forks": 0,
+        "openIssues": 0,
+        "sizeKb": 2132,
+        "createdAt": "2026-01-03T00:20:58Z",
+        "updatedAt": "2026-07-01T06:51:15Z",
+        "pushedAt": "2026-07-01T06:51:11Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "next",
+          "query": "topic:nextjs language:TypeScript archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 4,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/mughriah/omni-sketch.git mughriah--omni-sketch",
+          "pinCommand": "git -C mughriah--omni-sketch rev-parse master",
+          "scanCommand": "setuplens doctor mughriah--omni-sketch --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-jeremygarilao--techlearn-kenya",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "Jeremygarilao/TechLearn-Kenya",
+        "owner": "Jeremygarilao",
+        "name": "TechLearn-Kenya",
+        "htmlUrl": "https://github.com/Jeremygarilao/TechLearn-Kenya",
+        "cloneUrl": "https://github.com/Jeremygarilao/TechLearn-Kenya.git",
+        "apiUrl": "https://api.github.com/repos/Jeremygarilao/TechLearn-Kenya",
+        "defaultBranch": "main",
+        "description": "🌍 Empower youth in Kenya through accessible technology education, fostering skills for a brighter future and bridging the digital divide.",
+        "license": null,
+        "topics": [
+          "css",
+          "machine-learning",
+          "openai",
+          "postgresql",
+          "react",
+          "react-router",
+          "shadcn-ui",
+          "supabase",
+          "tanstack-query",
+          "typescript",
+          "vite"
+        ],
+        "primaryLanguage": "TypeScript",
+        "stars": 0,
+        "forks": 0,
+        "openIssues": 0,
+        "sizeKb": 2240,
+        "createdAt": "2025-12-28T16:16:46Z",
+        "updatedAt": "2026-07-01T06:48:51Z",
+        "pushedAt": "2026-07-01T06:48:47Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "vite",
+          "query": "topic:vite language:TypeScript archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 4,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/Jeremygarilao/TechLearn-Kenya.git Jeremygarilao--TechLearn-Kenya",
+          "pinCommand": "git -C Jeremygarilao--TechLearn-Kenya rev-parse main",
+          "scanCommand": "setuplens doctor Jeremygarilao--TechLearn-Kenya --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-potentsergey-dev--echosupport",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "potentsergey-dev/echosupport",
+        "owner": "potentsergey-dev",
+        "name": "echosupport",
+        "htmlUrl": "https://github.com/potentsergey-dev/echosupport",
+        "cloneUrl": "https://github.com/potentsergey-dev/echosupport.git",
+        "apiUrl": "https://api.github.com/repos/potentsergey-dev/echosupport",
+        "defaultBranch": "main",
+        "description": "Self-hosted AI customer support platform with RAG, human handoff, booking, voice input, and an embeddable widget.",
+        "license": "MIT",
+        "topics": [
+          "ai",
+          "chatbot",
+          "customer-support",
+          "docker",
+          "fastify",
+          "prisma",
+          "qdrant",
+          "rag",
+          "self-hosted",
+          "typescript"
+        ],
+        "primaryLanguage": "TypeScript",
+        "stars": 0,
+        "forks": 0,
+        "openIssues": 0,
+        "sizeKb": 301,
+        "createdAt": "2026-06-30T04:37:00Z",
+        "updatedAt": "2026-07-01T06:46:43Z",
+        "pushedAt": "2026-07-01T06:47:58Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "prisma",
+          "query": "topic:prisma archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 4,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/potentsergey-dev/echosupport.git potentsergey-dev--echosupport",
+          "pinCommand": "git -C potentsergey-dev--echosupport rev-parse main",
+          "scanCommand": "setuplens doctor potentsergey-dev--echosupport --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-inventree--inventree",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "inventree/InvenTree",
+        "owner": "inventree",
+        "name": "InvenTree",
+        "htmlUrl": "https://github.com/inventree/InvenTree",
+        "cloneUrl": "https://github.com/inventree/InvenTree.git",
+        "apiUrl": "https://api.github.com/repos/inventree/InvenTree",
+        "defaultBranch": "master",
+        "description": "Open Source Inventory Management System",
+        "license": "MIT",
+        "topics": [
+          "django",
+          "hacktoberfest",
+          "python"
+        ],
+        "primaryLanguage": "Python",
+        "stars": 7202,
+        "forks": 1436,
+        "openIssues": 187,
+        "sizeKb": 343131,
+        "createdAt": "2017-03-23T01:44:10Z",
+        "updatedAt": "2026-07-01T06:47:38Z",
+        "pushedAt": "2026-07-01T06:47:33Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "django",
+          "query": "topic:django language:Python archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 4,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/inventree/InvenTree.git inventree--InvenTree",
+          "pinCommand": "git -C inventree--InvenTree rev-parse master",
+          "scanCommand": "setuplens doctor inventree--InvenTree --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-inazon--ai-task-notify",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "inazon/ai-task-notify",
+        "owner": "inazon",
+        "name": "ai-task-notify",
+        "htmlUrl": "https://github.com/inazon/ai-task-notify",
+        "cloneUrl": "https://github.com/inazon/ai-task-notify.git",
+        "apiUrl": "https://api.github.com/repos/inazon/ai-task-notify",
+        "defaultBranch": "main",
+        "description": "📢 Notify users of Claude Code and Codex CLI task completions through various channels like WeCom, Feishu, DingTalk, and Email effortlessly.",
+        "license": null,
+        "topics": [
+          "ai-agents",
+          "aiagent",
+          "fastapi",
+          "gemini-api",
+          "multiagent-systems",
+          "nextjs15",
+          "notion-api",
+          "notion-database",
+          "openai",
+          "python",
+          "sqlalchemy",
+          "streamlit",
+          "supabase",
+          "typescript",
+          "uvicorn",
+          "visual-studio-code"
+        ],
+        "primaryLanguage": "Python",
+        "stars": 2,
+        "forks": 1,
+        "openIssues": 0,
+        "sizeKb": 1879,
+        "createdAt": "2025-08-06T08:53:07Z",
+        "updatedAt": "2026-07-01T06:50:45Z",
+        "pushedAt": "2026-07-01T06:50:42Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "fastapi",
+          "query": "topic:fastapi language:Python archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 4,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/inazon/ai-task-notify.git inazon--ai-task-notify",
+          "pinCommand": "git -C inazon--ai-task-notify rev-parse main",
+          "scanCommand": "setuplens doctor inazon--ai-task-notify --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-rezanajafi1382--laravel-llm-suite",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "rezanajafi1382/laravel-llm-suite",
+        "owner": "rezanajafi1382",
+        "name": "laravel-llm-suite",
+        "htmlUrl": "https://github.com/rezanajafi1382/laravel-llm-suite",
+        "cloneUrl": "https://github.com/rezanajafi1382/laravel-llm-suite.git",
+        "apiUrl": "https://api.github.com/repos/rezanajafi1382/laravel-llm-suite",
+        "defaultBranch": "main",
+        "description": "🤖 Connect seamlessly with multiple LLM providers using this Laravel toolkit for chat and image generation, offering unified access and easy management.",
+        "license": "MIT",
+        "topics": [
+          "laravel",
+          "llm",
+          "openai",
+          "php"
+        ],
+        "primaryLanguage": "PHP",
+        "stars": 0,
+        "forks": 0,
+        "openIssues": 0,
+        "sizeKb": 1524,
+        "createdAt": "2025-08-09T17:52:11Z",
+        "updatedAt": "2026-07-01T06:47:13Z",
+        "pushedAt": "2026-07-01T06:47:10Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "laravel",
+          "query": "topic:laravel language:PHP archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 4,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/rezanajafi1382/laravel-llm-suite.git rezanajafi1382--laravel-llm-suite",
+          "pinCommand": "git -C rezanajafi1382--laravel-llm-suite rev-parse main",
+          "scanCommand": "setuplens doctor rezanajafi1382--laravel-llm-suite --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-shakacode--control-plane-flow",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "shakacode/control-plane-flow",
+        "owner": "shakacode",
+        "name": "control-plane-flow",
+        "htmlUrl": "https://github.com/shakacode/control-plane-flow",
+        "cloneUrl": "https://github.com/shakacode/control-plane-flow.git",
+        "apiUrl": "https://api.github.com/repos/shakacode/control-plane-flow",
+        "defaultBranch": "main",
+        "description": " The power of Kubernetes with the ease of Heroku! Simple CI configuration for Heroku-style \"review apps,\" staging deployments, and promoting staging to production, following the \"convention over configuration\" philosophy.",
+        "license": "NOASSERTION",
+        "topics": [
+          "control",
+          "controlplane",
+          "heroku",
+          "k8",
+          "plane",
+          "rails"
+        ],
+        "primaryLanguage": "Ruby",
+        "stars": 51,
+        "forks": 5,
+        "openIssues": 5,
+        "sizeKb": 1630,
+        "createdAt": "2022-10-12T09:13:59Z",
+        "updatedAt": "2026-07-01T06:30:43Z",
+        "pushedAt": "2026-07-01T06:30:40Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "rails",
+          "query": "topic:rails language:Ruby archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 4,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/shakacode/control-plane-flow.git shakacode--control-plane-flow",
+          "pinCommand": "git -C shakacode--control-plane-flow rev-parse main",
+          "scanCommand": "setuplens doctor shakacode--control-plane-flow --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-alexmond--unitrack",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "alexmond/unitrack",
+        "owner": "alexmond",
+        "name": "unitrack",
+        "htmlUrl": "https://github.com/alexmond/unitrack",
+        "cloneUrl": "https://github.com/alexmond/unitrack.git",
+        "apiUrl": "https://api.github.com/repos/alexmond/unitrack",
+        "defaultBranch": "main",
+        "description": "Self-hosted test & coverage tracking over time — Allure-meets-Codecov, polyglot (JVM, Go, .NET, Node). Trends, flaky detection, quality gates, failure clustering + AI root-cause, load tests, PR checks, MCP.",
+        "license": "NOASSERTION",
+        "topics": [
+          "allure",
+          "ci",
+          "code-coverage",
+          "codecov",
+          "devops",
+          "flaky-tests",
+          "jacoco",
+          "java",
+          "junit",
+          "mcp",
+          "performance-testing",
+          "quality-gate",
+          "self-hosted",
+          "spring-boot",
+          "test-analytics",
+          "test-reporting"
+        ],
+        "primaryLanguage": "Java",
+        "stars": 0,
+        "forks": 0,
+        "openIssues": 38,
+        "sizeKb": 14156,
+        "createdAt": "2026-06-04T20:26:43Z",
+        "updatedAt": "2026-07-01T06:49:10Z",
+        "pushedAt": "2026-07-01T06:49:07Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "spring",
+          "query": "topic:spring-boot language:Java archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 4,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/alexmond/unitrack.git alexmond--unitrack",
+          "pinCommand": "git -C alexmond--unitrack rev-parse main",
+          "scanCommand": "setuplens doctor alexmond--unitrack --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-grandnode--grandnode2",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "grandnode/grandnode2",
+        "owner": "grandnode",
+        "name": "grandnode2",
+        "htmlUrl": "https://github.com/grandnode/grandnode2",
+        "cloneUrl": "https://github.com/grandnode/grandnode2.git",
+        "apiUrl": "https://api.github.com/repos/grandnode/grandnode2",
+        "defaultBranch": "develop",
+        "description": "E-commerce platform built with ASP.NET Core using MongoDB for NoSQL storage",
+        "license": "GPL-3.0",
+        "topics": [
+          "asp-net-core",
+          "asp-net-core-mvc",
+          "aspnet-core",
+          "aspnetcore",
+          "csharp",
+          "dotnet",
+          "dotnet-core",
+          "ecommerce",
+          "ecommerce-application",
+          "ecommerce-platform",
+          "mongodb",
+          "multitenant",
+          "netcore",
+          "nosql",
+          "online-store",
+          "shop",
+          "shopping-cart"
+        ],
+        "primaryLanguage": "C#",
+        "stars": 1316,
+        "forks": 549,
+        "openIssues": 107,
+        "sizeKb": 92660,
+        "createdAt": "2021-05-10T14:07:03Z",
+        "updatedAt": "2026-07-01T05:45:14Z",
+        "pushedAt": "2026-07-01T05:45:14Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "dotnet",
+          "query": "topic:aspnet-core language:C# archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 4,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/grandnode/grandnode2.git grandnode--grandnode2",
+          "pinCommand": "git -C grandnode--grandnode2 rev-parse develop",
+          "scanCommand": "setuplens doctor grandnode--grandnode2 --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-anthony-chaudhary--fak",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "anthony-chaudhary/fak",
+        "owner": "anthony-chaudhary",
+        "name": "fak",
+        "htmlUrl": "https://github.com/anthony-chaudhary/fak",
+        "cloneUrl": "https://github.com/anthony-chaudhary/fak.git",
+        "apiUrl": "https://api.github.com/repos/anthony-chaudhary/fak",
+        "defaultBranch": "main",
+        "description": "fak — the Fused Agent Kernel: treat the model like an untrusted program and the tool call like a syscall. One Go binary — a default-deny capability gate the model can't talk past, plus an addressable, bit-exact KV cache.",
+        "license": "Apache-2.0",
+        "topics": [
+          "agent",
+          "agent-security",
+          "agentic-ai",
+          "ai-agents",
+          "ai-safety",
+          "ai-security",
+          "capability-security",
+          "firewall",
+          "golang",
+          "inference",
+          "kv-cache",
+          "llm",
+          "llm-agents",
+          "llm-inference",
+          "llm-serving",
+          "llmops",
+          "mcp",
+          "prompt-injection",
+          "self-hosted",
+          "tool-poisoning"
+        ],
+        "primaryLanguage": "Go",
+        "stars": 8,
+        "forks": 5,
+        "openIssues": 425,
+        "sizeKb": 114868,
+        "createdAt": "2026-06-21T19:52:45Z",
+        "updatedAt": "2026-07-01T06:51:27Z",
+        "pushedAt": "2026-07-01T06:51:23Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "go",
+          "query": "topic:golang language:Go archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 4,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/anthony-chaudhary/fak.git anthony-chaudhary--fak",
+          "pinCommand": "git -C anthony-chaudhary--fak rev-parse main",
+          "scanCommand": "setuplens doctor anthony-chaudhary--fak --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-marmikshah--tono",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "marmikshah/tono",
+        "owner": "marmikshah",
+        "name": "tono",
+        "htmlUrl": "https://github.com/marmikshah/tono",
+        "cloneUrl": "https://github.com/marmikshah/tono.git",
+        "apiUrl": "https://api.github.com/repos/marmikshah/tono",
+        "defaultBranch": "master",
+        "description": "A headless sound studio for AI agents — GarageBand-as-API over MCP. Instruments, mixing console, SoundFont sampler, deterministic replayable sessions. Sibling of atelier.",
+        "license": "NOASSERTION",
+        "topics": [
+          "ai-agents",
+          "audio",
+          "chiptune",
+          "daw",
+          "gamedev",
+          "mcp",
+          "music",
+          "rust",
+          "sound-design",
+          "synthesis"
+        ],
+        "primaryLanguage": "Rust",
+        "stars": 2,
+        "forks": 0,
+        "openIssues": 2,
+        "sizeKb": 18266,
+        "createdAt": "2026-06-07T09:55:17Z",
+        "updatedAt": "2026-07-01T06:50:39Z",
+        "pushedAt": "2026-07-01T06:51:29Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "rust",
+          "query": "topic:rust language:Rust archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 4,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/marmikshah/tono.git marmikshah--tono",
+          "pinCommand": "git -C marmikshah--tono rev-parse master",
+          "scanCommand": "setuplens doctor marmikshah--tono --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-jeremybanka--wayforge",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "jeremybanka/wayforge",
+        "owner": "jeremybanka",
+        "name": "wayforge",
+        "htmlUrl": "https://github.com/jeremybanka/wayforge",
+        "cloneUrl": "https://github.com/jeremybanka/wayforge.git",
+        "apiUrl": "https://api.github.com/repos/jeremybanka/wayforge",
+        "defaultBranch": "main",
+        "description": "Mad science laboratory",
+        "license": null,
+        "topics": [
+          "monorepo",
+          "pnpm",
+          "turborepo",
+          "typescript",
+          "vitest"
+        ],
+        "primaryLanguage": "TypeScript",
+        "stars": 3,
+        "forks": 2,
+        "openIssues": 1,
+        "sizeKb": 1412686,
+        "createdAt": "2022-08-19T06:32:07Z",
+        "updatedAt": "2026-07-01T06:48:41Z",
+        "pushedAt": "2026-07-01T06:48:36Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "monorepo",
+          "query": "topic:monorepo archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 4,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/jeremybanka/wayforge.git jeremybanka--wayforge",
+          "pinCommand": "git -C jeremybanka--wayforge rev-parse main",
+          "scanCommand": "setuplens doctor jeremybanka--wayforge --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-datopian--portaljs",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "datopian/portaljs",
+        "owner": "datopian",
+        "name": "portaljs",
+        "htmlUrl": "https://github.com/datopian/portaljs",
+        "cloneUrl": "https://github.com/datopian/portaljs.git",
+        "apiUrl": "https://api.github.com/repos/datopian/portaljs",
+        "defaultBranch": "main",
+        "description": "🌀 AI-native framework for building data portals. Scaffold a full portal from a brief and load datasets in minutes with agentic skills — any backend (CKAN, GitHub, Frictionless).",
+        "license": "MIT",
+        "topics": [
+          "ai",
+          "ai-agents",
+          "ckan",
+          "data-fabric",
+          "data-management-platform",
+          "data-mesh",
+          "data-portal",
+          "data-portal-frontends",
+          "data-portals",
+          "datahub",
+          "dataverse",
+          "dkan",
+          "nextjs",
+          "open-data",
+          "open-data-portal",
+          "opendatasoft",
+          "openmetadata",
+          "socrata"
+        ],
+        "primaryLanguage": "TypeScript",
+        "stars": 2302,
+        "forks": 333,
+        "openIssues": 82,
+        "sizeKb": 223422,
+        "createdAt": "2011-10-14T21:44:30Z",
+        "updatedAt": "2026-07-01T06:51:11Z",
+        "pushedAt": "2026-07-01T06:51:07Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "next",
+          "query": "topic:nextjs language:TypeScript archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 5,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/datopian/portaljs.git datopian--portaljs",
+          "pinCommand": "git -C datopian--portaljs rev-parse main",
+          "scanCommand": "setuplens doctor datopian--portaljs --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    },
+    {
+      "id": "github-pcmakepass--vibesdk",
+      "status": "candidate",
+      "source": {
+        "provider": "github",
+        "fullName": "Pcmakepass/vibesdk",
+        "owner": "Pcmakepass",
+        "name": "vibesdk",
+        "htmlUrl": "https://github.com/Pcmakepass/vibesdk",
+        "cloneUrl": "https://github.com/Pcmakepass/vibesdk.git",
+        "apiUrl": "https://api.github.com/repos/Pcmakepass/vibesdk",
+        "defaultBranch": "main",
+        "description": "",
+        "license": "MIT",
+        "topics": [
+          "ai",
+          "cloudflare-app",
+          "cloudflare-workers",
+          "coding-agent",
+          "durable-objects",
+          "kv",
+          "react",
+          "templates",
+          "text-to-app",
+          "vibe-coding",
+          "vibecoding",
+          "vite"
+        ],
+        "primaryLanguage": "TypeScript",
+        "stars": 0,
+        "forks": 0,
+        "openIssues": 0,
+        "sizeKb": 5627,
+        "createdAt": "2023-11-19T05:56:21Z",
+        "updatedAt": "2026-07-01T06:48:48Z",
+        "pushedAt": "2026-07-01T06:48:45Z",
+        "discoveredAt": "2026-07-01T06:51:31.468Z",
+        "discoveredBy": {
+          "provider": "github-search-api",
+          "ecosystem": "vite",
+          "query": "topic:vite language:TypeScript archived:false pushed:>2024-01-01",
+          "page": 1,
+          "rank": 5,
+          "endpoint": "https://api.github.com/search/repositories"
+        }
+      },
+      "provenance": {
+        "evidenceKind": "github_repository_search_result",
+        "fetchedAt": "2026-07-01T06:51:31.468Z",
+        "reproducibility": {
+          "cloneCommand": "git clone https://github.com/Pcmakepass/vibesdk.git Pcmakepass--vibesdk",
+          "pinCommand": "git -C Pcmakepass--vibesdk rev-parse main",
+          "scanCommand": "setuplens doctor Pcmakepass--vibesdk --format json"
+        },
+        "retainedFields": [
+          "full_name",
+          "html_url",
+          "clone_url",
+          "default_branch",
+          "license",
+          "topics",
+          "language",
+          "pushed_at",
+          "stargazers_count"
+        ]
+      },
+      "clone": null,
+      "scan": null
+    }
+  ],
+  "errors": []
+}

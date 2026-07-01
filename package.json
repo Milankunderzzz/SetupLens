@@ -21,6 +21,8 @@
     "test": "node --test",
     "check": "node ./scripts/check-syntax.js",
     "corpus": "node ./scripts/evaluate-failure-corpus.js",
+    "dataset:collect": "node ./bin/setuplens.js failure-dataset collect",
+    "dataset:review": "node ./bin/setuplens.js failure-dataset review",
     "demo": "node ./bin/setuplens.js scan . --format html --output ./docs/demo-report.html"
   },
   "engines": {

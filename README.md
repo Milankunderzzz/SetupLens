@@ -26,7 +26,7 @@ I am building it in public and still keeping the core deterministic and local-fi
 
 SetupLens is an early research prototype and usable MVP, not yet a product whose effectiveness has been established. The current `main` branch includes:
 
-- 69 automated tests, executed in CI on Windows, Linux, and macOS with Node.js 18 and 22;
+- 72 automated tests, executed in CI on Windows, Linux, and macOS with Node.js 18 and 22;
 - context-aware file classification, workspace-level dependency reporting, and primary-stack ranking;
 - `Unsupported / Not scored` results for empty repositories, unknown stacks, and unsupported primary stacks instead of misleading numeric grades;
 - startup diagnosis with `ready`, `needs_setup`, `blocked`, and `unsupported` verdicts;
@@ -37,6 +37,7 @@ SetupLens is an early research prototype and usable MVP, not yet a product whose
 - a failure corpus with 13 real-project and distilled fixtures that keeps doctor rules tied to reproducible setup failures;
 - multi-ecosystem doctor adapters for PHP, Ruby, Java, .NET, Go, Rust, monorepos, and local service dependencies;
 - corpus metrics for diagnostic hit rate, first root-cause ranking, safe-fix generation, false blockers, and ecosystem coverage;
+- `failure-dataset collect/review` for pulling 50 public candidate repositories, preserving source provenance, scanning them, and turning the results into corpus and classifier feedback;
 - safer probe execution that runs verify probes by default, records probe traces, and only runs startup commands with `--probe-startup`;
 - action-panel doctor reports in terminal, JSON, and HTML with readiness separated from diagnosis confidence;
 - fix-plan output plus `doctor --apply safe` for whitelisted local repairs and safe recipes that never overwrite existing files;
@@ -108,9 +109,32 @@ SetupLens reads local files and commands only. It does not upload repository con
 - Ranked primary and supporting stacks with manifest evidence, plus matching VS Code extension recommendations
 - Explicitly loaded, repository-specific plugins
 
-## Real Benchmark
+## Evidence Loop Demo
 
-Measured against a real full-stack CMMS repository on Windows 11 with an Intel i5-12500H and Node.js 24. The repository contains Node.js, Python, Docker, and 261 indexed files.
+The old demo was a single benchmark. The stronger demo is now the evidence loop I use to make SetupLens better: collect real public candidates, keep provenance, scan them, review the misses, and only then distill safe minimal cases into the failure corpus.
+
+Collect the first 50 public repository candidates and commit only the auditable source manifest:
+
+```bash
+setuplens failure-dataset collect --limit 50 --format json --output docs/failure-dataset/sources.json
+```
+
+Clone and scan those candidates outside git:
+
+```bash
+setuplens failure-dataset collect --limit 50 --clone --scan --format json --output .setuplens/failure-dataset/sources.json
+```
+
+Review the scan results and turn them into a corpus/classifier backlog:
+
+```bash
+setuplens failure-dataset review --input .setuplens/failure-dataset/sources.json
+setuplens failure-dataset review --input .setuplens/failure-dataset/sources.json --format json --output .setuplens/failure-dataset/review.json
+```
+
+The manifest records repository URL, clone URL, default branch, license, topics, GitHub Search query, collection timestamp, optional resolved commit, optional doctor report path, root-cause ranking, safe-fix counts, unclassified logs, and unknowns. The detailed workflow is in [docs/failure-dataset/README.md](docs/failure-dataset/README.md).
+
+The original CMMS benchmark still exists as one local validation example. It was measured on Windows 11 with an Intel i5-12500H and Node.js 24. The repository contains Node.js, Python, Docker, and 261 indexed files.
 
 | Metric | Result |
 |---|---:|
@@ -137,6 +161,9 @@ setuplens doctor . --apply safe
 setuplens doctor . --format html --output setuplens-doctor.html
 setuplens doctor . --format json --output setuplens-doctor.json
 setuplens doctor-suite ./repos --format json
+setuplens failure-dataset collect --limit 50 --format json
+setuplens failure-dataset collect --limit 50 --clone --scan
+setuplens failure-dataset review --input .setuplens/failure-dataset/sources.json
 
 # Human-readable terminal report
 setuplens scan .
@@ -256,14 +283,17 @@ npm ci
 npm run check
 npm test
 npm run corpus
+npm run dataset:collect -- --limit 50 --format json
+npm run dataset:review -- --input .setuplens/failure-dataset/sources.json
 node ./bin/setuplens.js scan .
 node ./bin/setuplens.js doctor . --probe
 node ./bin/setuplens.js doctor-suite ./repos --format json
+node ./bin/setuplens.js failure-dataset collect --limit 50 --clone --scan
 ```
 
 The scanning runtime uses only Node.js built-ins. Development dependencies are used solely to generate the README demo GIF.
 
-I keep short notes from real-project testing in the [development log](docs/devlog/2026-06-18-cmms-validation.md), and real failures are reduced into corpus cases when they expose new rule boundaries.
+I keep short notes from real-project testing in the [development log](docs/devlog/2026-06-18-cmms-validation.md), use [failure dataset intake](docs/failure-dataset/README.md) to preserve source evidence, and reduce real failures into corpus cases when they expose new rule boundaries.
 
 ## Contributing
 

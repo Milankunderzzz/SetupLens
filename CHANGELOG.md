@@ -17,6 +17,8 @@ This alpha turns SetupLens from a static readiness scanner into a broader local 
 - `doctor --fix-plan` and `doctor --apply safe` for whitelisted local repairs such as copying env templates, appending env ignore rules, and creating missing Compose env placeholders without overwriting files.
 - Failure corpus evaluation with sanitized fixtures, log-classification expectations, safe-fix assertions, and `npm run corpus`.
 - Failure corpus metrics for diagnostic hit rate, first root-cause ranking, safe-fix generation, false blockers, and ecosystem coverage.
+- `setuplens failure-dataset collect` for pulling public repository candidates with GitHub Search provenance, optional clones, optional doctor scans, resolved commit evidence, and per-repository report paths.
+- `setuplens failure-dataset review` for turning scanned candidates into corpus promotion queues, classifier backlogs, safe-fix opportunities, unsupported-stack gaps, unclassified logs, and diagnostic unknowns.
 - CMMS-derived corpus coverage for nested project copies, missing local Node binaries, `npx --no-install` missing packages, and macOS archive metadata inside Python trees.
 - Optional `doctor --probe` execution with bounded local command probes, safe default probe policy, explicit `--probe-startup`, process-tree timeout cleanup, ready-output detection, and probe traces.
 - `doctor-suite` batch diagnosis for real-project validation with ecosystem coverage, failure-type distribution, and unclassified probe logs.
@@ -41,6 +43,7 @@ This alpha turns SetupLens from a static readiness scanner into a broader local 
 - Probe classifiers now distinguish missing local Node dependencies from generic command-not-found failures and identify macOS `__MACOSX`/`._*` files that make Python compile checks fail with null-byte syntax errors.
 - Real-project failures can now be distilled into corpus cases and run as part of the automated test suite.
 - README, license, CI, tests, and other repository hygiene findings are hidden from the default terminal report.
+- README demo positioning now shows the evidence loop from 50-source dataset intake through scan review instead of relying only on a static benchmark.
 - Lockfile and other non-blocking hygiene-style setup warnings no longer dominate the startup summary.
 
 ### Fixed

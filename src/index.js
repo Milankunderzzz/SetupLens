@@ -1,9 +1,11 @@
 export { doctor } from './doctor.js';
 export { doctorSuite } from './doctor-suite.js';
+export { collectFailureDataset, discoverGitHubRepositories, reviewFailureDataset } from './failure-dataset.js';
 export { scan } from './scan.js';
 export { renderDoctorHtml } from './reporters/doctor-html.js';
 export { renderDoctorSuiteTerminal } from './reporters/doctor-suite-terminal.js';
 export { renderDoctorTerminal } from './reporters/doctor-terminal.js';
+export { renderFailureDatasetTerminal } from './reporters/failure-dataset-terminal.js';
 export { renderTerminal } from './reporters/terminal.js';
 export { renderJson } from './reporters/json.js';
 export { renderHtml } from './reporters/html.js';
