@@ -120,6 +120,7 @@ test('doctor command supports machine-readable json output', async (t) => {
   assert.equal(parsed.project.primaryStack, 'node');
   assert.ok(parsed.probes.planned.length >= 2);
   assert.ok(parsed.diagnosis.confidence.score >= 0);
+  assert.ok(parsed.diagnosis.readiness);
   assert.ok(parsed.diagnosis.actionPanel);
 });
 
@@ -139,6 +140,8 @@ test('doctor command writes an HTML action panel report', async (t) => {
   assert.equal(result.status, 0, result.stderr);
   const html = await fs.readFile(output, 'utf8');
   assert.match(html, /Action Panel/);
+  assert.match(html, /Readiness/);
+  assert.match(html, /Diagnosis Confidence/);
   assert.match(html, /SetupLens Doctor/);
 });
 
@@ -239,6 +242,73 @@ test('error classifier recognizes broad setup failure families', () => {
   assert.equal(classifyLog('django.core.exceptions.ImproperlyConfigured: Requested setting INSTALLED_APPS, but settings are not configured').type, 'django_settings_error');
   assert.equal(classifyLog('APPLICATION FAILED TO START\nFailed to configure a DataSource').type, 'spring_datasource_config');
   assert.equal(classifyLog('error: package demo does not have feature postgres').type, 'rust_feature_mismatch');
+  assert.equal(classifyLog('npm error npx canceled due to missing packages and no YES option: ["next@16.2.9"]').type, 'node_dependencies_missing');
+  assert.equal(classifyLog("*** Error compiling './__MACOSX/app/._main.py'...\nSyntaxError: source code string cannot contain null bytes").type, 'macos_resource_fork_files');
+});
+
+test('doctor classifies missing local Node binaries as dependency installation gaps', async (t) => {
+  const root = await fixture({
+    'package.json': JSON.stringify({
+      name: 'node-bin-missing',
+      scripts: { lint: 'next lint' },
+      dependencies: { next: '^14.0.0', react: '^18.2.0', 'react-dom': '^18.2.0' }
+    }),
+    'app/page.tsx': 'export default function Page() { return <main />; }\n'
+  });
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+
+  const report = await doctor(root, { probe: true, timeoutMs: 3000 });
+  const failedLint = report.probes.results.find((item) => item.id.includes('node.verify') && item.status === 'fail');
+
+  assert.equal(failedLint.classification.type, 'node_dependencies_missing');
+  assert.equal(report.diagnosis.rootCauses[0].type, 'node_dependencies_missing');
+  assert.ok(report.diagnosis.fixPlan.fixes.some((item) => item.id.startsWith('manual.node.dependencies')));
+});
+
+test('doctor separates readiness score from diagnosis confidence and recommends safe next command', async (t) => {
+  const root = await fixture({
+    'package.json': JSON.stringify({ name: 'env-app', scripts: { start: 'node index.js' } }),
+    'index.js': 'console.log(process.env.DATABASE_URL);\n',
+    '.env.example': 'DATABASE_URL=\n'
+  });
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+
+  const report = await doctor(root);
+
+  assert.equal(report.status, 'needs_setup');
+  assert.equal(report.diagnosis.actionPanel.nextCommand.type, 'safe_fix');
+  assert.match(report.diagnosis.actionPanel.nextCommand.command, /--apply safe/);
+  assert.ok(report.diagnosis.readiness.score < 100);
+  assert.notEqual(report.diagnosis.readiness.score, report.diagnosis.confidence.score);
+});
+
+test('doctor reports macOS archive metadata as the Python compile blocker', async (t) => {
+  const root = await fixture({
+    'requirements.txt': 'fastapi\n',
+    'main.py': 'print("ok")\n',
+    '__MACOSX/app/._main.py': '\u0000metadata\n'
+  });
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+
+  const report = await doctor(root, { probe: true, timeoutMs: 3000 });
+  const compileProbe = report.probes.results.find((item) => item.id === 'python.compileall');
+
+  assert.equal(compileProbe.classification.type, 'macos_resource_fork_files');
+  assert.ok(report.diagnosis.rootCauses.some((item) => item.type === 'macos_resource_fork_files'));
+  assert.match(compileProbe.classification.evidence, /__MACOSX/);
+});
+
+test('doctor warns when duplicate package copies look like repeated project snapshots', async (t) => {
+  const root = await fixture({
+    'copy-a/package.json': JSON.stringify({ name: 'cmms-web', scripts: { dev: 'next dev' }, dependencies: { next: '^14.0.0' } }),
+    'copy-b/package.json': JSON.stringify({ name: 'cmms-web', scripts: { dev: 'next dev' }, dependencies: { next: '^14.0.0' } })
+  });
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+
+  const report = await doctor(root);
+
+  assert.ok(report.diagnosis.rootCauses.some((item) => item.type === 'duplicate_project_copies'));
+  assert.ok(report.project.adapters.find((adapter) => adapter.id === 'node').signals.duplicatePackages.length > 0);
 });
 
 test('doctor adds deep Next, Vite, Prisma, and TypeScript rules', async (t) => {

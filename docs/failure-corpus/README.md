@@ -24,6 +24,8 @@ Source kinds currently used:
 
 The corpus must always contain at least one real-project case. Seed cases are allowed, but they should be replaced or reinforced with real evidence over time.
 
+The current corpus includes 13 cases. Two CMMS-derived real-project boundaries are represented: broken Compose/Makefile references, and a nested-copy report that exposed missing local Node dependencies plus macOS `__MACOSX`/`._*` archive metadata being treated as Python source.
+
 ## How to Add a Real Failure
 
 1. Reproduce the failing project locally.
@@ -81,6 +83,7 @@ Run one case:
 
 ```bash
 node ./scripts/evaluate-failure-corpus.js --case cmms-compose-paths-and-make-script
+node ./scripts/evaluate-failure-corpus.js --case cmms-nested-copies-node-python-artifacts
 ```
 
 Keep generated fixtures for debugging:

@@ -82,6 +82,12 @@ function normalizeAction(action) {
   };
 }
 
+function quoteCommandPath(value) {
+  const text = String(value);
+  if (!/[\s"]/u.test(text)) return text;
+  return `"${text.replaceAll('"', '\\"')}"`;
+}
+
 function buildStatus({ scanReport, rootCauses, probesEnabled, probes, adapters }) {
   if (!scanReport.scorable && adapters.length === 0) return 'unsupported';
   if (rootCauses.some((item) => item.severity === 'fail')) return 'blocked';
@@ -192,6 +198,27 @@ function buildConfidence({ adapters, rootCauses, probesEnabled, probes }) {
   };
 }
 
+function buildReadiness({ status, rootCauses, probesEnabled, probes }) {
+  const failures = rootCauses.filter((cause) => cause.severity === 'fail').length;
+  const warnings = rootCauses.filter((cause) => cause.severity === 'warn').length;
+  const failedProbes = probes.filter((probe) => probe.status === 'fail').length;
+  let score = 0;
+  if (status === 'ready') score = 100;
+  else if (status === 'needs_probe') score = probesEnabled ? 62 : 55;
+  else if (status === 'needs_setup') score = Math.max(35, 70 - warnings * 8);
+  else if (status === 'blocked') score = Math.max(0, 30 - failures * 7 - failedProbes * 3);
+  else score = null;
+  const level = score === null ? 'unknown' : score >= 80 ? 'ready' : score >= 55 ? 'probe_needed' : score >= 30 ? 'needs_setup' : 'blocked';
+  return {
+    verdict: status,
+    score,
+    level,
+    summary: score === null
+      ? 'Readiness cannot be scored because the project is outside active adapters.'
+      : `${failures} blocker${failures === 1 ? '' : 's'}, ${warnings} warning${warnings === 1 ? '' : 's'}, and ${failedProbes} failed probe${failedProbes === 1 ? '' : 's'} were considered.`
+  };
+}
+
 function buildUnknowns({ probesEnabled, probes, rootCauses }) {
   const unknowns = [];
   if (!probesEnabled) unknowns.push('Command probes were not run, so static diagnosis may miss machine-specific failures.');
@@ -205,14 +232,37 @@ function buildUnknowns({ probesEnabled, probes, rootCauses }) {
   return [...new Set(unknowns)];
 }
 
-function buildActionPanel({ rootCauses, nextActions, fixPlan, probes, unknowns, confidence }) {
+function selectNextCommand({ root, adapterActions, fixPlan }) {
+  const safeFixes = fixPlan.fixes.filter((fix) => fix.canApply);
+  if (safeFixes.length > 0) {
+    return {
+      type: 'safe_fix',
+      command: `setuplens doctor ${quoteCommandPath(root)} --apply safe`,
+      cwd: '.',
+      description: `Apply ${safeFixes.length} whitelisted safe fix${safeFixes.length === 1 ? '' : 'es'} before retrying probes.`,
+      reason: 'Whitelisted safe fixes are available.',
+      confidence: 'high'
+    };
+  }
+
+  const commandActions = adapterActions.filter((action) => action.command);
+  return commandActions.find((action) => action.type === 'install')
+    ?? commandActions.find((action) => action.type === 'setup')
+    ?? commandActions.find((action) => action.type === 'verify')
+    ?? commandActions.find((action) => action.type === 'run')
+    ?? commandActions[0]
+    ?? null;
+}
+
+function buildActionPanel({ rootCauses, nextActions, nextCommand, fixPlan, probes, unknowns, confidence, readiness }) {
   const safeFixes = fixPlan.fixes.filter((fix) => fix.canApply).map((fix) => ({ ...fix, explanation: explainFix(fix) }));
   const manualFixes = fixPlan.fixes.filter((fix) => !fix.canApply).map((fix) => ({ ...fix, explanation: explainFix(fix) }));
   return {
     confidence,
+    readiness,
     topRootCause: rootCauses[0] ?? null,
     rootCauses: rootCauses.slice(0, 5),
-    nextCommand: nextActions.find((action) => action.command) ?? null,
+    nextCommand,
     nextActions: nextActions.slice(0, 5),
     safeFixes: safeFixes.slice(0, 6),
     manualFixes: manualFixes.slice(0, 6),
@@ -264,15 +314,17 @@ export async function doctor(target = '.', options = {}) {
   const rootCauses = rankRootCauses(uniqueBy([...staticCauses, ...probeCauses], (cause) => `${cause.type}:${cause.evidence}`));
   const adapterActions = adapters.flatMap((adapter) => adapter.actions ?? []).map(normalizeAction);
   const fixActions = rootCauses.map(actionFromCause).filter(Boolean);
-  const nextActions = uniqueBy([...fixActions, ...adapterActions], (action) => action.command ?? action.description).slice(0, 12);
   const status = buildStatus({ scanReport, rootCauses, probesEnabled, probes, adapters });
   const fixPlan = options.apply === 'safe'
     ? await applySafeFixes(root, buildFixPlan({ index, adapters, rootCauses }))
     : buildFixPlan({ index, adapters, rootCauses });
   fixPlan.fixes = fixPlan.fixes.map((fix) => ({ ...fix, explanation: explainFix(fix) }));
+  const nextCommand = selectNextCommand({ root, adapterActions, fixPlan });
+  const nextActions = uniqueBy([nextCommand, ...fixActions, ...adapterActions].filter(Boolean), (action) => action.command ?? action.description).slice(0, 12);
   const confidence = buildConfidence({ adapters, rootCauses, probesEnabled, probes });
+  const readiness = buildReadiness({ status, rootCauses, probesEnabled, probes });
   const unknowns = buildUnknowns({ probesEnabled, probes, rootCauses });
-  const actionPanel = buildActionPanel({ rootCauses, nextActions, fixPlan, probes, unknowns, confidence });
+  const actionPanel = buildActionPanel({ rootCauses, nextActions, nextCommand, fixPlan, probes, unknowns, confidence, readiness });
 
   return {
     schemaVersion: '2.0-doctor',
@@ -306,6 +358,7 @@ export async function doctor(target = '.', options = {}) {
       nextActions,
       fixPlan,
       confidence,
+      readiness,
       unknowns,
       actionPanel
     },

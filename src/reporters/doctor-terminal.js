@@ -71,7 +71,8 @@ export function renderDoctorTerminal(report, options = {}) {
   const panel = report.diagnosis.actionPanel;
   if (panel) {
     lines.push(paint.bold('Action panel'));
-    lines.push(`  Confidence ${paint.bold(`${panel.confidence.level} (${panel.confidence.score}/100)`)}`);
+    lines.push(`  Readiness ${paint.bold(panel.readiness.score === null ? 'n/a' : `${panel.readiness.score}/100`)} ${paint.dim(`[${panel.readiness.verdict}]`)}`);
+    lines.push(`  Diagnosis ${paint.bold(`${panel.confidence.level} confidence (${panel.confidence.score}/100)`)}`);
     if (panel.topRootCause) lines.push(`  Top cause  ${paint.bold(panel.topRootCause.title)} ${paint.dim(`[${panel.topRootCause.source}]`)}`);
     if (panel.nextCommand) lines.push(`  Next cmd   ${paint.bold(panel.nextCommand.command)}${paint.dim(panel.nextCommand.cwd && panel.nextCommand.cwd !== '.' ? ` in ${panel.nextCommand.cwd}` : '')}`);
     if (panel.safeFixes.length > 0) lines.push(`  Safe fixes ${panel.safeFixes.length}`);

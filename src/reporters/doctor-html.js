@@ -43,7 +43,7 @@ export function renderDoctorHtml(report) {
     .grid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:16px; }
     .wide { grid-column:1 / -1; }
     section { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:16px; }
-    .metrics { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:12px; margin-bottom:16px; }
+    .metrics { display:grid; grid-template-columns:repeat(5, minmax(0, 1fr)); gap:12px; margin-bottom:16px; }
     .metric { border:1px solid var(--line); border-radius:6px; padding:12px; background:#fbfcfe; }
     .metric span { display:block; color:var(--muted); font-size:12px; margin-bottom:4px; }
     .metric strong { font-size:20px; }
@@ -70,7 +70,8 @@ export function renderDoctorHtml(report) {
   <section class="wide">
     <h2>Action Panel</h2>
     <div class="metrics">
-      <div class="metric"><span>Confidence</span><strong>${escapeHtml(panel?.confidence?.score ?? 0)}/100</strong></div>
+      <div class="metric"><span>Readiness</span><strong>${panel?.readiness?.score === null ? 'n/a' : `${escapeHtml(panel?.readiness?.score ?? 0)}/100`}</strong></div>
+      <div class="metric"><span>Diagnosis Confidence</span><strong>${escapeHtml(panel?.confidence?.level ?? 'unknown')}</strong></div>
       <div class="metric"><span>Safe Fixes</span><strong>${escapeHtml(panel?.safeFixes?.length ?? 0)}</strong></div>
       <div class="metric"><span>Manual Fixes</span><strong>${escapeHtml(panel?.manualFixes?.length ?? 0)}</strong></div>
       <div class="metric"><span>Probe Results</span><strong>${escapeHtml(panel?.probeTrace?.total ?? 0)}</strong></div>

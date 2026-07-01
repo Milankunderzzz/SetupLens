@@ -245,6 +245,28 @@ function fixFromCause(cause) {
       reason: 'Installing packages changes dependency state and should follow the project package manager policy.'
     };
   }
+  if (cause.type === 'node_dependencies_missing') {
+    return {
+      id: `manual.node.dependencies.${cause.subject ?? 'local-bin'}`,
+      source: cause.source,
+      title: cause.subject ? `Install Node dependencies for ${cause.subject}` : 'Install Node dependencies',
+      description: cause.recommendation,
+      safety: 'manual',
+      confidence: cause.confidence ?? 'medium',
+      reason: 'Package installation changes dependency state and must follow the selected package manager and lockfile policy.'
+    };
+  }
+  if (cause.type === 'macos_resource_fork_files') {
+    return {
+      id: 'manual.python.remove-macos-resource-forks',
+      source: cause.source,
+      title: 'Remove macOS archive metadata from Python source tree',
+      description: cause.recommendation,
+      safety: 'manual',
+      confidence: cause.confidence ?? 'medium',
+      reason: 'Deleting files is intentionally manual even when the files look like archive metadata.'
+    };
+  }
   if (cause.type === 'laravel_missing_app_key') {
     return {
       id: 'manual.laravel.key-generate',

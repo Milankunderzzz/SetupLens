@@ -76,6 +76,20 @@ function scriptNames(pkg) {
   return Object.keys(pkg.manifest.scripts ?? {}).sort();
 }
 
+function duplicatePackageGroups(packages) {
+  const groups = new Map();
+  for (const pkg of packages) {
+    const name = String(pkg.manifest.name ?? '').trim();
+    if (!name) continue;
+    const current = groups.get(name) ?? [];
+    current.push(pkg.relativeDirectory);
+    groups.set(name, current);
+  }
+  return [...groups.entries()]
+    .filter(([, directories]) => directories.length > 1)
+    .map(([name, directories]) => ({ name, directories: directories.sort() }));
+}
+
 function shouldIgnoreEnvKey(key) {
   return COMMON_ENV_KEYS.has(key)
     || key.startsWith('GITHUB_')
@@ -171,6 +185,7 @@ export async function nodeAdapter({ index, detection }) {
   const refs = await envReferences(index);
   const availableEnv = await localEnvKeys(index);
   const missingEnvRefs = refs.filter((ref) => !availableEnv.has(ref.key));
+  const duplicatePackages = duplicatePackageGroups(packages);
   const installed = detection.workspace
     ? fs.existsSync(path.join(index.root, 'node_modules'))
     : fs.existsSync(path.join(rootPackage.directory, 'node_modules'));
@@ -305,6 +320,16 @@ export async function nodeAdapter({ index, detection }) {
       recommendation: 'Add a tsconfig.json appropriate for the framework before relying on type checks.'
     });
   }
+  if (duplicatePackages.length > 0) {
+    const first = duplicatePackages[0];
+    issues.push({
+      type: 'duplicate_project_copies',
+      severity: 'warn',
+      title: 'Possible duplicate project copies were found',
+      evidence: `${first.name} appears in ${first.directories.join(', ')}${duplicatePackages.length > 1 ? ` and ${duplicatePackages.length - 1} other duplicate package group(s)` : ''}.`,
+      recommendation: 'Choose the canonical project root before fixing failures, or run doctor-suite on the parent folder to compare each copy separately.'
+    });
+  }
 
   if (frameworks.includes('Next.js')) {
     probes.push(createProbe({
@@ -345,6 +370,7 @@ export async function nodeAdapter({ index, detection }) {
       })),
       frameworks,
       deep,
+      duplicatePackages,
       workspace: detection.workspace ? {
         manager: detection.workspace.manager,
         manifest: detection.workspace.manifest,
