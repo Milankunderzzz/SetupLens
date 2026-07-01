@@ -350,6 +350,70 @@
       }
     },
     {
+      "id": "cmms-nested-copies-node-python-artifacts",
+      "ecosystems": ["node", "python", "real-project-boundary"],
+      "source": {
+        "kind": "private_real_project",
+        "label": "CMMS doctor report on 2026-07-01",
+        "reference": "F:/Desktop/SetupLens 医生 - CMMS.pdf",
+        "sanitized": true
+      },
+      "fixture": {
+        "files": {
+          "CMMS-main/frontend/package.json": {
+            "json": {
+              "name": "cmms-web",
+              "scripts": {
+                "lint": "next lint"
+              }
+            }
+          },
+          "cmms/CMMS/frontend/package.json": {
+            "json": {
+              "name": "cmms-web",
+              "scripts": {
+                "lint": "next lint"
+              }
+            }
+          },
+          "cmms/CMMS-Milankunderzzz/frontend/package.json": {
+            "json": {
+              "name": "cmms-web",
+              "scripts": {
+                "lint": "next lint"
+              }
+            }
+          },
+          "cmms/CMMS/.env.example": "DATABASE_URL=\nNEXT_PUBLIC_APP_URL=\n",
+          "cmms/CMMS/backend/requirements.txt": "fastapi\n",
+          "cmms/CMMS/backend/main.py": "print('ok')\n"
+        }
+      },
+      "logSamples": [
+        {
+          "name": "npx no-install missing next",
+          "text": "npm error npx canceled due to missing packages and no YES option: [\"next@16.2.9\"]",
+          "expect": {
+            "type": "node_dependencies_missing",
+            "subject": "next@16.2.9"
+          }
+        },
+        {
+          "name": "macOS AppleDouble python artifact",
+          "text": "*** Error compiling './cmms/__MACOSX/CMMS/backend/._main.py'...\nSyntaxError: source code string cannot contain null bytes",
+          "expect": {
+            "type": "macos_resource_fork_files"
+          }
+        }
+      ],
+      "expect": {
+        "status": "needs_setup",
+        "adapters": ["node", "python"],
+        "rootCauseTypes": ["duplicate_project_copies"],
+        "safeFixTitles": ["Create local environment file from cmms/CMMS/.env.example"]
+      }
+    },
+    {
       "id": "turbo-nx-workspace-task-discovery",
       "ecosystems": ["turbo", "nx", "monorepo"],
       "source": {

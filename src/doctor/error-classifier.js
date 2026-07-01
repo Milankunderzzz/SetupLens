@@ -21,6 +21,27 @@ const RULES = [
     recommendation: (match) => `Install or restore the missing dependency/module: ${match[1]}.`
   },
   {
+    type: 'node_dependencies_missing',
+    severity: 'fail',
+    title: 'Node dependencies are not installed',
+    pattern: /npx\s+(?:error\s+)?canceled due to missing packages and no YES option:\s*\["([^"]+)"\]/i,
+    recommendation: (match) => `Install project dependencies so ${match[1]} is available locally, then retry the probe.`
+  },
+  {
+    type: 'macos_resource_fork_files',
+    severity: 'fail',
+    title: 'macOS archive metadata files are being treated as Python source',
+    pattern: /\*\*\* Error compiling ['"]?([^'"\n\r]*(?:__MACOSX|(?:^|[\\/])\._)[^'"\n\r]*\.py)['"]?[\s\S]{0,220}?source code string cannot contain null bytes/i,
+    recommendation: (match) => `Remove ${match[1]} and other __MACOSX/._* archive metadata files before running Python checks.`
+  },
+  {
+    type: 'python_syntax_error',
+    severity: 'fail',
+    title: 'Python syntax error',
+    pattern: /File ["']([^"']+\.py)["'], line (\d+)[\s\S]{0,240}?(?:SyntaxError|IndentationError):\s*([^\n\r]+)/i,
+    recommendation: (match) => `Fix ${match[1]} at line ${match[2]}: ${match[3]}.`
+  },
+  {
     type: 'missing_file',
     severity: 'fail',
     title: 'Required file or directory is missing',
@@ -247,6 +268,39 @@ function firstNonEmpty(...values) {
   return values.find((value) => String(value ?? '').trim().length > 0) ?? '';
 }
 
+function classifyNodeProbe(result, combined) {
+  if (!['node', 'prisma', 'monorepo'].includes(result.adapter)) return null;
+
+  const missingNpx = combined.match(/npx\s+(?:error\s+)?canceled due to missing packages and no YES option:\s*\["([^"]+)"\]/i);
+  if (missingNpx) {
+    return {
+      type: 'node_dependencies_missing',
+      severity: 'fail',
+      title: 'Node dependencies are not installed',
+      evidence: firstNonEmpty(missingNpx[0]).slice(0, 240),
+      subject: missingNpx[1],
+      recommendation: `Install project dependencies so ${missingNpx[1]} is available locally, then retry the probe.`
+    };
+  }
+
+  const missingScriptBinary = combined.match(/['"]?([A-Za-z][\w.-]+)['"]?\s+is not recognized as an internal or external command/i)
+    ?? combined.match(/sh:\s*(?:\d+:\s*)?([A-Za-z][\w.-]+):\s*not found/i);
+  const packageScript = /\b(?:npm|pnpm|yarn|bun)\s+(?:run\s+)?[\w:-]+/.test(result.display ?? '')
+    || /^>\s+[^\n]+\n>\s+[A-Za-z][\w.-]+/m.test(combined);
+  if (missingScriptBinary && packageScript) {
+    return {
+      type: 'node_dependencies_missing',
+      severity: 'fail',
+      title: 'Node dependencies are not installed',
+      evidence: firstNonEmpty(missingScriptBinary[0]).slice(0, 240),
+      subject: missingScriptBinary[1],
+      recommendation: `Run the package manager install command for this package so the local ${missingScriptBinary[1]} binary exists, then retry ${result.display}.`
+    };
+  }
+
+  return null;
+}
+
 export function classifyLog(output) {
   const text = String(output ?? '');
   for (const rule of RULES) {
@@ -266,6 +320,8 @@ export function classifyLog(output) {
 
 export function classifyProbeResult(result) {
   const combined = `${result.stdout ?? ''}\n${result.stderr ?? ''}`;
+  const contextual = classifyNodeProbe(result, combined);
+  if (contextual) return contextual;
   const classified = classifyLog(combined);
   if (classified) return classified;
 

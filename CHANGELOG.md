@@ -17,6 +17,7 @@ This alpha turns SetupLens from a static readiness scanner into a broader local 
 - `doctor --fix-plan` and `doctor --apply safe` for whitelisted local repairs such as copying env templates, appending env ignore rules, and creating missing Compose env placeholders without overwriting files.
 - Failure corpus evaluation with sanitized fixtures, log-classification expectations, safe-fix assertions, and `npm run corpus`.
 - Failure corpus metrics for diagnostic hit rate, first root-cause ranking, safe-fix generation, false blockers, and ecosystem coverage.
+- CMMS-derived corpus coverage for nested project copies, missing local Node binaries, `npx --no-install` missing packages, and macOS archive metadata inside Python trees.
 - Optional `doctor --probe` execution with bounded local command probes, safe default probe policy, explicit `--probe-startup`, process-tree timeout cleanup, ready-output detection, and probe traces.
 - `doctor-suite` batch diagnosis for real-project validation with ecosystem coverage, failure-type distribution, and unclassified probe logs.
 - Doctor HTML action-panel reports.
@@ -35,7 +36,9 @@ This alpha turns SetupLens from a static readiness scanner into a broader local 
 - Main package description and scan report tagline now point users to doctor mode for deeper investigation.
 - Terminal output now defaults to the practical startup path instead of printing every pass/fail item.
 - Doctor terminal, JSON, and HTML output now include an action panel with confidence, ranked root causes, next command, safe/manual fixes, probe trace, and unknowns.
+- Doctor action panels now separate readiness score from diagnosis confidence so a blocked project is not presented like a healthy 100-point result.
 - Safe fixes now include conservative `tsconfig.json` and Vite `index.html` creation recipes, while package script and env-template patches remain manual.
+- Probe classifiers now distinguish missing local Node dependencies from generic command-not-found failures and identify macOS `__MACOSX`/`._*` files that make Python compile checks fail with null-byte syntax errors.
 - Real-project failures can now be distilled into corpus cases and run as part of the automated test suite.
 - README, license, CI, tests, and other repository hygiene findings are hidden from the default terminal report.
 - Lockfile and other non-blocking hygiene-style setup warnings no longer dominate the startup summary.

@@ -38,6 +38,7 @@ function summarizeReport(target, report) {
     ecosystems,
     adapters,
     confidence: report.diagnosis.confidence,
+    readiness: report.diagnosis.readiness,
     topRootCause: report.diagnosis.rootCauses[0] ?? null,
     rootCauseTypes: report.diagnosis.rootCauses.map((cause) => cause.type),
     unclassifiedProbes: report.probes.results

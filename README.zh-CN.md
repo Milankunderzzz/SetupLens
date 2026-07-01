@@ -137,7 +137,7 @@ SetupLens 不想替代 IDE、Docker、包管理器或漏洞扫描器。它的定
 
 SetupLens 仍然是早期产品预览版，不是成熟稳定工具。当前已经具备：
 
-- 65 项自动化测试
+- 69 项自动化测试
 - Windows、Linux、macOS CI
 - setup 与 hygiene 分离
 - 不支持技术栈不打分
