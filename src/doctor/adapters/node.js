@@ -62,6 +62,14 @@ function runScriptCommand(manager, script) {
   return { command: manager, args: ['run', script] };
 }
 
+function directNodeScriptCommand(script) {
+  const text = String(script ?? '').trim();
+  if (!/^node(?:\.exe)?\s+/i.test(text)) return null;
+  if (/[|&;<>()]/.test(text)) return null;
+  const args = text.split(/\s+/).slice(1);
+  return args.length > 0 ? { command: 'node', args } : null;
+}
+
 function commandText({ command, args }) {
   return [command, ...args].join(' ');
 }
@@ -227,6 +235,7 @@ export async function nodeAdapter({ index, detection }) {
     const startScript = START_SCRIPT_PRIORITY.find((script) => scripts.includes(script));
     if (startScript) {
       const command = runScriptCommand(manager, startScript);
+      const probeCommand = directNodeScriptCommand(pkg.manifest.scripts?.[startScript]) ?? command;
       scriptActions.push({
         type: 'run',
         command: commandText(command),
@@ -237,8 +246,9 @@ export async function nodeAdapter({ index, detection }) {
           id: `node.script.${pkg.relativeDirectory}.${startScript}`.replaceAll('/', '.'),
           adapter: 'node',
           label: `Run ${startScript}`,
-          command: command.command,
-          args: command.args,
+          command: probeCommand.command,
+          args: probeCommand.args,
+          display: commandText(command),
           cwd: pkg.relativeDirectory,
           purpose: 'Probe the most likely startup command and classify early failure output.',
           kind: 'startup',
@@ -340,7 +350,11 @@ export async function nodeAdapter({ index, detection }) {
       args: ['--no-install', 'next', 'info'],
       purpose: 'Collect Next.js runtime environment information without starting the app.',
       kind: 'verify',
-      confidence: 'medium'
+      confidence: 'medium',
+      skip: installed ? null : {
+        reason: 'Node dependencies are not installed, so optional Next.js info collection was skipped.',
+        recommendation: 'Run the package manager install command before collecting Next.js environment info.'
+      }
     }));
   }
   if (frameworks.includes('Vite') && rootScripts.includes('build')) {
@@ -353,7 +367,11 @@ export async function nodeAdapter({ index, detection }) {
       args: command.args,
       purpose: 'Run the Vite build path to expose framework configuration and module errors.',
       kind: 'verify',
-      confidence: 'medium'
+      confidence: 'medium',
+      skip: installed ? null : {
+        reason: 'Node dependencies are not installed, so the optional Vite build probe was skipped.',
+        recommendation: 'Run the package manager install command before probing the Vite build.'
+      }
     }));
   }
 

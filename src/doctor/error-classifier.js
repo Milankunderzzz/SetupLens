@@ -264,6 +264,10 @@ const RULES = [
 
 const READY_PATTERN = /(?:ready|started|listening|compiled successfully|local:\s*https?:\/\/|server running|vite .*ready)/i;
 
+export function outputLooksReady(output) {
+  return READY_PATTERN.test(String(output ?? ''));
+}
+
 function firstNonEmpty(...values) {
   return values.find((value) => String(value ?? '').trim().length > 0) ?? '';
 }
@@ -327,7 +331,7 @@ export function classifyProbeResult(result) {
   if (classified) return classified;
 
   if (result.status === 'timeout') {
-    const appearsReady = READY_PATTERN.test(combined);
+    const appearsReady = outputLooksReady(combined);
     return {
       type: appearsReady ? 'startup_appears_ready' : 'command_timeout',
       severity: appearsReady ? 'info' : 'warn',

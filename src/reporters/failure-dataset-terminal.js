@@ -25,6 +25,15 @@ function countLines(label, items, lines, paint) {
   if (items.length > 10) lines.push(`  ... ${items.length - 10} more`);
 }
 
+function renderMetric(item) {
+  if (!item) return null;
+  if ('numerator' in item && 'denominator' in item) {
+    const value = item.value === null ? 'n/a' : `${item.value}%`;
+    return `  ${item.label}: ${value} (${item.numerator}/${item.denominator}, ${item.mode})`;
+  }
+  return `  ${item.label}: ${item.value} ${item.unit ?? ''}`.trimEnd();
+}
+
 function renderCollection(report, paint) {
   const lines = [];
   lines.push('');
@@ -74,6 +83,24 @@ function renderReview(report, paint) {
   lines.push(`Safe fixes ${paint.bold(report.summary.safeFixes)} ${paint.dim(`manual ${report.summary.manualFixes}`)}`);
   lines.push(`Gaps       ${report.ruleGaps.length} ${paint.dim(`unclassified logs ${report.summary.unclassifiedLogs}`)}`);
   lines.push('');
+  if (report.scorecard) {
+    lines.push(paint.bold('Scorecard'));
+    lines.push(`  Overall: ${report.scorecard.overallScore ?? 'n/a'} ${paint.dim(report.scorecard.grade)}`);
+    lines.push(`  Mode: ${report.scorecard.mode} ${paint.dim(`labeled cases ${report.scorecard.labeledCases}`)}`);
+    for (const item of [
+      report.scorecard.metrics.diagnosticHitRate,
+      report.scorecard.metrics.rootCauseFirstRate,
+      report.scorecard.metrics.safeFixGenerationRate,
+      report.scorecard.metrics.falseBlockerRate,
+      report.scorecard.metrics.falseBlockerRiskRate,
+      report.scorecard.metrics.ecosystemCoverageCount
+    ]) {
+      const rendered = renderMetric(item);
+      if (rendered) lines.push(rendered);
+    }
+    for (const note of report.scorecard.notes.slice(0, 2)) lines.push(paint.dim(`  note: ${note}`));
+    lines.push('');
+  }
   countLines('Statuses', report.summary.statuses, lines, paint);
   lines.push('');
   countLines('Ecosystem coverage', report.summary.ecosystemCoverage, lines, paint);

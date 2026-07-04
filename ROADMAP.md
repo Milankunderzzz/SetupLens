@@ -1,112 +1,138 @@
 # SetupLens Roadmap
 
-Last updated: 2026-06-20
+Last updated: 2026-07-04
 
-SetupLens will move from a research prototype to a dependable product through
-evidence, not feature count. Version numbers represent a stronger level of
-validation and product commitment, not merely more checks.
+SetupLens is moving toward a broad, local-first repository doctor. The goal is
+not to claim that every project can be fixed automatically. The goal is to make
+the tool good at identifying what the project is, why it probably fails, what
+evidence supports that diagnosis, and which repairs are safe enough to suggest
+or apply.
 
-## Product principles
+## Product Principles
 
-1. Keep findings deterministic, local-first, read-only, and evidence-backed.
-2. Improve Node.js, Python, and Docker accuracy before adding ecosystems.
-3. Separate pilot repositories from confirmatory holdout evaluation.
-4. Freeze the exact tool commit used for every reported experiment.
-5. Do not claim time savings, accuracy, or usefulness before measuring them.
-6. Prefer small maintenance releases and reversible changes.
+1. Prefer evidence over feature count.
+2. Keep diagnosis deterministic, local-first, and explainable.
+3. Separate static readiness, command probes, and manual ground truth.
+4. Treat unlabeled public scans as operational evidence, not accuracy proof.
+5. Only apply low-risk, whitelisted repairs that never overwrite user files.
+6. Promote real failures into minimal corpus cases before claiming coverage.
 
-## Version direction
+## Current Track
 
-### v0.1.x - Core maintenance (current)
+The v0.2 line has two user-facing layers:
 
-Purpose: keep the existing MVP reliable while preparing the study.
+- `scan`: deterministic readiness and repository hygiene checks for CI-style use.
+- `doctor`: adapter-driven diagnosis with startup plans, optional probes,
+  failure classification, fix plans, and action-panel reports.
 
-- Maintain setup-readiness and repository-hygiene separation.
-- Reduce confirmed false positives and false negatives.
-- Keep terminal, JSON, HTML, CLI exit codes, and GitHub Action behavior aligned.
-- Preserve cross-platform CI on Windows, Linux, and macOS.
-- Add regression tests for every confirmed product defect.
+The current `0.2.0-alpha.2` branch adds the evidence layer needed to keep doctor
+mode honest: failure-dataset scorecards, safer probe behavior, ready-output
+detection, and regression tests tied to the curated failure corpus.
 
-Exit condition: the 10-repository pilot workflow is ready to run, with no
-known scoring behavior that can materially mislead the experiment.
+## Version Direction
 
-### v0.2.0-alpha.1 - Frozen pilot build
+### v0.2.0-alpha.2 - Evidence scorecards and safer probes
 
-Purpose: create an immutable pre-release for the pilot study.
+Purpose: make the public failure-dataset loop measurable without pretending
+unlabeled scans prove final accuracy.
 
-- Complete Pass A, Pass B, and Pass C for 10 pilot repositories.
-- Resolve only pilot-confirmed validity blockers.
-- Freeze the report schema, scoring rules, weights, and exact commit SHA.
-- Record the tag, runtime, operating system, repository commits, and protocol
-  version used to produce every pilot result.
+- Report diagnostic hit rate, first-root-cause rate when labels exist,
+  safe-fix generation, false-blocker metrics, false-blocker risk, and ecosystem
+  coverage.
+- Keep labeled accuracy separate from operational proxy metrics.
+- Detect ready output from long-running startup commands and stop probes safely.
+- Skip optional probes when prerequisites such as `node_modules` are missing.
+- Keep version, README, changelog, demo report, and roadmap aligned.
 
-Exit condition: the pilot and contamination audit are complete, the annotation
-procedure is stable, and any later tool change requires a new experiment
-version.
+Exit condition: tests, syntax checks, corpus regression, and failure-dataset
+review all pass on the release branch.
 
-### v0.2.0 - Validated core and initial distribution
+### v0.2.0-alpha.3 - Corpus promotion workflow
 
-Purpose: publish the first version supported by independent evidence.
+Purpose: turn useful public scan results into reproducible fixtures instead of
+letting them remain one-off observations.
 
-- Evaluate an uncontaminated holdout set against adjudicated Ground Truth.
-- Report precision, recall, F1, repository-level confidence intervals, and
-  diagnosis-time comparisons.
-- Complete the real human-comparison records required by the protocol.
-- Obtain five external users, three confirmed real findings, and at least one
-  external Issue or feedback report.
-- Publish a 30-second before/after demonstration.
-- Align the GitHub Release, npm package, GitHub Action tag, and Marketplace
-  listing to the same commit and documentation.
+- Add a promotion workflow for converting failure-dataset candidates into
+  sanitized corpus case drafts.
+- Store expected status, expected root-cause type, expected top cause, safe-fix
+  expectation, and provenance pointer for each promoted case.
+- Generate a review checklist that shows what evidence is still missing before a
+  public candidate can become a committed fixture.
+- Add cleanup tooling for `.setuplens/failure-dataset/repos` so large cloned
+  datasets do not linger on a user's machine.
 
-Release gate: benchmark validation passes, evidence and limitations are public,
-critical false positives are resolved, and installation paths reproduce the
-same version.
+Exit condition: at least the highest-value public blockers from the 50-source
+dataset have either been promoted, rejected with a reason, or filed as classifier
+backlog.
+
+### v0.2.0-beta - Real-project regression loop
+
+Purpose: make SetupLens visibly stronger as more broken projects are scanned.
+
+- Save historical scorecard snapshots so regressions can be compared over time.
+- Add a visual regression report for ecosystem coverage, failure-type mix,
+  unknown logs, safe-fix yield, and false-blocker risk.
+- Expand framework-specific classifiers only when a corpus case or public scan
+  shows the gap.
+- Improve doctor HTML reports into a clearer action panel with root causes,
+  evidence, next command, safe fixes, manual fixes, probe trace, unknowns, and
+  confidence explanation.
+
+Exit condition: a repeatable suite can show whether a rule change improved or
+regressed real diagnostic behavior.
+
+### v0.2.0 - Stable doctor preview
+
+Purpose: ship a coherent first product-oriented release.
+
+- Stabilize the `doctor`, `scan`, `doctor-suite`, and `failure-dataset` command
+  contracts enough for early users.
+- Publish npm and GitHub Action usage pointing at the same release tag.
+- Keep the supported-ecosystem list honest and mark unsupported primary stacks
+  as `Unsupported / Not scored`.
+- Document limitations, safe-fix boundaries, and evidence requirements.
+
+Release gate: the command contracts are documented, the demo is reproducible,
+and no known score or report path can materially mislead users.
 
 ### v0.3.0 - Adoption-informed improvements
 
-Purpose: improve the product using evidence from real use.
+Purpose: prioritize changes by observed failure frequency and user value.
 
-- Prioritize checks by observed failure frequency and user time saved.
-- Improve explanations, next actions, plugin ergonomics, and report comparison.
-- Consider a read-only repair preview only if external users demonstrate demand.
-- Preserve the v0.2 benchmark as a regression suite and report metric changes.
-
-Release gate: improvements are tied to external cases and do not regress the
-validated core metrics beyond a documented tolerance.
+- Grow ecosystem depth from confirmed cases, not speculative pattern lists.
+- Improve explanations, next actions, report comparison, and plugin ergonomics.
+- Add more safe recipes only when the operation is local, reversible, and
+  reviewable.
+- Preserve the v0.2 evidence set as a regression suite.
 
 ### v1.0.0 - Stable product contract
 
-Purpose: make SetupLens dependable for routine individual and CI use.
+Purpose: make SetupLens dependable for routine personal and CI use.
 
-- Stabilize CLI commands, exit codes, JSON schema, Action outputs, and plugin API.
+- Stabilize CLI commands, exit codes, JSON schemas, Action outputs, and plugin
+  APIs.
 - Publish compatibility, deprecation, security, and support policies.
-- Maintain reproducible releases across npm, GitHub Action, and Marketplace.
-- Document validated operating-system and runtime support.
-- Provide a maintained benchmark report and a repeatable release checklist.
+- Maintain reproducible releases across npm, GitHub Action, and GitHub releases.
+- Keep a maintained benchmark and regression report with clear limitations.
 
-Release gate: the public interfaces are stable, the evidence can be reproduced,
-and maintenance capacity exists for the documented support promise.
+## Deferred Until Evidence Supports Them
 
-## Deferred until evidence supports them
-
-- Deep Java, Go, Rust, C++, or other ecosystem support.
-- AI-generated explanations as a required part of diagnosis.
-- Automatic project mutation or unrestricted repair commands.
+- Unrestricted automatic repair.
+- Running long-lived services by default.
 - Cloud accounts, telemetry, or repository uploads.
+- Accuracy, time-saving, or "works for every project" claims without measured
+  evidence.
+- Large new ecosystem expansions without corpus cases or public scan evidence.
 
-Each deferred direction requires an Issue or proposal containing external user
-evidence, scope, privacy impact, tests, and an evaluation plan.
-
-## Decision metrics
+## Decision Metrics
 
 The roadmap is reviewed using:
 
-- condition-level precision, recall, and F1;
-- false-positive severity and false-negative category;
-- time to first actionable diagnosis;
-- confirmed external cases and repeat usage;
-- installation and report-generation success across supported platforms;
-- unresolved critical defects and maintenance cost.
-
-The research protocol and current evidence state live in
-[SetupBench-Lens](https://github.com/Milankunderzzz/SetupBench-Lens).
+- diagnostic hit rate;
+- root cause ranked first;
+- safe-fix generation rate;
+- false-blocker rate and false-blocker risk;
+- ecosystem coverage count;
+- unclassified probe logs and diagnostic unknowns;
+- time to first actionable next command;
+- installation, scan, and report-generation success across supported platforms.

@@ -34,7 +34,7 @@ test('doctor identifies adapters, framework signals, README commands, and Prisma
     'src/db.ts': 'export const url = process.env.DATABASE_URL;\n',
     'README.md': '# App\n\n```bash\nnpm install\nnpm run dev\n```\n'
   });
-  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  t.after(() => fs.rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }));
 
   const report = await doctor(root);
   const adapterIds = report.project.adapters.map((adapter) => adapter.id);
@@ -65,7 +65,7 @@ test('doctor probe classifies real startup failures into root causes', async (t)
     }),
     'server.js': 'throw new Error("Missing required environment variable DATABASE_URL");\n'
   });
-  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  t.after(() => fs.rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }));
 
   const safeReport = await doctor(root, { probe: true, timeoutMs: 3000 });
   const skippedStartup = safeReport.probes.results.find((item) => item.id.includes('node.script'));
@@ -91,7 +91,7 @@ test('startup probe treats ready output before timeout as a pass signal', async 
     'package.json': JSON.stringify({ scripts: { dev: 'node ready.js' } }),
     'ready.js': 'console.log("server ready and listening on http://localhost:3000"); setInterval(() => {}, 1000);\n'
   });
-  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  t.after(() => fs.rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }));
 
   const report = await doctor(root, { probe: true, probeStartup: true, timeoutMs: 1200 });
   const startupProbe = report.probes.results.find((item) => item.id.includes('node.script'));
@@ -107,7 +107,7 @@ test('doctor command supports machine-readable json output', async (t) => {
     'package.json': JSON.stringify({ name: 'cli-doctor', scripts: { start: 'node index.js' } }),
     'index.js': 'console.log("ok");\n'
   });
-  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  t.after(() => fs.rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }));
 
   const result = spawnSync(process.execPath, [cliPath, 'doctor', root, '--format', 'json', '--timeout', '3000'], {
     encoding: 'utf8',
@@ -130,7 +130,7 @@ test('doctor command writes an HTML action panel report', async (t) => {
     'index.js': 'console.log("ok");\n'
   });
   const output = path.join(root, 'doctor.html');
-  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  t.after(() => fs.rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }));
 
   const result = spawnSync(process.execPath, [cliPath, 'doctor', root, '--format', 'html', '--output', output, '--timeout', '3000'], {
     encoding: 'utf8',
@@ -151,7 +151,7 @@ test('doctor command shows terminal fix plan only when requested', async (t) => 
     'index.js': 'console.log("ok");\n',
     '.env.example': 'DATABASE_URL=\n'
   });
-  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  t.after(() => fs.rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }));
 
   const plain = spawnSync(process.execPath, [cliPath, 'doctor', root, '--no-color', '--timeout', '3000'], {
     encoding: 'utf8',
@@ -174,7 +174,7 @@ test('doctor diagnoses unsupported scan stacks when a doctor adapter exists', as
     'composer.json': JSON.stringify({ require: { php: '^8.3', 'laravel/framework': '^11.0' } }),
     'artisan': '<?php echo "Laravel";\n'
   });
-  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  t.after(() => fs.rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }));
 
   const report = await doctor(root);
   const php = report.project.adapters.find((adapter) => adapter.id === 'php');
@@ -191,7 +191,7 @@ test('doctor reports missing Compose env_file as a startup blocker', async (t) =
   const root = await fixture({
     'compose.yaml': 'services:\n  db:\n    image: postgres:16\n    env_file:\n      - .env.db\n    ports:\n      - "5432:5432"\n'
   });
-  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  t.after(() => fs.rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }));
 
   const report = await doctor(root);
   const services = report.project.adapters.find((adapter) => adapter.id === 'services');
@@ -211,7 +211,7 @@ test('doctor recognizes Java, dotnet, Go, and Rust adapters', async (t) => {
     'Cargo.toml': '[package]\nname = "demo"\nversion = "0.1.0"\nedition = "2021"\n',
     'src/main.rs': 'fn main() {}\n'
   });
-  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  t.after(() => fs.rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }));
 
   const report = await doctor(root);
   const ids = report.project.adapters.map((adapter) => adapter.id);
@@ -255,7 +255,7 @@ test('doctor classifies missing local Node binaries as dependency installation g
     }),
     'app/page.tsx': 'export default function Page() { return <main />; }\n'
   });
-  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  t.after(() => fs.rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }));
 
   const report = await doctor(root, { probe: true, timeoutMs: 3000 });
   const failedLint = report.probes.results.find((item) => item.id.includes('node.verify') && item.status === 'fail');
@@ -271,7 +271,7 @@ test('doctor separates readiness score from diagnosis confidence and recommends 
     'index.js': 'console.log(process.env.DATABASE_URL);\n',
     '.env.example': 'DATABASE_URL=\n'
   });
-  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  t.after(() => fs.rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }));
 
   const report = await doctor(root);
 
@@ -301,7 +301,7 @@ test('doctor aggregates repeated environment reference causes and fix-plan entri
       'process.env.CLOUDINARY_API_KEY'
     ].join(';\n')
   });
-  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  t.after(() => fs.rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }));
 
   const report = await doctor(root);
   const envCauses = report.diagnosis.rootCauses.filter((cause) => cause.type === 'missing_env_reference');
@@ -322,7 +322,7 @@ test('doctor reports macOS archive metadata as the Python compile blocker', asyn
     'main.py': 'print("ok")\n',
     '__MACOSX/app/._main.py': '\u0000metadata\n'
   });
-  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  t.after(() => fs.rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }));
 
   const report = await doctor(root, { probe: true, timeoutMs: 3000 });
   const compileProbe = report.probes.results.find((item) => item.id === 'python.compileall');
@@ -337,7 +337,7 @@ test('doctor warns when duplicate package copies look like repeated project snap
     'copy-a/package.json': JSON.stringify({ name: 'cmms-web', scripts: { dev: 'next dev' }, dependencies: { next: '^14.0.0' } }),
     'copy-b/package.json': JSON.stringify({ name: 'cmms-web', scripts: { dev: 'next dev' }, dependencies: { next: '^14.0.0' } })
   });
-  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  t.after(() => fs.rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }));
 
   const report = await doctor(root);
 
@@ -357,7 +357,7 @@ test('doctor adds deep Next, Vite, Prisma, and TypeScript rules', async (t) => {
     'vite.config.ts': 'export default {};\n',
     'prisma/schema.prisma': 'generator client { provider = "prisma-client-js" }\ndatasource db { provider = "postgresql" url = env("DATABASE_URL") }\n'
   });
-  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  t.after(() => fs.rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }));
 
   const report = await doctor(root);
   const node = report.project.adapters.find((adapter) => adapter.id === 'node');
@@ -381,7 +381,7 @@ test('doctor adds deep FastAPI and Django rules', async (t) => {
     'manage.py': 'print("manage")\n',
     'project/settings.py': 'SECRET_KEY = "x"\n'
   });
-  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  t.after(() => fs.rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }));
 
   const report = await doctor(root);
   const python = report.project.adapters.find((adapter) => adapter.id === 'python');
@@ -401,7 +401,7 @@ test('safe fix plan can create local env files and compose env placeholders', as
     '.env.example': 'APP_KEY=\nDB_DATABASE=local\n',
     'compose.yaml': 'services:\n  app:\n    image: php:8.3\n    env_file: .env.compose\n'
   });
-  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  t.after(() => fs.rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }));
 
   const planned = await doctor(root);
   assert.ok(planned.diagnosis.fixPlan.fixes.some((item) => item.id.startsWith('safe.laravel.copy-env')));
@@ -421,7 +421,7 @@ test('safe fix recipes create tsconfig and Vite index without overwriting', asyn
     }),
     'src/main.ts': 'console.log("boot");\n'
   });
-  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  t.after(() => fs.rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }));
 
   const planned = await doctor(root);
   assert.ok(planned.diagnosis.fixPlan.fixes.some((item) => item.id === 'safe.typescript.create-tsconfig'));
@@ -442,7 +442,7 @@ test('doctor adds deep Laravel, Rails, Spring, and .NET web rules', async (t) =>
     'pom.xml': '<project><dependencies><dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-web</artifactId></dependency></dependencies></project>',
     'web.csproj': '<Project Sdk="Microsoft.NET.Sdk.Web"><PropertyGroup><TargetFramework>net8.0</TargetFramework></PropertyGroup></Project>'
   });
-  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  t.after(() => fs.rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }));
 
   const report = await doctor(root);
   const php = report.project.adapters.find((adapter) => adapter.id === 'php');
@@ -481,7 +481,7 @@ test('doctor adds deep Turbo and Nx workspace rules', async (t) => {
     'nx.json': JSON.stringify({ targetDefaults: { build: {}, test: {} } }),
     'pnpm-workspace.yaml': "packages:\n  - 'apps/*'\n"
   });
-  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  t.after(() => fs.rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }));
 
   const report = await doctor(root);
   const monorepo = report.project.adapters.find((adapter) => adapter.id === 'monorepo');
@@ -501,7 +501,7 @@ test('doctor deepens Go service and Rust binary signals', async (t) => {
     'Cargo.toml': '[package]\nname = "worker"\nversion = "0.1.0"\nedition = "2021"\n',
     'src/bin/worker.rs': 'fn main() { let _ = std::env::var("DATABASE_URL"); }\n'
   });
-  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  t.after(() => fs.rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }));
 
   const report = await doctor(root);
   const go = report.project.adapters.find((adapter) => adapter.id === 'go');
@@ -524,7 +524,7 @@ test('doctor-suite summarizes repositories, ecosystems, and failure types', asyn
     'app-two/go.mod': 'module example.com/service\n\ngo 1.22\n',
     'app-two/internal/server/server.go': 'package server\nimport "net/http"\nfunc Run() { _ = http.ListenAndServe(":8080", nil) }\n'
   });
-  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  t.after(() => fs.rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }));
 
   const report = await doctorSuite(root);
   const failureTypes = report.summary.failureTypeDistribution.map((item) => item.name);

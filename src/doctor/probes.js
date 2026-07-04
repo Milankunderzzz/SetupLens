@@ -1,7 +1,7 @@
 import { spawn, spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { performance } from 'node:perf_hooks';
-import { classifyProbeResult } from './error-classifier.js';
+import { classifyProbeResult, outputLooksReady } from './error-classifier.js';
 
 const WINDOWS_SHIMS = new Set(['npm', 'pnpm', 'yarn', 'bun', 'npx', 'composer', 'bundle', 'rails', 'mvn', 'gradle']);
 const MAX_OUTPUT = 1024 * 1024 * 4;
@@ -39,6 +39,11 @@ function killProcessTree(child, signal = 'SIGTERM') {
   if (!child.pid) return;
   if (process.platform === 'win32') {
     spawnSync('taskkill', ['/pid', String(child.pid), '/T', '/F'], { windowsHide: true, stdio: 'ignore' });
+    try {
+      child.kill(signal);
+    } catch {
+      // taskkill is the primary Windows cleanup path.
+    }
     return;
   }
   try {
@@ -65,7 +70,8 @@ export function createProbe(input) {
     purpose: input.purpose,
     confidence: input.confidence ?? 'medium',
     safety: input.safety ?? (input.kind === 'startup' ? 'long_running' : 'read_only'),
-    destructive: input.destructive === true
+    destructive: input.destructive === true,
+    skip: input.skip ?? null
   };
 }
 
@@ -79,6 +85,8 @@ export async function runProbe(root, probe, options = {}) {
   let stderr = '';
   let error = null;
   let timedOut = false;
+  let readyDetected = false;
+  let endedByReady = false;
   const child = spawn(platformCommand.command, platformCommand.args, {
     cwd,
     encoding: 'utf8',
@@ -92,20 +100,46 @@ export async function runProbe(root, probe, options = {}) {
     shell: false
   });
   let forceKillTimer = null;
+  let fallbackResolveTimer = null;
+  let resolveFinishedFallback = null;
   const finished = new Promise((resolve) => {
-    child.stdout?.on('data', (chunk) => { stdout = appendOutput(stdout, chunk); });
-    child.stderr?.on('data', (chunk) => { stderr = appendOutput(stderr, chunk); });
+    let settled = false;
+    const resolveOnce = (value) => {
+      if (settled) return;
+      settled = true;
+      resolve(value);
+    };
+    resolveFinishedFallback = resolveOnce;
+    const stopAfterReadyOutput = () => {
+      if (probe.kind !== 'startup' || readyDetected) return;
+      if (!outputLooksReady(`${stdout}\n${stderr}`)) return;
+      readyDetected = true;
+      endedByReady = true;
+      timedOut = true;
+      killProcessTree(child);
+      fallbackResolveTimer = setTimeout(() => resolveOnce({ code: null, signal: 'SIGTERM' }), 1500);
+    };
+    child.stdout?.on('data', (chunk) => {
+      stdout = appendOutput(stdout, chunk);
+      stopAfterReadyOutput();
+    });
+    child.stderr?.on('data', (chunk) => {
+      stderr = appendOutput(stderr, chunk);
+      stopAfterReadyOutput();
+    });
     child.on('error', (err) => { error = err; });
-    child.on('close', (code, signal) => resolve({ code, signal }));
+    child.on('close', (code, signal) => resolveOnce({ code, signal }));
   });
   const timer = setTimeout(() => {
     timedOut = true;
     killProcessTree(child);
     forceKillTimer = setTimeout(() => killProcessTree(child, 'SIGKILL'), 1000);
+    fallbackResolveTimer = setTimeout(() => resolveFinishedFallback?.({ code: null, signal: 'SIGTERM' }), 2500);
   }, timeoutMs);
   const result = await finished;
   clearTimeout(timer);
   if (forceKillTimer) clearTimeout(forceKillTimer);
+  if (fallbackResolveTimer) clearTimeout(fallbackResolveTimer);
   const durationMs = Math.max(1, Math.round(performance.now() - started));
   const rawStatus = timedOut ? 'timeout' : result.code === 0 ? 'pass' : 'fail';
   const output = {
@@ -137,7 +171,8 @@ export async function runProbe(root, probe, options = {}) {
         stderr: Buffer.byteLength(stderr, 'utf8')
       },
       timedOut,
-      readyDetected: false
+      readyDetected,
+      endedByReady
     }
   };
   output.classification = classifyProbeResult(output);
@@ -193,6 +228,15 @@ export function runProbes(root, probes, options = {}) {
   const results = [];
   const policy = options.includeStartup ? 'startup-enabled' : 'safe';
   for (const probe of probes) {
+    if (probe.skip) {
+      results.push(skippedProbe(
+        probe,
+        probe.skip.reason ?? 'Probe prerequisite was not met.',
+        probe.skip.recommendation ?? 'Fix the prerequisite and rerun probes for deeper validation.',
+        { ...options, policy }
+      ));
+      continue;
+    }
     if (probe.destructive) {
       results.push(skippedProbe(
         probe,

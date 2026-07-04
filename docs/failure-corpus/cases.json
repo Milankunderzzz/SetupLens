@@ -69,7 +69,7 @@
           },
           "app/page.tsx": "export default function Page() { return <main>Hello</main>; }\n",
           "src/db.ts": "export const databaseUrl = process.env.DATABASE_URL;\n",
-          ".env.example": "DATABASE_URL=postgresql://user:pass@localhost:5432/app\n",
+          ".env.example": "DATABASE_URL=postgresql://localhost:5432/app\n",
           "prisma/schema.prisma": "generator client { provider = \"prisma-client-js\" }\ndatasource db { provider = \"postgresql\" url = env(\"DATABASE_URL\") }\n"
         }
       },

@@ -110,6 +110,24 @@ test('builds a practical startup plan for a Node application', async (t) => {
   assert.doesNotMatch(terminal, /README \[hygiene \/ Repository\]/);
 });
 
+test('ignores local SetupLens dataset cache during scans', async (t) => {
+  const root = await fixture({
+    'package.json': JSON.stringify({ name: 'root-app' }),
+    '.setuplens/failure-dataset/repos/bad/package.json': JSON.stringify({
+      dependencies: { missing: '1.0.0' }
+    }),
+    '.setuplens/failure-dataset/repos/bad/docker-compose.yml': 'services:\n  api:\n    build: ./missing\n'
+  });
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+
+  const report = await scan(root);
+  const serializedFindings = JSON.stringify(report.findings);
+
+  assert.equal(report.target.filesIndexed, 1);
+  assert.equal(report.primaryStack, 'node');
+  assert.doesNotMatch(serializedFindings, /\.setuplens/);
+});
+
 test('detects a Python web app startup path', async (t) => {
   const root = await fixture({
     'requirements.txt': 'flask\n',

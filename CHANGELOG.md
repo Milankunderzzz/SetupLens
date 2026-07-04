@@ -5,6 +5,27 @@ All notable changes to SetupLens are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project uses semantic versioning while it remains in the `0.x` stage.
 
+## [0.2.0-alpha.2] - 2026-07-02
+
+This alpha adds a review scorecard so public failure-dataset scans can be evaluated as a regression signal instead of only described as pass/fail evidence.
+
+### Added
+
+- Failure dataset review scorecards with diagnostic hit rate, root-cause-first rate, safe-fix generation rate, false-blocker rate, operational false-blocker risk, and ecosystem coverage count.
+- Per-ecosystem review scorecard rows with source counts, scanned counts, corpus candidates, verdict mix, safe/manual fix totals, and top failure types.
+- Terminal review output now surfaces the scorecard, evaluation mode, labeled-case count, and notes when public scans do not yet have human ground-truth labels.
+
+### Changed
+
+- Failure dataset review can now separate labeled evaluation metrics from operational proxy metrics, avoiding misleading precision claims for unlabeled public repositories.
+- Normal repository scans now skip the `.setuplens` cache directory so retained failure-dataset clones do not pollute reports or demos.
+- Package version advanced to `0.2.0-alpha.2`.
+
+### Fixed
+
+- The generated demo report no longer includes cloned failure-dataset repositories from the local `.setuplens` cache.
+- Failure corpus env examples no longer use credential-shaped database URLs that make SetupLens report its own sanitized fixtures as secret exposures.
+
 ## [0.2.0-alpha.1] - 2026-07-01
 
 This alpha turns SetupLens from a static readiness scanner into a broader local repository doctor.
@@ -88,6 +109,7 @@ This is a maintenance release. It does not claim validated precision, recall, F1
 
 - Initial public MVP with local terminal, JSON, HTML, plugin, and GitHub Action interfaces for Node.js, Python, Docker, configuration, path, security, and repository checks.
 
+[0.2.0-alpha.2]: https://github.com/Milankunderzzz/SetupLens/compare/v0.2.0-alpha.1...v0.2.0-alpha.2
 [0.2.0-alpha.1]: https://github.com/Milankunderzzz/SetupLens/compare/v0.1.1...v0.2.0-alpha.1
 [0.1.1]: https://github.com/Milankunderzzz/SetupLens/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/Milankunderzzz/SetupLens/releases/tag/v0.1.0

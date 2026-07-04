@@ -12,6 +12,7 @@ Each collected source records:
 - Optional doctor evidence: readiness, diagnosis confidence, root-cause ranking, safe/manual fix counts, unclassified probe logs, unknowns, and per-repository JSON report path.
 
 Third-party repository contents are cloned into `.setuplens/failure-dataset/repos` by default and stay out of git. The committed manifest is meant to preserve reproducible evidence, not vendor external source code.
+Normal repository scans skip the `.setuplens` cache directory, so retained dataset clones do not pollute a scan of the SetupLens checkout itself.
 
 ## Collect 50 Public Candidates
 
@@ -63,6 +64,7 @@ setuplens failure-dataset review --input .setuplens/failure-dataset/sources.json
 
 The review separates:
 
+- a review scorecard with diagnostic hit rate, root-cause-first rate, safe-fix generation rate, false-blocker metrics, operational blocker risk, and ecosystem coverage;
 - corpus promotion candidates;
 - ecosystem coverage;
 - failure-type distribution;
@@ -71,6 +73,8 @@ The review separates:
 - unsupported stacks;
 - unclassified probe logs;
 - diagnostic unknowns.
+
+For public repository scans, most sources do not have human ground-truth labels yet. In that mode the scorecard reports operational proxy metrics and explicitly marks label-dependent metrics such as `rootCauseFirstRate` and `falseBlockerRate` as `n/a`. Once a source is promoted into the curated corpus with expected root causes, the same scorecard can report labeled diagnostic accuracy.
 
 Only sanitized, minimal reproductions should be promoted into the committed failure corpus. The manifest and per-repository reports provide the evidence needed to recreate the source failure before reducing it into a fixture.
 

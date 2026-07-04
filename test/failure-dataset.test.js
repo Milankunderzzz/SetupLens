@@ -85,6 +85,11 @@ test('failure dataset review builds a corpus queue and classifier backlog', asyn
           primaryLanguage: 'TypeScript',
           discoveredBy: { ecosystem: 'next', query: 'topic:nextjs', page: 1, rank: 1 }
         },
+        expect: {
+          status: 'blocked',
+          rootCauseTypes: ['node_dependencies_missing'],
+          safeFix: true
+        },
         clone: { status: 'cloned', path: 'repos/next-app', commit: 'abc123', commitDate: '2026-01-01T00:00:00Z' },
         scan: {
           status: 'blocked',
@@ -153,6 +158,14 @@ test('failure dataset review builds a corpus queue and classifier backlog', asyn
   assert.equal(review.schemaVersion, '1.0-failure-dataset-review');
   assert.equal(review.summary.sources, 3);
   assert.equal(review.summary.corpusCandidates, 1);
+  assert.equal(review.scorecard.overallScore, 75);
+  assert.equal(review.scorecard.grade, 'strong');
+  assert.equal(review.scorecard.metrics.diagnosticHitRate.value, 100);
+  assert.equal(review.scorecard.metrics.rootCauseFirstRate.value, 100);
+  assert.equal(review.scorecard.metrics.safeFixGenerationRate.value, 100);
+  assert.equal(review.scorecard.metrics.falseBlockerRate.value, 0);
+  assert.equal(review.scorecard.metrics.falseBlockerRiskRate.value, 100);
+  assert.ok(review.scorecard.ecosystemCoverage.some((item) => item.ecosystem === 'next' && item.sources === 1));
   assert.equal(review.promotionCandidates[0].id, 'github-example-next-app');
   assert.equal(review.feedback.safeFixOpportunities[0].safeFixCount, 1);
   assert.ok(review.ruleGaps.some((gap) => gap.type === 'unclassified_probe_log'));
@@ -188,4 +201,5 @@ test('failure-dataset review command supports terminal output', async (t) => {
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /SetupLens Failure Dataset Review/);
   assert.match(result.stdout, /Sources\s+0/);
+  assert.match(result.stdout, /Scorecard/);
 });

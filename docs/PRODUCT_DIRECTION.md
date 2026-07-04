@@ -50,13 +50,14 @@ Product preview for the startup diagnosis redesign.
 
 ### v0.2.0-alpha.2
 
-Turn the startup scanner into a broader repository doctor.
+Turn the startup scanner into a broader, evidence-backed repository doctor.
 
 - Add `setuplens doctor`.
 - Add adapter-driven signals, actions, issues, and probes.
 - Add optional `--probe` execution with timeouts.
 - Add failure classification for common command-output families.
 - Add Prisma, PHP, Ruby, Java, .NET, Go, Rust, monorepo, local service, and README instruction adapters.
+- Add failure-dataset review scorecards so public scans report diagnostic hit rate, root-cause-first rate when labels exist, safe-fix generation, false-blocker risk, and ecosystem coverage.
 
 ### v0.2.0-beta
 
