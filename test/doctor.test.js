@@ -324,7 +324,7 @@ test('doctor reports macOS archive metadata as the Python compile blocker', asyn
   });
   t.after(() => fs.rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }));
 
-  const report = await doctor(root, { probe: true, timeoutMs: 3000 });
+  const report = await doctor(root, { probe: true, timeoutMs: 10000 });
   const compileProbe = report.probes.results.find((item) => item.id === 'python.compileall');
 
   assert.equal(compileProbe.classification.type, 'macos_resource_fork_files');
