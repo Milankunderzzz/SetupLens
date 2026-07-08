@@ -5,7 +5,13 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
-import { classifyCloneFailure, collectFailureDataset, reviewFailureDataset } from '../src/failure-dataset.js';
+import {
+  classifyCloneFailure,
+  cleanFailureDataset,
+  collectFailureDataset,
+  promoteFailureDataset,
+  reviewFailureDataset
+} from '../src/failure-dataset.js';
 
 const cliPath = fileURLToPath(new URL('../bin/setuplens.js', import.meta.url));
 
@@ -85,6 +91,11 @@ test('failure dataset review builds a corpus queue and classifier backlog', asyn
           primaryLanguage: 'TypeScript',
           discoveredBy: { ecosystem: 'next', query: 'topic:nextjs', page: 1, rank: 1 }
         },
+        expect: {
+          status: 'blocked',
+          rootCauseTypes: ['node_dependencies_missing'],
+          safeFix: true
+        },
         clone: { status: 'cloned', path: 'repos/next-app', commit: 'abc123', commitDate: '2026-01-01T00:00:00Z' },
         scan: {
           status: 'blocked',
@@ -153,6 +164,14 @@ test('failure dataset review builds a corpus queue and classifier backlog', asyn
   assert.equal(review.schemaVersion, '1.0-failure-dataset-review');
   assert.equal(review.summary.sources, 3);
   assert.equal(review.summary.corpusCandidates, 1);
+  assert.equal(review.scorecard.overallScore, 75);
+  assert.equal(review.scorecard.grade, 'strong');
+  assert.equal(review.scorecard.metrics.diagnosticHitRate.value, 100);
+  assert.equal(review.scorecard.metrics.rootCauseFirstRate.value, 100);
+  assert.equal(review.scorecard.metrics.safeFixGenerationRate.value, 100);
+  assert.equal(review.scorecard.metrics.falseBlockerRate.value, 0);
+  assert.equal(review.scorecard.metrics.falseBlockerRiskRate.value, 100);
+  assert.ok(review.scorecard.ecosystemCoverage.some((item) => item.ecosystem === 'next' && item.sources === 1));
   assert.equal(review.promotionCandidates[0].id, 'github-example-next-app');
   assert.equal(review.feedback.safeFixOpportunities[0].safeFixCount, 1);
   assert.ok(review.ruleGaps.some((gap) => gap.type === 'unclassified_probe_log'));
@@ -168,6 +187,91 @@ test('failure dataset classifies Windows path length clone failures', () => {
 
   assert.equal(classification.type, 'windows_path_too_long');
   assert.match(classification.recommendation, /long paths/i);
+});
+
+test('failure dataset promotion builds corpus drafts and review checklist', async () => {
+  const dataset = {
+    schemaVersion: '1.0-failure-dataset',
+    generatedAt: '2026-07-08T00:00:00.000Z',
+    sources: [
+      {
+        id: 'github-example-next-app',
+        source: {
+          fullName: 'example/next-app',
+          htmlUrl: 'https://github.com/example/next-app',
+          cloneUrl: 'https://github.com/example/next-app.git',
+          license: 'MIT',
+          discoveredBy: { ecosystem: 'next', query: 'topic:nextjs', page: 1, rank: 1 }
+        },
+        clone: { status: 'cloned', path: 'repos/next-app', commit: 'abc123', commitDate: '2026-01-01T00:00:00Z' },
+        scan: {
+          status: 'blocked',
+          readiness: { score: 0 },
+          confidence: { score: 93 },
+          ecosystems: ['node', 'Next.js'],
+          topRootCause: { type: 'node_dependencies_missing', title: 'Node dependencies missing' },
+          rootCauseTypes: ['node_dependencies_missing'],
+          safeFixCount: 1,
+          manualFixCount: 2,
+          reportPath: 'reports/next-app.doctor.json'
+        }
+      },
+      {
+        id: 'github-example-unsupported',
+        source: {
+          fullName: 'example/unsupported',
+          htmlUrl: 'https://github.com/example/unsupported',
+          license: null,
+          discoveredBy: { ecosystem: 'unknown', query: 'topic:unknown', page: 1, rank: 1 }
+        },
+        scan: {
+          status: 'unsupported',
+          rootCauseTypes: [],
+          safeFixCount: 0,
+          manualFixCount: 0
+        }
+      }
+    ]
+  };
+
+  const report = await promoteFailureDataset({ dataset, now: '2026-07-08T00:00:00.000Z' });
+  const draft = report.drafts[0];
+
+  assert.equal(report.schemaVersion, '1.0-failure-dataset-promotion');
+  assert.equal(report.summary.eligible, 1);
+  assert.equal(report.summary.highPriority, 1);
+  assert.equal(draft.priority, 'high');
+  assert.equal(draft.draftCase.source.sanitized, false);
+  assert.deepEqual(draft.draftCase.fixture.files, {});
+  assert.equal(draft.draftCase.expect.status, 'blocked');
+  assert.equal(draft.draftCase.expect.topRootCauseType, 'node_dependencies_missing');
+  assert.ok(draft.draftCase.ecosystems.includes('Next.js'));
+  assert.ok(draft.reviewChecklist.some((item) => /sanitize/i.test(item)));
+  assert.equal(report.rejections[0].reason, 'status_unsupported');
+});
+
+test('failure dataset clean removes only safe local cache paths', async (t) => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'setuplens-clean-'));
+  const reposDir = path.join(root, '.setuplens', 'failure-dataset', 'repos');
+  const reportsDir = path.join(root, '.setuplens', 'failure-dataset', 'reports');
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  await fs.mkdir(path.join(reposDir, 'repo'), { recursive: true });
+  await fs.mkdir(reportsDir, { recursive: true });
+  await fs.writeFile(path.join(reposDir, 'repo', 'package.json'), '{}', 'utf8');
+  await fs.writeFile(path.join(reportsDir, 'repo.doctor.json'), '{}', 'utf8');
+
+  const report = await cleanFailureDataset({ reposDir, reportsDir, includeReports: true });
+
+  assert.equal(report.schemaVersion, '1.0-failure-dataset-clean');
+  assert.equal(report.summary.reposRemoved, true);
+  assert.equal(report.summary.reportsRemoved, true);
+  assert.equal(report.summary.reposFiles, 1);
+  await assert.rejects(fs.access(reposDir));
+  await assert.rejects(fs.access(reportsDir));
+  await assert.rejects(
+    () => cleanFailureDataset({ reposDir: path.join(root, 'not-dataset') }),
+    /Refusing to clean/
+  );
 });
 
 test('failure-dataset review command supports terminal output', async (t) => {
@@ -188,4 +292,5 @@ test('failure-dataset review command supports terminal output', async (t) => {
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /SetupLens Failure Dataset Review/);
   assert.match(result.stdout, /Sources\s+0/);
+  assert.match(result.stdout, /Scorecard/);
 });

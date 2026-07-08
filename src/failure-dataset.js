@@ -518,6 +518,229 @@ function summarizeReview(sources) {
   };
 }
 
+function percent(numerator, denominator) {
+  if (denominator === 0) return null;
+  return Math.round((numerator / denominator) * 1000) / 10;
+}
+
+function metric(label, numerator, denominator, definition, mode = 'operational') {
+  return {
+    label,
+    value: percent(numerator, denominator),
+    numerator,
+    denominator,
+    unit: 'percent',
+    mode,
+    definition
+  };
+}
+
+function scanStatus(source) {
+  return source.scan?.status ?? 'not_scanned';
+}
+
+function rootCauseTypes(source) {
+  return asArray(source.scan?.rootCauseTypes);
+}
+
+function topRootCauseType(source) {
+  return source.scan?.topRootCause?.type ?? rootCauseTypes(source)[0] ?? null;
+}
+
+function hasRankedRootCause(source) {
+  return rootCauseTypes(source).length > 0 || Boolean(source.scan?.topRootCause?.type);
+}
+
+function expectationFor(source) {
+  const expect = source.expect ?? source.expected ?? source.evaluation?.expect ?? source.corpus?.expect ?? null;
+  if (!expect || typeof expect !== 'object') return null;
+  const expectedRootCauseTypes = asArray(expect.rootCauseTypes ?? expect.rootCauseType)
+    .flat()
+    .filter(Boolean);
+  const expectedStatus = expect.status ?? expect.verdict ?? null;
+  const expectedSafeFix = expect.safeFix === true || expect.safeFixExpected === true || asArray(expect.safeFixTitles).length > 0;
+  if (expectedRootCauseTypes.length === 0 && !expectedStatus && !expectedSafeFix) return null;
+  return {
+    rootCauseTypes: expectedRootCauseTypes,
+    status: expectedStatus,
+    safeFix: expectedSafeFix
+  };
+}
+
+function sourceEcosystem(source) {
+  return source.source?.discoveredBy?.ecosystem
+    ?? source.scan?.primaryStack
+    ?? source.source?.primaryLanguage
+    ?? 'unknown';
+}
+
+function blockerRisk(source) {
+  if (scanStatus(source) !== 'blocked') return false;
+  if (!hasRankedRootCause(source)) return true;
+  if ((source.scan?.confidence?.score ?? 100) < 55) return true;
+  if ((source.scan?.unclassifiedProbes?.length ?? 0) > 0 && rootCauseTypes(source).length <= 1) return true;
+  return false;
+}
+
+function buildEcosystemScorecard(sources) {
+  const buckets = new Map();
+  for (const source of sources) {
+    const ecosystem = sourceEcosystem(source);
+    const bucket = buckets.get(ecosystem) ?? {
+      ecosystem,
+      sources: 0,
+      scanned: 0,
+      corpusCandidates: 0,
+      blocked: 0,
+      needsSetup: 0,
+      needsProbe: 0,
+      safeFixes: 0,
+      manualFixes: 0,
+      failureTypes: new Map()
+    };
+    bucket.sources += 1;
+    const status = scanStatus(source);
+    if (source.scan && !['skipped', 'error'].includes(status)) bucket.scanned += 1;
+    if (['blocked', 'needs_setup'].includes(status) && rootCauseTypes(source).length > 0) bucket.corpusCandidates += 1;
+    if (status === 'blocked') bucket.blocked += 1;
+    if (status === 'needs_setup') bucket.needsSetup += 1;
+    if (status === 'needs_probe') bucket.needsProbe += 1;
+    bucket.safeFixes += source.scan?.safeFixCount ?? 0;
+    bucket.manualFixes += source.scan?.manualFixCount ?? 0;
+    for (const type of rootCauseTypes(source)) increment(bucket.failureTypes, type);
+    buckets.set(ecosystem, bucket);
+  }
+  return [...buckets.values()]
+    .sort((left, right) => right.sources - left.sources || left.ecosystem.localeCompare(right.ecosystem))
+    .map((bucket) => ({
+      ecosystem: bucket.ecosystem,
+      sources: bucket.sources,
+      scanned: bucket.scanned,
+      corpusCandidates: bucket.corpusCandidates,
+      blocked: bucket.blocked,
+      needsSetup: bucket.needsSetup,
+      needsProbe: bucket.needsProbe,
+      safeFixes: bucket.safeFixes,
+      manualFixes: bucket.manualFixes,
+      topFailureTypes: sortedCounts(bucket.failureTypes).slice(0, 5)
+    }));
+}
+
+function buildScorecard(sources) {
+  const scanned = sources.filter((source) => source.scan && !['skipped', 'error'].includes(scanStatus(source)));
+  const actionable = scanned.filter((source) => ['blocked', 'needs_setup'].includes(scanStatus(source)));
+  const blocked = scanned.filter((source) => scanStatus(source) === 'blocked');
+  const labeled = sources
+    .map((source) => ({ source, expect: expectationFor(source) }))
+    .filter((item) => item.expect);
+  const labeledRootCauses = labeled.filter((item) => item.expect.rootCauseTypes.length > 0);
+  const labeledStatuses = labeled.filter((item) => item.expect.status);
+  const labeledSafeFixes = labeled.filter((item) => item.expect.safeFix);
+
+  const diagnosticDenominator = labeledRootCauses.length > 0 ? labeledRootCauses.length : actionable.length;
+  const diagnosticHits = labeledRootCauses.length > 0
+    ? labeledRootCauses.filter(({ source, expect }) => expect.rootCauseTypes.some((type) => rootCauseTypes(source).includes(type))).length
+    : actionable.filter(hasRankedRootCause).length;
+  const rootFirstHits = labeledRootCauses
+    .filter(({ source, expect }) => topRootCauseType(source) === expect.rootCauseTypes[0])
+    .length;
+  const safeFixDenominator = labeledSafeFixes.length > 0 ? labeledSafeFixes.length : actionable.length;
+  const safeFixHits = labeledSafeFixes.length > 0
+    ? labeledSafeFixes.filter(({ source }) => (source.scan?.safeFixCount ?? 0) > 0).length
+    : actionable.filter((source) => (source.scan?.safeFixCount ?? 0) > 0).length;
+  const falseBlockers = labeledStatuses
+    .filter(({ source, expect }) => expect.status !== 'blocked' && scanStatus(source) === 'blocked')
+    .length;
+  const blockerRisks = blocked.filter(blockerRisk).length;
+
+  const diagnosticHitRate = metric(
+    'Diagnostic hit rate',
+    diagnosticHits,
+    diagnosticDenominator,
+    labeledRootCauses.length > 0
+      ? 'Percent of labeled cases whose expected root-cause type appeared anywhere in the ranked diagnosis.'
+      : 'Percent of blocked/needs_setup candidates with at least one ranked root cause.',
+    labeledRootCauses.length > 0 ? 'labeled' : 'operational'
+  );
+  const rootCauseFirstRate = metric(
+    'Root cause first rate',
+    rootFirstHits,
+    labeledRootCauses.length,
+    'Percent of labeled cases whose expected first root cause was ranked #1.',
+    'labeled'
+  );
+  const safeFixGenerationRate = metric(
+    'Safe fix generation rate',
+    safeFixHits,
+    safeFixDenominator,
+    labeledSafeFixes.length > 0
+      ? 'Percent of labeled safe-fix cases where at least one safe fix was generated.'
+      : 'Percent of blocked/needs_setup candidates where at least one whitelisted safe fix was generated.',
+    labeledSafeFixes.length > 0 ? 'labeled' : 'operational'
+  );
+  const falseBlockerRate = metric(
+    'False blocker rate',
+    falseBlockers,
+    labeledStatuses.length,
+    'Percent of labeled non-blocked cases that were incorrectly marked blocked.',
+    'labeled'
+  );
+  const falseBlockerRiskRate = metric(
+    'False blocker risk rate',
+    blockerRisks,
+    blocked.length,
+    'Percent of blocked public candidates with weak evidence, low confidence, or unclassified probe noise.',
+    'operational'
+  );
+  const ecosystemCoverage = buildEcosystemScorecard(sources);
+
+  const scoredValues = [
+    diagnosticHitRate.value,
+    safeFixGenerationRate.value,
+    falseBlockerRiskRate.value === null ? null : 100 - falseBlockerRiskRate.value,
+    rootCauseFirstRate.value
+  ].filter((value) => value !== null);
+  const overallScore = labeled.length === 0 || scoredValues.length === 0
+    ? null
+    : Math.round(scoredValues.reduce((sum, value) => sum + value, 0) / scoredValues.length);
+  const grade = overallScore === null
+    ? labeled.length === 0 ? 'operational_only' : 'unscored'
+    : overallScore >= 90 ? 'excellent'
+      : overallScore >= 75 ? 'strong'
+        : overallScore >= 60 ? 'developing'
+          : 'needs_attention';
+
+  return {
+    schemaVersion: '1.0-scorecard',
+    mode: labeled.length > 0 ? 'labeled_and_operational' : 'operational',
+    overallScore,
+    grade,
+    labeledCases: labeled.length,
+    notes: [
+      labeledRootCauses.length === 0
+        ? 'Root cause first rate requires labeled expected root causes; public source scans are treated as operational evidence until promoted into the curated corpus.'
+        : null,
+      labeledStatuses.length === 0
+        ? 'False blocker rate requires labeled expected statuses; false blocker risk is reported as an operational proxy.'
+        : null
+    ].filter(Boolean),
+    metrics: {
+      diagnosticHitRate,
+      rootCauseFirstRate,
+      safeFixGenerationRate,
+      falseBlockerRate,
+      falseBlockerRiskRate,
+      ecosystemCoverageCount: {
+        label: 'Ecosystem coverage count',
+        value: ecosystemCoverage.length,
+        unit: 'ecosystems',
+        definition: 'Number of source ecosystems represented in the reviewed dataset.'
+      }
+    },
+    ecosystemCoverage
+  };
+}
+
 function promotionCandidate(source) {
   return {
     id: source.id,
@@ -536,6 +759,7 @@ function promotionCandidate(source) {
       status: source.scan.status,
       readiness: source.scan.readiness,
       confidence: source.scan.confidence,
+      ecosystems: source.scan.ecosystems ?? [],
       topRootCause: source.scan.topRootCause,
       rootCauseTypes: source.scan.rootCauseTypes,
       safeFixCount: source.scan.safeFixCount,
@@ -548,6 +772,102 @@ function promotionCandidate(source) {
       scanCommand: source.clone?.path ? `setuplens doctor "${source.clone.path}" --format json` : `setuplens doctor ${safeSlug(source.source.fullName)} --format json`
     }
   };
+}
+
+function promotionPriority(candidate) {
+  if (candidate.scan.status === 'blocked') return 'high';
+  if ((candidate.scan.safeFixCount ?? 0) > 0) return 'medium';
+  return 'review';
+}
+
+function corpusDraftId(candidate) {
+  const project = safeSlug(candidate.source.fullName).toLowerCase();
+  const cause = safeSlug(candidate.scan.topRootCause?.type ?? candidate.scan.rootCauseTypes?.[0] ?? 'setup-failure').toLowerCase();
+  return `${project}-${cause}`.slice(0, 120);
+}
+
+function buildCorpusDraft(candidate) {
+  return {
+    id: corpusDraftId(candidate),
+    ecosystems: [...new Set([candidate.source.discoveredBy?.ecosystem, ...(candidate.scan.ecosystems ?? [])].filter(Boolean))],
+    source: {
+      kind: 'public_real_project',
+      label: `${candidate.source.fullName} failure-dataset candidate`,
+      reference: candidate.source.htmlUrl,
+      sanitized: false,
+      provenance: {
+        sourceId: candidate.id,
+        discoveredBy: candidate.source.discoveredBy,
+        license: candidate.source.license,
+        commit: candidate.clone?.commit ?? null,
+        commitDate: candidate.clone?.commitDate ?? null,
+        reportPath: candidate.scan.reportPath ?? null
+      }
+    },
+    fixture: {
+      files: {},
+      note: 'Paste the smallest sanitized file tree that still reproduces this diagnosis.'
+    },
+    expect: {
+      status: candidate.scan.status,
+      rootCauseTypes: candidate.scan.rootCauseTypes ?? [],
+      topRootCauseType: candidate.scan.topRootCause?.type ?? candidate.scan.rootCauseTypes?.[0] ?? null,
+      safeFixExpected: (candidate.scan.safeFixCount ?? 0) > 0
+    }
+  };
+}
+
+function promotionReviewChecklist(candidate) {
+  return [
+    'Reproduce the project at the recorded clone URL and commit before trusting the draft.',
+    'Run the recorded SetupLens doctor command and compare the root-cause ranking.',
+    'Reduce the project to the smallest fixture that still triggers the same diagnosis.',
+    'Remove secrets, private URLs, generated code, vendor code, and unrelated project files.',
+    'Paste the minimized fixture into draftCase.fixture.files and set source.sanitized to true.',
+    'Confirm expected status, rootCauseTypes, topRootCauseType, and safeFixExpected.',
+    'Run npm run corpus and npm test before committing the promoted case.'
+  ].concat(candidate.source.license ? [] : ['Review licensing before copying even minimized public source snippets.']);
+}
+
+function buildPromotionDraft(candidate) {
+  const missingEvidence = [];
+  if (!candidate.clone?.commit) missingEvidence.push('resolved commit');
+  if (!candidate.scan.reportPath) missingEvidence.push('doctor report path');
+  if (!candidate.scan.topRootCause?.type) missingEvidence.push('ranked top root cause');
+  if (!candidate.source.license) missingEvidence.push('license');
+  return {
+    id: candidate.id,
+    project: candidate.source.fullName,
+    priority: promotionPriority(candidate),
+    missingEvidence,
+    evidence: {
+      status: candidate.scan.status,
+      readiness: candidate.scan.readiness,
+      confidence: candidate.scan.confidence,
+      topRootCause: candidate.scan.topRootCause,
+      rootCauseTypes: candidate.scan.rootCauseTypes,
+      safeFixCount: candidate.scan.safeFixCount,
+      manualFixCount: candidate.scan.manualFixCount,
+      reportPath: candidate.scan.reportPath,
+      clone: candidate.clone,
+      reproduce: candidate.reproduce
+    },
+    draftCase: buildCorpusDraft(candidate),
+    reviewChecklist: promotionReviewChecklist(candidate)
+  };
+}
+
+function buildPromotionRejections(sources) {
+  return sources
+    .filter((source) => !(['blocked', 'needs_setup'].includes(source.scan?.status) && source.scan?.rootCauseTypes?.length > 0))
+    .map((source) => ({
+      id: source.id,
+      project: source.source?.fullName ?? source.id,
+      reason: !source.scan ? 'not_scanned'
+        : ['skipped', 'error'].includes(source.scan.status) ? source.scan.reason ?? source.scan.status
+          : !['blocked', 'needs_setup'].includes(source.scan.status) ? `status_${source.scan.status}`
+            : 'missing_ranked_root_cause'
+    }));
 }
 
 function buildRuleGaps(sources) {
@@ -612,6 +932,7 @@ export async function reviewFailureDataset(options = {}) {
       return leftScore - rightScore || left.id.localeCompare(right.id);
     });
   const ruleGaps = buildRuleGaps(sources);
+  const scorecard = buildScorecard(sources);
 
   return {
     schemaVersion: '1.0-failure-dataset-review',
@@ -620,6 +941,7 @@ export async function reviewFailureDataset(options = {}) {
     input,
     datasetGeneratedAt: dataset.generatedAt ?? null,
     summary: summarizeReview(sources),
+    scorecard,
     promotionCandidates,
     feedback: {
       corpusPromotionQueue: promotionCandidates.slice(0, 20),
@@ -640,5 +962,117 @@ export async function reviewFailureDataset(options = {}) {
       'Promote only sanitized minimal fixtures into docs/failure-corpus/cases.json.',
       'Keep third-party repository contents outside git unless a license review explicitly allows inclusion.'
     ]
+  };
+}
+
+export async function promoteFailureDataset(options = {}) {
+  const input = options.input ? path.resolve(options.input) : null;
+  const dataset = options.dataset ?? JSON.parse(await fs.readFile(input, 'utf8'));
+  const sources = asArray(dataset.sources);
+  const candidates = sources
+    .filter((source) => ['blocked', 'needs_setup'].includes(source.scan?.status) && source.scan?.rootCauseTypes?.length > 0)
+    .map(promotionCandidate)
+    .sort((left, right) => {
+      const priority = { high: 0, medium: 1, review: 2 };
+      return priority[promotionPriority(left)] - priority[promotionPriority(right)] || left.id.localeCompare(right.id);
+    });
+  const drafts = candidates.map(buildPromotionDraft);
+  const rejections = buildPromotionRejections(sources);
+  return {
+    schemaVersion: '1.0-failure-dataset-promotion',
+    tool: { name: 'SetupLens', version: VERSION },
+    generatedAt: options.now ?? new Date().toISOString(),
+    input,
+    datasetGeneratedAt: dataset.generatedAt ?? null,
+    summary: {
+      sources: sources.length,
+      eligible: candidates.length,
+      drafted: drafts.length,
+      highPriority: drafts.filter((draft) => draft.priority === 'high').length,
+      rejected: rejections.length
+    },
+    policy: {
+      purpose: 'Create reviewable corpus case drafts from public failure-dataset scan evidence.',
+      safety: 'Drafts intentionally keep fixture.files empty until a human sanitizes and minimizes the public project evidence.',
+      commitRule: 'Commit only sanitized minimal fixtures, not cloned third-party repository contents.'
+    },
+    drafts,
+    rejections,
+    nextActions: [
+      'Open the highest-priority draft and reproduce it at the recorded commit.',
+      'Minimize and sanitize the file tree before copying it into docs/failure-corpus/cases.json.',
+      'Run npm run corpus and npm test after promotion.',
+      'Keep the original public source manifest as provenance for later review.'
+    ]
+  };
+}
+
+function assertDatasetCachePath(target) {
+  const resolved = path.resolve(target);
+  const parts = resolved.split(path.sep).map((part) => part.toLowerCase());
+  if (parts.includes('.setuplens') && parts.includes('failure-dataset')) return resolved;
+  throw new Error(`Refusing to clean a path outside .setuplens/failure-dataset: ${target}`);
+}
+
+async function countCacheEntries(root) {
+  const stats = { files: 0, directories: 0 };
+  if (!await pathExists(root)) return stats;
+  async function walk(directory) {
+    let entries = [];
+    try {
+      entries = await fs.readdir(directory, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      const absolute = path.join(directory, entry.name);
+      if (entry.isDirectory()) {
+        stats.directories += 1;
+        await walk(absolute);
+      } else {
+        stats.files += 1;
+      }
+      if (stats.files + stats.directories > 50000) return;
+    }
+  }
+  await walk(root);
+  return stats;
+}
+
+export async function cleanFailureDataset(options = {}) {
+  const started = performance.now();
+  const reposDir = assertDatasetCachePath(options.reposDir ?? path.join(DEFAULT_ROOT, 'repos'));
+  const reportsDir = assertDatasetCachePath(options.reportsDir ?? path.join(DEFAULT_ROOT, 'reports'));
+  const includeReports = options.includeReports === true;
+  const reposBefore = await countCacheEntries(reposDir);
+  const reportsBefore = includeReports ? await countCacheEntries(reportsDir) : { files: 0, directories: 0 };
+  const reposExisted = await pathExists(reposDir);
+  const reportsExisted = includeReports && await pathExists(reportsDir);
+
+  await fs.rm(reposDir, { recursive: true, force: true });
+  if (includeReports) await fs.rm(reportsDir, { recursive: true, force: true });
+
+  return {
+    schemaVersion: '1.0-failure-dataset-clean',
+    tool: { name: 'SetupLens', version: VERSION },
+    generatedAt: options.now ?? new Date().toISOString(),
+    durationMs: Math.max(1, Math.round(performance.now() - started)),
+    policy: {
+      safety: 'Only paths under .setuplens/failure-dataset are eligible for cleanup.',
+      retained: includeReports
+        ? 'Source manifests outside the cleaned directories are retained.'
+        : 'Per-repository reports and source manifests are retained; only cloned repositories were removed.'
+    },
+    summary: {
+      reposDir,
+      reposRemoved: reposExisted,
+      reposFiles: reposBefore.files,
+      reposDirectories: reposBefore.directories,
+      reportsDir,
+      reportsRemoved: reportsExisted,
+      reportsFiles: reportsBefore.files,
+      reportsDirectories: reportsBefore.directories,
+      includeReports
+    }
   };
 }

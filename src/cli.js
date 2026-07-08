@@ -3,7 +3,7 @@ import path from 'node:path';
 import { VERSION } from './constants.js';
 import { doctor } from './doctor.js';
 import { doctorSuite } from './doctor-suite.js';
-import { collectFailureDataset, reviewFailureDataset } from './failure-dataset.js';
+import { cleanFailureDataset, collectFailureDataset, promoteFailureDataset, reviewFailureDataset } from './failure-dataset.js';
 import { scan } from './scan.js';
 import { renderDoctorTerminal } from './reporters/doctor-terminal.js';
 import { renderDoctorHtml } from './reporters/doctor-html.js';
@@ -21,6 +21,8 @@ Usage:
   setuplens doctor-suite [path] [options]
   setuplens failure-dataset collect [options]
   setuplens failure-dataset review [options]
+  setuplens failure-dataset promote [options]
+  setuplens failure-dataset clean [options]
   setuplens scan [path] [options]
   setuplens [path] [options]
 
@@ -35,9 +37,10 @@ Options:
   --limit <n>                   Failure dataset source limit (default: 50)
   --clone                       Clone collected failure dataset candidates
   --scan                        Run doctor on cloned failure dataset candidates
-  --input <file>                Read a failure dataset manifest for review
+  --input <file>                Read a failure dataset manifest for review or promotion
   --repos-dir <dir>             Directory for cloned dataset repositories
   --reports-dir <dir>           Directory for per-repository doctor reports
+  --include-reports             Also clean per-repository doctor reports
   --threshold <0-100>           Exit 1 when lower, 2 when not scorable
   --plugin <file>               Load a trusted local plugin (repeatable)
   --no-color                    Disable terminal colors
@@ -52,6 +55,8 @@ Examples:
   setuplens failure-dataset collect --limit 50 --format json
   setuplens failure-dataset collect --limit 50 --clone --scan
   setuplens failure-dataset review --input .setuplens/failure-dataset/sources.json
+  setuplens failure-dataset promote --input .setuplens/failure-dataset/sources.json
+  setuplens failure-dataset clean
   setuplens scan .
   setuplens scan . --format html -o setuplens-report.html
   setuplens scan . --format json --threshold 80
@@ -137,7 +142,7 @@ function parseArguments(argv) {
 }
 
 function parseFailureDatasetArguments(args) {
-  const action = ['collect', 'review'].includes(args[0]) ? args.shift() : 'collect';
+  const action = ['collect', 'review', 'promote', 'clean'].includes(args[0]) ? args.shift() : 'collect';
   const options = {
     command: 'failure-dataset',
     action,
@@ -152,6 +157,7 @@ function parseFailureDatasetArguments(args) {
     scan: false,
     probe: false,
     probeStartup: false,
+    includeReports: false,
     timeoutMs: 8000,
     timeoutSet: false,
     reposDir: '.setuplens/failure-dataset/repos',
@@ -167,6 +173,7 @@ function parseFailureDatasetArguments(args) {
     if (arg === '--scan') { options.scan = true; options.clone = true; continue; }
     if (arg === '--probe') { options.probe = true; continue; }
     if (arg === '--probe-startup') { options.probe = true; options.probeStartup = true; continue; }
+    if (arg === '--include-reports') { options.includeReports = true; continue; }
     if (arg === '--format') { options.format = valueAfter(args, index, arg); index += 1; continue; }
     if (arg === '-o' || arg === '--output') { options.output = valueAfter(args, index, arg); options.outputSet = true; index += 1; continue; }
     if (arg === '--input') { options.input = valueAfter(args, index, arg); options.inputSet = true; index += 1; continue; }
@@ -184,9 +191,12 @@ function parseFailureDatasetArguments(args) {
     throw new Error('--timeout must be between 1000 and 120000 milliseconds.');
   }
   if (options.probe && !options.scan) throw new Error('--probe requires --scan for failure-dataset collect.');
-  if (action === 'review' && options.scan) throw new Error('--scan is only available with failure-dataset collect.');
-  if (action === 'collect' && options.inputSet) throw new Error('--input is only available with failure-dataset review.');
-  if (action === 'review' && !options.input) options.input = '.setuplens/failure-dataset/sources.json';
+  if (action !== 'collect' && options.scan) throw new Error('--scan is only available with failure-dataset collect.');
+  if (action !== 'collect' && options.clone) throw new Error('--clone is only available with failure-dataset collect.');
+  if (action !== 'clean' && options.includeReports) throw new Error('--include-reports is only available with failure-dataset clean.');
+  if (action === 'collect' && options.inputSet) throw new Error('--input is only available with failure-dataset review or promote.');
+  if (['review', 'promote'].includes(action) && !options.input) options.input = '.setuplens/failure-dataset/sources.json';
+  if (action === 'clean' && options.inputSet) throw new Error('--input is not used with failure-dataset clean.');
   if (action === 'collect' && !options.outputSet && options.format === 'json') options.output = '.setuplens/failure-dataset/sources.json';
   return options;
 }
@@ -211,6 +221,14 @@ async function runCommand(options) {
   }
   if (options.command === 'failure-dataset') {
     if (options.action === 'review') return reviewFailureDataset({ input: options.input });
+    if (options.action === 'promote') return promoteFailureDataset({ input: options.input });
+    if (options.action === 'clean') {
+      return cleanFailureDataset({
+        reposDir: options.reposDir,
+        reportsDir: options.reportsDir,
+        includeReports: options.includeReports
+      });
+    }
     return collectFailureDataset({
       limit: options.limit,
       clone: options.clone,

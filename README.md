@@ -26,7 +26,7 @@ I am building it in public and still keeping the core deterministic and local-fi
 
 SetupLens is an early research prototype and usable MVP, not yet a product whose effectiveness has been established. The current `main` branch includes:
 
-- 74 automated tests, executed in CI on Windows, Linux, and macOS with Node.js 18 and 22;
+- 77 automated tests, executed in CI on Windows, Linux, and macOS with Node.js 18 and 22;
 - context-aware file classification, workspace-level dependency reporting, and primary-stack ranking;
 - `Unsupported / Not scored` results for empty repositories, unknown stacks, and unsupported primary stacks instead of misleading numeric grades;
 - startup diagnosis with `ready`, `needs_setup`, `blocked`, and `unsupported` verdicts;
@@ -38,6 +38,8 @@ SetupLens is an early research prototype and usable MVP, not yet a product whose
 - multi-ecosystem doctor adapters for PHP, Ruby, Java, .NET, Go, Rust, monorepos, and local service dependencies;
 - corpus metrics for diagnostic hit rate, first root-cause ranking, safe-fix generation, false blockers, and ecosystem coverage;
 - `failure-dataset collect/review` for pulling 50 public candidate repositories, preserving source provenance, scanning them, and turning the results into corpus and classifier feedback;
+- failure-dataset review scorecards with diagnostic hit rate, root-cause-first rate, safe-fix generation, false-blocker metrics, operational risk notes, and per-ecosystem coverage counts;
+- failure-dataset promotion drafts and local cache cleanup so public scan evidence can move toward curated corpus coverage without retaining cloned repositories forever;
 - safer probe execution that runs verify probes by default, records probe traces, and only runs startup commands with `--probe-startup`;
 - action-panel doctor reports in terminal, JSON, and HTML with readiness separated from diagnosis confidence;
 - fix-plan output plus `doctor --apply safe` for whitelisted local repairs and safe recipes that never overwrite existing files;
@@ -132,7 +134,21 @@ setuplens failure-dataset review --input .setuplens/failure-dataset/sources.json
 setuplens failure-dataset review --input .setuplens/failure-dataset/sources.json --format json --output .setuplens/failure-dataset/review.json
 ```
 
-The manifest records repository URL, clone URL, default branch, license, topics, GitHub Search query, collection timestamp, optional resolved commit, optional doctor report path, root-cause ranking, safe-fix counts, unclassified logs, and unknowns. The detailed workflow is in [docs/failure-dataset/README.md](docs/failure-dataset/README.md).
+Generate reviewable corpus drafts from the highest-value candidates:
+
+```bash
+setuplens failure-dataset promote --input .setuplens/failure-dataset/sources.json
+setuplens failure-dataset promote --input .setuplens/failure-dataset/sources.json --format json --output .setuplens/failure-dataset/corpus-drafts.json
+```
+
+Clean cloned public repositories when the evidence has been reviewed:
+
+```bash
+setuplens failure-dataset clean
+setuplens failure-dataset clean --include-reports
+```
+
+The manifest records repository URL, clone URL, default branch, license, topics, GitHub Search query, collection timestamp, optional resolved commit, optional doctor report path, root-cause ranking, safe-fix counts, unclassified logs, and unknowns. Review output also includes a scorecard for diagnostic hit rate, first-root-cause ranking when labels exist, safe-fix generation, false-blocker risk, and ecosystem coverage. Promotion output keeps `fixture.files` empty until a human sanitizes and minimizes the public source evidence. The detailed workflow is in [docs/failure-dataset/README.md](docs/failure-dataset/README.md).
 
 The original CMMS benchmark still exists as one local validation example. It was measured on Windows 11 with an Intel i5-12500H and Node.js 24. The repository contains Node.js, Python, Docker, and 261 indexed files.
 
@@ -164,6 +180,8 @@ setuplens doctor-suite ./repos --format json
 setuplens failure-dataset collect --limit 50 --format json
 setuplens failure-dataset collect --limit 50 --clone --scan
 setuplens failure-dataset review --input .setuplens/failure-dataset/sources.json
+setuplens failure-dataset promote --input .setuplens/failure-dataset/sources.json
+setuplens failure-dataset clean
 
 # Human-readable terminal report
 setuplens scan .
@@ -202,7 +220,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: Milankunderzzz/SetupLens@v0.1.1
+      - uses: Milankunderzzz/SetupLens@v0.2.0-alpha.3
         with:
           path: .
           threshold: 75
@@ -285,6 +303,8 @@ npm test
 npm run corpus
 npm run dataset:collect -- --limit 50 --format json
 npm run dataset:review -- --input .setuplens/failure-dataset/sources.json
+npm run dataset:promote -- --input .setuplens/failure-dataset/sources.json
+npm run dataset:clean
 node ./bin/setuplens.js scan .
 node ./bin/setuplens.js doctor . --probe
 node ./bin/setuplens.js doctor-suite ./repos --format json
