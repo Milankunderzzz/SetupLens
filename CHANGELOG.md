@@ -5,6 +5,23 @@ All notable changes to SetupLens are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project uses semantic versioning while it remains in the `0.x` stage.
 
+## [0.2.0-alpha.3] - 2026-07-08
+
+This alpha turns failure-dataset review output into a promotion workflow so real public failures can move toward curated corpus coverage without copying third-party source code by accident.
+
+### Added
+
+- `setuplens failure-dataset promote` for generating reviewable corpus case drafts from scanned public repository evidence.
+- Promotion drafts with priority, missing-evidence notes, reproduction commands, expected status, expected root-cause types, top-root-cause expectations, safe-fix expectations, and a human review checklist.
+- `setuplens failure-dataset clean` for safely removing local cloned dataset repositories under `.setuplens/failure-dataset/repos`.
+- `--include-reports` for cleaning per-repository doctor reports along with cloned repositories.
+- npm shortcuts for `dataset:promote` and `dataset:clean`.
+
+### Changed
+
+- Package version advanced to `0.2.0-alpha.3`.
+- Documentation now presents corpus promotion and local cache cleanup as the next iteration after alpha.2 scorecards.
+
 ## [0.2.0-alpha.2] - 2026-07-02
 
 This alpha adds a review scorecard so public failure-dataset scans can be evaluated as a regression signal instead of only described as pass/fail evidence.
@@ -109,6 +126,7 @@ This is a maintenance release. It does not claim validated precision, recall, F1
 
 - Initial public MVP with local terminal, JSON, HTML, plugin, and GitHub Action interfaces for Node.js, Python, Docker, configuration, path, security, and repository checks.
 
+[0.2.0-alpha.3]: https://github.com/Milankunderzzz/SetupLens/compare/v0.2.0-alpha.2...v0.2.0-alpha.3
 [0.2.0-alpha.2]: https://github.com/Milankunderzzz/SetupLens/compare/v0.2.0-alpha.1...v0.2.0-alpha.2
 [0.2.0-alpha.1]: https://github.com/Milankunderzzz/SetupLens/compare/v0.1.1...v0.2.0-alpha.1
 [0.1.1]: https://github.com/Milankunderzzz/SetupLens/compare/v0.1.0...v0.1.1

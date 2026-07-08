@@ -76,6 +76,41 @@ The review separates:
 
 For public repository scans, most sources do not have human ground-truth labels yet. In that mode the scorecard reports operational proxy metrics and explicitly marks label-dependent metrics such as `rootCauseFirstRate` and `falseBlockerRate` as `n/a`. Once a source is promoted into the curated corpus with expected root causes, the same scorecard can report labeled diagnostic accuracy.
 
+## Promote Corpus Drafts
+
+Promotion turns the best scanned candidates into reviewable corpus drafts without copying public source files automatically:
+
+```bash
+setuplens failure-dataset promote --input .setuplens/failure-dataset/sources.json
+setuplens failure-dataset promote --input .setuplens/failure-dataset/sources.json \
+  --format json --output .setuplens/failure-dataset/corpus-drafts.json
+```
+
+Each draft includes:
+
+- priority and missing-evidence notes;
+- the source repository, license, GitHub query, commit, and doctor report path;
+- the expected status, expected root-cause types, expected top root cause, and safe-fix expectation;
+- reproduction commands;
+- an empty `fixture.files` object that must be filled only after manual sanitization and minimization;
+- a review checklist for reproduction, license review, secret removal, minimization, and regression testing.
+
 Only sanitized, minimal reproductions should be promoted into the committed failure corpus. The manifest and per-repository reports provide the evidence needed to recreate the source failure before reducing it into a fixture.
+
+## Clean Local Dataset Cache
+
+After review, remove cloned third-party repositories while keeping manifests and reports:
+
+```bash
+setuplens failure-dataset clean
+```
+
+Remove per-repository doctor reports too when you want a fully clean local dataset cache:
+
+```bash
+setuplens failure-dataset clean --include-reports
+```
+
+Cleanup refuses paths outside `.setuplens/failure-dataset`, so it cannot be pointed at an arbitrary project directory by accident.
 
 The first 50-source scan review is recorded in [scan-review-2026-07-01.md](scan-review-2026-07-01.md). It keeps the public aggregate evidence and follow-up backlog without committing third-party repository contents or local absolute report paths.

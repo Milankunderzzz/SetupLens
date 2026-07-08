@@ -20,7 +20,7 @@ v0.2 线现在有两个用户入口：
 - `scan`：面向 CI 的确定性 readiness 与仓库规范检查。
 - `doctor`：基于 adapter 的仓库诊断，包含启动计划、可选 probe、失败分类、fix plan 和行动面板报告。
 
-当前 `0.2.0-alpha.2` 分支补上了 doctor 继续变强所需的证据层：failure-dataset scorecard、更安全的 probe、ready output 识别，以及和 failure corpus 绑定的回归测试。
+当前 `0.2.0-alpha.3` 分支补上了把公开扫描证据沉淀为 corpus 草稿所需的 promotion 层，同时让第三方克隆仓库继续留在 git 外并可被安全清理。
 
 ## 版本方向
 
@@ -34,18 +34,18 @@ v0.2 线现在有两个用户入口：
 - 当前置条件缺失时跳过可选 probe，例如没有 `node_modules` 时不跑 Next/Vite 深 probe。
 - 保持版本号、README、CHANGELOG、demo 报告和路线图一致。
 
-进入下一阶段条件：release 分支上的语法检查、测试、corpus 回归和 failure-dataset review 全部通过。
+状态：已在 alpha.2 release 分支完成。
 
 ### v0.2.0-alpha.3 - Corpus promotion 工作流
 
-目标：把有价值的公开扫描结果变成可复现 fixture，而不是停留在一次性观察。
+目标：把有价值的公开扫描结果变成可审核 corpus 草稿，而不是停留在一次性观察。
 
-- 增加把 failure-dataset candidate 转成 sanitized corpus case 草稿的流程。
+- 增加把 failure-dataset candidate 转成 reviewable corpus case 草稿的流程。
 - 为每个 promoted case 保存期望 status、期望 root-cause type、期望 top cause、safe-fix 期望和 provenance 指针。
 - 生成 review checklist，标出公开 candidate 进入 committed corpus 之前还缺哪些证据。
 - 增加 `.setuplens/failure-dataset/repos` 清理工具，避免大量克隆项目长期留在用户电脑上。
 
-进入下一阶段条件：50-source dataset 中最高价值的 blocker 已经被 promotion、明确拒绝并记录原因，或进入 classifier backlog。
+进入下一阶段条件：promotion 草稿、本地缓存清理、语法检查、完整测试、corpus 回归和 failure-dataset review 都在 release 分支通过。
 
 ### v0.2.0-beta - 真实项目回归闭环
 

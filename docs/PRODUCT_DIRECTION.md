@@ -59,6 +59,14 @@ Turn the startup scanner into a broader, evidence-backed repository doctor.
 - Add Prisma, PHP, Ruby, Java, .NET, Go, Rust, monorepo, local service, and README instruction adapters.
 - Add failure-dataset review scorecards so public scans report diagnostic hit rate, root-cause-first rate when labels exist, safe-fix generation, false-blocker risk, and ecosystem coverage.
 
+### v0.2.0-alpha.3
+
+Turn public scan evidence into a repeatable corpus promotion loop.
+
+- Add `setuplens failure-dataset promote` for corpus case drafts with provenance, expected diagnosis, missing-evidence notes, and human review checklists.
+- Keep draft fixture files empty until a maintainer sanitizes and minimizes public source evidence.
+- Add `setuplens failure-dataset clean` so cloned public repositories can be removed after review while manifests and reports remain reproducible.
+
 ### v0.2.0-beta
 
 Make doctor mode more trustworthy across real repositories.

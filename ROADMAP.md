@@ -25,9 +25,9 @@ The v0.2 line has two user-facing layers:
 - `doctor`: adapter-driven diagnosis with startup plans, optional probes,
   failure classification, fix plans, and action-panel reports.
 
-The current `0.2.0-alpha.2` branch adds the evidence layer needed to keep doctor
-mode honest: failure-dataset scorecards, safer probe behavior, ready-output
-detection, and regression tests tied to the curated failure corpus.
+The current `0.2.0-alpha.3` branch adds the promotion layer needed to turn
+public scan evidence into reviewable corpus drafts while keeping cloned
+third-party repositories out of git and easy to clean up locally.
 
 ## Version Direction
 
@@ -44,8 +44,7 @@ unlabeled scans prove final accuracy.
 - Skip optional probes when prerequisites such as `node_modules` are missing.
 - Keep version, README, changelog, demo report, and roadmap aligned.
 
-Exit condition: tests, syntax checks, corpus regression, and failure-dataset
-review all pass on the release branch.
+Status: complete in the alpha.2 release branch.
 
 ### v0.2.0-alpha.3 - Corpus promotion workflow
 
@@ -53,7 +52,7 @@ Purpose: turn useful public scan results into reproducible fixtures instead of
 letting them remain one-off observations.
 
 - Add a promotion workflow for converting failure-dataset candidates into
-  sanitized corpus case drafts.
+  reviewable corpus case drafts.
 - Store expected status, expected root-cause type, expected top cause, safe-fix
   expectation, and provenance pointer for each promoted case.
 - Generate a review checklist that shows what evidence is still missing before a
@@ -61,9 +60,8 @@ letting them remain one-off observations.
 - Add cleanup tooling for `.setuplens/failure-dataset/repos` so large cloned
   datasets do not linger on a user's machine.
 
-Exit condition: at least the highest-value public blockers from the 50-source
-dataset have either been promoted, rejected with a reason, or filed as classifier
-backlog.
+Exit condition: promotion drafts, cache cleanup, syntax checks, full tests,
+corpus regression, and failure-dataset review all pass on the release branch.
 
 ### v0.2.0-beta - Real-project regression loop
 

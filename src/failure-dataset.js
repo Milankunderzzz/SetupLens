@@ -759,6 +759,7 @@ function promotionCandidate(source) {
       status: source.scan.status,
       readiness: source.scan.readiness,
       confidence: source.scan.confidence,
+      ecosystems: source.scan.ecosystems ?? [],
       topRootCause: source.scan.topRootCause,
       rootCauseTypes: source.scan.rootCauseTypes,
       safeFixCount: source.scan.safeFixCount,
@@ -771,6 +772,102 @@ function promotionCandidate(source) {
       scanCommand: source.clone?.path ? `setuplens doctor "${source.clone.path}" --format json` : `setuplens doctor ${safeSlug(source.source.fullName)} --format json`
     }
   };
+}
+
+function promotionPriority(candidate) {
+  if (candidate.scan.status === 'blocked') return 'high';
+  if ((candidate.scan.safeFixCount ?? 0) > 0) return 'medium';
+  return 'review';
+}
+
+function corpusDraftId(candidate) {
+  const project = safeSlug(candidate.source.fullName).toLowerCase();
+  const cause = safeSlug(candidate.scan.topRootCause?.type ?? candidate.scan.rootCauseTypes?.[0] ?? 'setup-failure').toLowerCase();
+  return `${project}-${cause}`.slice(0, 120);
+}
+
+function buildCorpusDraft(candidate) {
+  return {
+    id: corpusDraftId(candidate),
+    ecosystems: [...new Set([candidate.source.discoveredBy?.ecosystem, ...(candidate.scan.ecosystems ?? [])].filter(Boolean))],
+    source: {
+      kind: 'public_real_project',
+      label: `${candidate.source.fullName} failure-dataset candidate`,
+      reference: candidate.source.htmlUrl,
+      sanitized: false,
+      provenance: {
+        sourceId: candidate.id,
+        discoveredBy: candidate.source.discoveredBy,
+        license: candidate.source.license,
+        commit: candidate.clone?.commit ?? null,
+        commitDate: candidate.clone?.commitDate ?? null,
+        reportPath: candidate.scan.reportPath ?? null
+      }
+    },
+    fixture: {
+      files: {},
+      note: 'Paste the smallest sanitized file tree that still reproduces this diagnosis.'
+    },
+    expect: {
+      status: candidate.scan.status,
+      rootCauseTypes: candidate.scan.rootCauseTypes ?? [],
+      topRootCauseType: candidate.scan.topRootCause?.type ?? candidate.scan.rootCauseTypes?.[0] ?? null,
+      safeFixExpected: (candidate.scan.safeFixCount ?? 0) > 0
+    }
+  };
+}
+
+function promotionReviewChecklist(candidate) {
+  return [
+    'Reproduce the project at the recorded clone URL and commit before trusting the draft.',
+    'Run the recorded SetupLens doctor command and compare the root-cause ranking.',
+    'Reduce the project to the smallest fixture that still triggers the same diagnosis.',
+    'Remove secrets, private URLs, generated code, vendor code, and unrelated project files.',
+    'Paste the minimized fixture into draftCase.fixture.files and set source.sanitized to true.',
+    'Confirm expected status, rootCauseTypes, topRootCauseType, and safeFixExpected.',
+    'Run npm run corpus and npm test before committing the promoted case.'
+  ].concat(candidate.source.license ? [] : ['Review licensing before copying even minimized public source snippets.']);
+}
+
+function buildPromotionDraft(candidate) {
+  const missingEvidence = [];
+  if (!candidate.clone?.commit) missingEvidence.push('resolved commit');
+  if (!candidate.scan.reportPath) missingEvidence.push('doctor report path');
+  if (!candidate.scan.topRootCause?.type) missingEvidence.push('ranked top root cause');
+  if (!candidate.source.license) missingEvidence.push('license');
+  return {
+    id: candidate.id,
+    project: candidate.source.fullName,
+    priority: promotionPriority(candidate),
+    missingEvidence,
+    evidence: {
+      status: candidate.scan.status,
+      readiness: candidate.scan.readiness,
+      confidence: candidate.scan.confidence,
+      topRootCause: candidate.scan.topRootCause,
+      rootCauseTypes: candidate.scan.rootCauseTypes,
+      safeFixCount: candidate.scan.safeFixCount,
+      manualFixCount: candidate.scan.manualFixCount,
+      reportPath: candidate.scan.reportPath,
+      clone: candidate.clone,
+      reproduce: candidate.reproduce
+    },
+    draftCase: buildCorpusDraft(candidate),
+    reviewChecklist: promotionReviewChecklist(candidate)
+  };
+}
+
+function buildPromotionRejections(sources) {
+  return sources
+    .filter((source) => !(['blocked', 'needs_setup'].includes(source.scan?.status) && source.scan?.rootCauseTypes?.length > 0))
+    .map((source) => ({
+      id: source.id,
+      project: source.source?.fullName ?? source.id,
+      reason: !source.scan ? 'not_scanned'
+        : ['skipped', 'error'].includes(source.scan.status) ? source.scan.reason ?? source.scan.status
+          : !['blocked', 'needs_setup'].includes(source.scan.status) ? `status_${source.scan.status}`
+            : 'missing_ranked_root_cause'
+    }));
 }
 
 function buildRuleGaps(sources) {
@@ -865,5 +962,117 @@ export async function reviewFailureDataset(options = {}) {
       'Promote only sanitized minimal fixtures into docs/failure-corpus/cases.json.',
       'Keep third-party repository contents outside git unless a license review explicitly allows inclusion.'
     ]
+  };
+}
+
+export async function promoteFailureDataset(options = {}) {
+  const input = options.input ? path.resolve(options.input) : null;
+  const dataset = options.dataset ?? JSON.parse(await fs.readFile(input, 'utf8'));
+  const sources = asArray(dataset.sources);
+  const candidates = sources
+    .filter((source) => ['blocked', 'needs_setup'].includes(source.scan?.status) && source.scan?.rootCauseTypes?.length > 0)
+    .map(promotionCandidate)
+    .sort((left, right) => {
+      const priority = { high: 0, medium: 1, review: 2 };
+      return priority[promotionPriority(left)] - priority[promotionPriority(right)] || left.id.localeCompare(right.id);
+    });
+  const drafts = candidates.map(buildPromotionDraft);
+  const rejections = buildPromotionRejections(sources);
+  return {
+    schemaVersion: '1.0-failure-dataset-promotion',
+    tool: { name: 'SetupLens', version: VERSION },
+    generatedAt: options.now ?? new Date().toISOString(),
+    input,
+    datasetGeneratedAt: dataset.generatedAt ?? null,
+    summary: {
+      sources: sources.length,
+      eligible: candidates.length,
+      drafted: drafts.length,
+      highPriority: drafts.filter((draft) => draft.priority === 'high').length,
+      rejected: rejections.length
+    },
+    policy: {
+      purpose: 'Create reviewable corpus case drafts from public failure-dataset scan evidence.',
+      safety: 'Drafts intentionally keep fixture.files empty until a human sanitizes and minimizes the public project evidence.',
+      commitRule: 'Commit only sanitized minimal fixtures, not cloned third-party repository contents.'
+    },
+    drafts,
+    rejections,
+    nextActions: [
+      'Open the highest-priority draft and reproduce it at the recorded commit.',
+      'Minimize and sanitize the file tree before copying it into docs/failure-corpus/cases.json.',
+      'Run npm run corpus and npm test after promotion.',
+      'Keep the original public source manifest as provenance for later review.'
+    ]
+  };
+}
+
+function assertDatasetCachePath(target) {
+  const resolved = path.resolve(target);
+  const parts = resolved.split(path.sep).map((part) => part.toLowerCase());
+  if (parts.includes('.setuplens') && parts.includes('failure-dataset')) return resolved;
+  throw new Error(`Refusing to clean a path outside .setuplens/failure-dataset: ${target}`);
+}
+
+async function countCacheEntries(root) {
+  const stats = { files: 0, directories: 0 };
+  if (!await pathExists(root)) return stats;
+  async function walk(directory) {
+    let entries = [];
+    try {
+      entries = await fs.readdir(directory, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      const absolute = path.join(directory, entry.name);
+      if (entry.isDirectory()) {
+        stats.directories += 1;
+        await walk(absolute);
+      } else {
+        stats.files += 1;
+      }
+      if (stats.files + stats.directories > 50000) return;
+    }
+  }
+  await walk(root);
+  return stats;
+}
+
+export async function cleanFailureDataset(options = {}) {
+  const started = performance.now();
+  const reposDir = assertDatasetCachePath(options.reposDir ?? path.join(DEFAULT_ROOT, 'repos'));
+  const reportsDir = assertDatasetCachePath(options.reportsDir ?? path.join(DEFAULT_ROOT, 'reports'));
+  const includeReports = options.includeReports === true;
+  const reposBefore = await countCacheEntries(reposDir);
+  const reportsBefore = includeReports ? await countCacheEntries(reportsDir) : { files: 0, directories: 0 };
+  const reposExisted = await pathExists(reposDir);
+  const reportsExisted = includeReports && await pathExists(reportsDir);
+
+  await fs.rm(reposDir, { recursive: true, force: true });
+  if (includeReports) await fs.rm(reportsDir, { recursive: true, force: true });
+
+  return {
+    schemaVersion: '1.0-failure-dataset-clean',
+    tool: { name: 'SetupLens', version: VERSION },
+    generatedAt: options.now ?? new Date().toISOString(),
+    durationMs: Math.max(1, Math.round(performance.now() - started)),
+    policy: {
+      safety: 'Only paths under .setuplens/failure-dataset are eligible for cleanup.',
+      retained: includeReports
+        ? 'Source manifests outside the cleaned directories are retained.'
+        : 'Per-repository reports and source manifests are retained; only cloned repositories were removed.'
+    },
+    summary: {
+      reposDir,
+      reposRemoved: reposExisted,
+      reposFiles: reposBefore.files,
+      reposDirectories: reposBefore.directories,
+      reportsDir,
+      reportsRemoved: reportsExisted,
+      reportsFiles: reportsBefore.files,
+      reportsDirectories: reportsBefore.directories,
+      includeReports
+    }
   };
 }

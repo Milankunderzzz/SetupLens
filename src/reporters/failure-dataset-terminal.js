@@ -126,9 +126,58 @@ function renderReview(report, paint) {
   return lines.join('\n');
 }
 
+function renderPromotion(report, paint) {
+  const lines = [];
+  lines.push('');
+  lines.push(paint.bold(`SetupLens Failure Dataset Promotion ${report.tool.version}`));
+  lines.push(paint.dim('Reviewable corpus draft queue from public scan evidence.'));
+  lines.push('');
+  lines.push(`Sources       ${paint.bold(report.summary.sources)}`);
+  lines.push(`Eligible      ${paint.bold(report.summary.eligible)}`);
+  lines.push(`Drafted       ${paint.bold(report.summary.drafted)} ${paint.dim(`high priority ${report.summary.highPriority}`)}`);
+  lines.push(`Rejected      ${report.summary.rejected}`);
+  lines.push('');
+  if (report.drafts.length > 0) {
+    lines.push(paint.bold('Draft queue'));
+    for (const draft of report.drafts.slice(0, 8)) {
+      const cause = draft.evidence.topRootCause?.type ? ` - ${draft.evidence.topRootCause.type}` : '';
+      const missing = draft.missingEvidence.length > 0 ? paint.dim(` missing: ${draft.missingEvidence.join(', ')}`) : '';
+      lines.push(`  ${draft.priority.toUpperCase()} ${draft.project}${paint.dim(cause)}${missing}`);
+    }
+    lines.push('');
+  }
+  if (report.rejections.length > 0) {
+    lines.push(paint.bold('Not promoted'));
+    for (const item of report.rejections.slice(0, 6)) lines.push(`  ${item.project}: ${item.reason}`);
+    if (report.rejections.length > 6) lines.push(`  ... ${report.rejections.length - 6} more`);
+    lines.push('');
+  }
+  lines.push(paint.bold('Next actions'));
+  for (const action of report.nextActions) lines.push(`  - ${action}`);
+  return lines.join('\n');
+}
+
+function renderClean(report, paint) {
+  const lines = [];
+  lines.push('');
+  lines.push(paint.bold(`SetupLens Failure Dataset Clean ${report.tool.version}`));
+  lines.push(paint.dim('Local dataset cache cleanup.'));
+  lines.push('');
+  lines.push(`Repos removed   ${paint.bold(String(report.summary.reposRemoved))}`);
+  lines.push(`Repo entries    ${report.summary.reposFiles} files, ${report.summary.reposDirectories} directories`);
+  lines.push(`Reports removed ${paint.bold(String(report.summary.reportsRemoved))}`);
+  if (!report.summary.includeReports) lines.push(paint.dim('Reports retained. Use --include-reports to remove per-repository reports too.'));
+  lines.push('');
+  lines.push(`Repos dir       ${report.summary.reposDir}`);
+  if (report.summary.includeReports) lines.push(`Reports dir     ${report.summary.reportsDir}`);
+  return lines.join('\n');
+}
+
 export function renderFailureDatasetTerminal(report, options = {}) {
   const useColor = options.color !== false && Boolean(process.stdout.isTTY);
   const paint = painter(useColor);
   if (report.schemaVersion === '1.0-failure-dataset-review') return renderReview(report, paint);
+  if (report.schemaVersion === '1.0-failure-dataset-promotion') return renderPromotion(report, paint);
+  if (report.schemaVersion === '1.0-failure-dataset-clean') return renderClean(report, paint);
   return renderCollection(report, paint);
 }
