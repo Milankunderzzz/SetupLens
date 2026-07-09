@@ -30,7 +30,7 @@ export function renderDoctorHtml(report) {
   <style>
     :root { --bg:#f7f8fa; --ink:#17202a; --muted:#64748b; --line:#d9e0e8; --panel:#fff; --good:#147a45; --warn:#9a5b00; --bad:#b42318; --info:#1769aa; }
     * { box-sizing:border-box; }
-    body { margin:0; font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background:var(--bg); color:var(--ink); }
+    body { margin:0; font-family:Inter, "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background:var(--bg); color:var(--ink); }
     main { max-width:1120px; margin:0 auto; padding:32px 20px 48px; }
     header { display:flex; justify-content:space-between; gap:20px; align-items:flex-start; margin-bottom:24px; }
     h1 { font-size:28px; margin:0 0 6px; }

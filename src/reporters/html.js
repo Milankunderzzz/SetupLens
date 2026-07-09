@@ -46,7 +46,7 @@ export function renderHtml(report) {
   <style>
     :root { color-scheme: light; --ink:#17202a; --muted:#607080; --line:#d9e0e6; --paper:#ffffff; --canvas:#f3f6f8; --red:#b42318; --red-bg:#fff1f0; --amber:#9a6700; --amber-bg:#fff8df; --green:#147a45; --green-bg:#eaf8f0; --blue:#1769aa; --blue-bg:#eaf4fb; }
     * { box-sizing:border-box; }
-    body { margin:0; background:var(--canvas); color:var(--ink); font:15px/1.5 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; letter-spacing:0; }
+    body { margin:0; background:var(--canvas); color:var(--ink); font:15px/1.5 Inter, "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; letter-spacing:0; }
     header { background:#15232f; color:white; padding:34px 24px 30px; border-bottom:5px solid #39b47a; }
     .wrap { width:min(1100px, calc(100% - 32px)); margin:0 auto; }
     .brand { display:flex; align-items:center; justify-content:space-between; gap:20px; }

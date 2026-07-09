@@ -5,6 +5,20 @@ All notable changes to SetupLens are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project uses semantic versioning while it remains in the `0.x` stage.
 
+## [Unreleased]
+
+### Added
+
+- Regenerated the 50-source failure-dataset manifest with `0.2.0-alpha.3`, including sanitized clone and scan summaries without local absolute paths.
+- Added `npm run corpus:promote-public` to convert reviewed public scan patterns into sanitized synthetic corpus fixtures without copying third-party source.
+- Expanded the failure corpus from 13 to 56 passing cases across Next.js, Vite, Prisma, Django, FastAPI, Laravel, Rails, Spring Boot, .NET, Go, Rust, Docker Compose, Turbo, Nx, and monorepo setup failures.
+- Added an alpha.3 capability comparison report and a 2026-07-09 failure-dataset scan review.
+- Added `npm run report:capability` to regenerate the UTF-8 HTML capability report.
+
+### Changed
+
+- HTML report font stacks now include common CJK fonts so Chinese report text renders correctly on Windows and macOS.
+
 ## [0.2.0-alpha.3] - 2026-07-08
 
 This alpha turns failure-dataset review output into a promotion workflow so real public failures can move toward curated corpus coverage without copying third-party source code by accident.

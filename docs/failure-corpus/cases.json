@@ -1,10 +1,13 @@
 {
   "schemaVersion": "1.0",
-  "description": "Distilled setup-failure cases used to keep SetupLens doctor rules tied to reproducible project failures.",
+  "description": "Distilled setup-failure cases used to keep SetupLens doctor rules tied to reproducible project failures. Public alpha.3 scan patterns are distilled into sanitized minimal fixtures after review.",
   "cases": [
     {
       "id": "cmms-compose-paths-and-make-script",
-      "ecosystems": ["docker", "node"],
+      "ecosystems": [
+        "docker",
+        "node"
+      ],
       "source": {
         "kind": "private_real_project",
         "label": "CMMS validation on 2026-06-18",
@@ -34,14 +37,28 @@
       },
       "expect": {
         "status": "blocked",
-        "adapters": ["docker", "services", "node"],
-        "rootCauseTypes": ["paths.compose.docker-compose.yml", "paths.makefile.Makefile"],
-        "rootCauseEvidence": ["infra/api/Dockerfile", "npm run format"]
+        "adapters": [
+          "docker",
+          "services",
+          "node"
+        ],
+        "rootCauseTypes": [
+          "paths.compose.docker-compose.yml",
+          "paths.makefile.Makefile"
+        ],
+        "rootCauseEvidence": [
+          "infra/api/Dockerfile",
+          "npm run format"
+        ]
       }
     },
     {
       "id": "next-prisma-env-template-missing-local-env",
-      "ecosystems": ["next", "prisma", "node"],
+      "ecosystems": [
+        "next",
+        "prisma",
+        "node"
+      ],
       "source": {
         "kind": "seeded_failure_pattern",
         "label": "Common Next.js + Prisma local clone missing .env",
@@ -85,10 +102,22 @@
       ],
       "expect": {
         "status": "needs_setup",
-        "adapters": ["node", "prisma"],
-        "rootCauseTypes": ["missing_env_reference", "typescript_missing_tsconfig", "prisma_missing_migrations"],
-        "probes": ["node.next.info", "prisma.generate.prisma.schema.prisma"],
-        "safeFixTitles": ["Create local environment file from .env.example"],
+        "adapters": [
+          "node",
+          "prisma"
+        ],
+        "rootCauseTypes": [
+          "missing_env_reference",
+          "typescript_missing_tsconfig",
+          "prisma_missing_migrations"
+        ],
+        "probes": [
+          "node.next.info",
+          "prisma.generate.prisma.schema.prisma"
+        ],
+        "safeFixTitles": [
+          "Create local environment file from .env.example"
+        ],
         "applySafe": true,
         "createdFiles": [
           {
@@ -100,7 +129,10 @@
     },
     {
       "id": "vite-missing-entry-html",
-      "ecosystems": ["vite", "node"],
+      "ecosystems": [
+        "vite",
+        "node"
+      ],
       "source": {
         "kind": "seeded_failure_pattern",
         "label": "Vite package without index.html after partial copy",
@@ -126,10 +158,20 @@
       },
       "expect": {
         "status": "needs_setup",
-        "adapters": ["node"],
-        "rootCauseTypes": ["vite_missing_index_html", "typescript_missing_tsconfig"],
-        "probes": ["node.vite.build"],
-        "safeFixTitles": ["Create minimal Vite index.html", "Create minimal tsconfig.json"],
+        "adapters": [
+          "node"
+        ],
+        "rootCauseTypes": [
+          "vite_missing_index_html",
+          "typescript_missing_tsconfig"
+        ],
+        "probes": [
+          "node.vite.build"
+        ],
+        "safeFixTitles": [
+          "Create minimal Vite index.html",
+          "Create minimal tsconfig.json"
+        ],
         "applySafe": true,
         "createdFiles": [
           {
@@ -145,7 +187,10 @@
     },
     {
       "id": "fastapi-app-without-uvicorn",
-      "ecosystems": ["fastapi", "python"],
+      "ecosystems": [
+        "fastapi",
+        "python"
+      ],
       "source": {
         "kind": "seeded_failure_pattern",
         "label": "FastAPI app imports FastAPI but runtime server dependency is missing",
@@ -169,15 +214,26 @@
       ],
       "expect": {
         "status": "needs_setup",
-        "adapters": ["python"],
-        "rootCauseTypes": ["fastapi_missing_uvicorn"],
-        "nextActionCommands": ["uvicorn main:app --reload"],
-        "probes": ["python.compileall"]
+        "adapters": [
+          "python"
+        ],
+        "rootCauseTypes": [
+          "fastapi_missing_uvicorn"
+        ],
+        "nextActionCommands": [
+          "uvicorn main:app --reload"
+        ],
+        "probes": [
+          "python.compileall"
+        ]
       }
     },
     {
       "id": "django-manage-without-settings",
-      "ecosystems": ["django", "python"],
+      "ecosystems": [
+        "django",
+        "python"
+      ],
       "source": {
         "kind": "seeded_failure_pattern",
         "label": "Django checkout where settings package is missing from the indexed files",
@@ -191,15 +247,26 @@
       },
       "expect": {
         "status": "needs_setup",
-        "adapters": ["python"],
-        "rootCauseTypes": ["django_missing_settings"],
-        "nextActionCommands": ["manage.py runserver"],
-        "probes": ["python.django.migrations"]
+        "adapters": [
+          "python"
+        ],
+        "rootCauseTypes": [
+          "django_missing_settings"
+        ],
+        "nextActionCommands": [
+          "manage.py runserver"
+        ],
+        "probes": [
+          "python.django.migrations"
+        ]
       }
     },
     {
       "id": "laravel-template-env-without-app-key",
-      "ecosystems": ["laravel", "php"],
+      "ecosystems": [
+        "laravel",
+        "php"
+      ],
       "source": {
         "kind": "seeded_failure_pattern",
         "label": "Laravel clone with .env.example but no local .env",
@@ -229,10 +296,19 @@
       ],
       "expect": {
         "status": "needs_setup",
-        "adapters": ["php"],
-        "rootCauseTypes": ["laravel_missing_env"],
-        "nextActionCommands": ["php artisan serve", "php artisan migrate:status"],
-        "safeFixTitles": ["Create Laravel .env from template"],
+        "adapters": [
+          "php"
+        ],
+        "rootCauseTypes": [
+          "laravel_missing_env"
+        ],
+        "nextActionCommands": [
+          "php artisan serve",
+          "php artisan migrate:status"
+        ],
+        "safeFixTitles": [
+          "Create Laravel .env from template"
+        ],
         "applySafe": true,
         "createdFiles": [
           {
@@ -244,7 +320,10 @@
     },
     {
       "id": "rails-encrypted-credentials-no-local-key",
-      "ecosystems": ["rails", "ruby"],
+      "ecosystems": [
+        "rails",
+        "ruby"
+      ],
       "source": {
         "kind": "seeded_failure_pattern",
         "label": "Rails app with encrypted credentials but no local master key",
@@ -258,15 +337,28 @@
       },
       "expect": {
         "status": "needs_setup",
-        "adapters": ["ruby"],
-        "rootCauseTypes": ["rails_missing_master_key", "rails_missing_database_config"],
-        "nextActionCommands": ["bundle exec rails server", "bundle exec rails db:prepare"],
-        "probes": ["ruby.rails.db-version"]
+        "adapters": [
+          "ruby"
+        ],
+        "rootCauseTypes": [
+          "rails_missing_master_key",
+          "rails_missing_database_config"
+        ],
+        "nextActionCommands": [
+          "bundle exec rails server",
+          "bundle exec rails db:prepare"
+        ],
+        "probes": [
+          "ruby.rails.db-version"
+        ]
       }
     },
     {
       "id": "spring-boot-web-without-application-config",
-      "ecosystems": ["spring", "java"],
+      "ecosystems": [
+        "spring",
+        "java"
+      ],
       "source": {
         "kind": "seeded_failure_pattern",
         "label": "Spring Boot service missing local application.properties/yml",
@@ -279,15 +371,25 @@
       },
       "expect": {
         "status": "needs_setup",
-        "adapters": ["java"],
-        "rootCauseTypes": ["spring_missing_application_config"],
-        "nextActionCommands": ["mvn spring-boot:run"],
-        "probes": ["java.maven.compile"]
+        "adapters": [
+          "java"
+        ],
+        "rootCauseTypes": [
+          "spring_missing_application_config"
+        ],
+        "nextActionCommands": [
+          "mvn spring-boot:run"
+        ],
+        "probes": [
+          "java.maven.compile"
+        ]
       }
     },
     {
       "id": "dotnet-web-without-appsettings",
-      "ecosystems": ["dotnet"],
+      "ecosystems": [
+        "dotnet"
+      ],
       "source": {
         "kind": "seeded_failure_pattern",
         "label": ".NET Web SDK project missing appsettings.json",
@@ -300,15 +402,25 @@
       },
       "expect": {
         "status": "needs_setup",
-        "adapters": ["dotnet"],
-        "rootCauseTypes": ["dotnet_missing_appsettings"],
-        "nextActionCommands": ["dotnet run --project Api.csproj"],
-        "probes": ["dotnet.build.Api.csproj"]
+        "adapters": [
+          "dotnet"
+        ],
+        "rootCauseTypes": [
+          "dotnet_missing_appsettings"
+        ],
+        "nextActionCommands": [
+          "dotnet run --project Api.csproj"
+        ],
+        "probes": [
+          "dotnet.build.Api.csproj"
+        ]
       }
     },
     {
       "id": "go-http-service-without-cmd-entry",
-      "ecosystems": ["go"],
+      "ecosystems": [
+        "go"
+      ],
       "source": {
         "kind": "seeded_failure_pattern",
         "label": "Go service code starts an HTTP server but has no conventional cmd entry",
@@ -322,15 +434,25 @@
       },
       "expect": {
         "status": "needs_setup",
-        "adapters": ["go"],
-        "rootCauseTypes": ["go_service_missing_cmd_entry"],
-        "nextActionCommands": ["go test ./..."],
-        "probes": ["go.test"]
+        "adapters": [
+          "go"
+        ],
+        "rootCauseTypes": [
+          "go_service_missing_cmd_entry"
+        ],
+        "nextActionCommands": [
+          "go test ./..."
+        ],
+        "probes": [
+          "go.test"
+        ]
       }
     },
     {
       "id": "rust-bin-target-with-runtime-env",
-      "ecosystems": ["rust"],
+      "ecosystems": [
+        "rust"
+      ],
       "source": {
         "kind": "seeded_failure_pattern",
         "label": "Rust binary target with runtime environment dependency",
@@ -344,14 +466,24 @@
       },
       "expect": {
         "status": "needs_probe",
-        "adapters": ["rust"],
-        "nextActionCommands": ["cargo run --bin worker"],
-        "probes": ["rust.cargo.check"]
+        "adapters": [
+          "rust"
+        ],
+        "nextActionCommands": [
+          "cargo run --bin worker"
+        ],
+        "probes": [
+          "rust.cargo.check"
+        ]
       }
     },
     {
       "id": "cmms-nested-copies-node-python-artifacts",
-      "ecosystems": ["node", "python", "real-project-boundary"],
+      "ecosystems": [
+        "node",
+        "python",
+        "real-project-boundary"
+      ],
       "source": {
         "kind": "private_real_project",
         "label": "CMMS doctor report on 2026-07-01",
@@ -408,14 +540,25 @@
       ],
       "expect": {
         "status": "needs_setup",
-        "adapters": ["node", "python"],
-        "rootCauseTypes": ["duplicate_project_copies"],
-        "safeFixTitles": ["Create local environment file from cmms/CMMS/.env.example"]
+        "adapters": [
+          "node",
+          "python"
+        ],
+        "rootCauseTypes": [
+          "duplicate_project_copies"
+        ],
+        "safeFixTitles": [
+          "Create local environment file from cmms/CMMS/.env.example"
+        ]
       }
     },
     {
       "id": "turbo-nx-workspace-task-discovery",
-      "ecosystems": ["turbo", "nx", "monorepo"],
+      "ecosystems": [
+        "turbo",
+        "nx",
+        "monorepo"
+      ],
       "source": {
         "kind": "seeded_failure_pattern",
         "label": "Monorepo with task runners where graph/task probes are needed",
@@ -426,7 +569,9 @@
           "package.json": {
             "json": {
               "private": true,
-              "workspaces": ["apps/*"],
+              "workspaces": [
+                "apps/*"
+              ],
               "scripts": {
                 "build": "turbo build",
                 "test": "nx run-many -t test"
@@ -468,8 +613,2102 @@
       },
       "expect": {
         "status": "needs_setup",
-        "adapters": ["node", "monorepo"],
-        "probes": ["monorepo.turbo.dry-run", "monorepo.nx.graph"]
+        "adapters": [
+          "node",
+          "monorepo"
+        ],
+        "probes": [
+          "monorepo.turbo.dry-run",
+          "monorepo.nx.graph"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-next-missing-routes",
+      "ecosystems": [
+        "next",
+        "node"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: Next.js package without route roots",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-araldev--jobs-finder",
+          "project": "araldev/jobs-finder",
+          "url": "https://github.com/araldev/jobs-finder",
+          "observedRootCauseType": "missing_compose_env_file",
+          "observedStatus": "blocked"
+        }
+      },
+      "fixture": {
+        "files": {
+          "package.json": {
+            "json": {
+              "name": "next-missing-routes",
+              "version": "0.0.0",
+              "private": true,
+              "scripts": {
+                "dev": "next dev",
+                "build": "next build"
+              },
+              "dependencies": {
+                "next": "^15.0.0",
+                "react": "^19.0.0",
+                "react-dom": "^19.0.0"
+              }
+            }
+          }
+        }
+      },
+      "expect": {
+        "status": "needs_setup",
+        "adapters": [
+          "node"
+        ],
+        "rootCauseTypes": [
+          "next_missing_routes",
+          "dependencies.node.installed.package.json"
+        ],
+        "safeFixTitles": [
+          "Ignore local environment files"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-next-missing-scripts",
+      "ecosystems": [
+        "next",
+        "node"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: Next.js app without npm scripts",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-araldev--jobs-finder",
+          "project": "araldev/jobs-finder",
+          "url": "https://github.com/araldev/jobs-finder",
+          "observedRootCauseType": "missing_compose_env_file",
+          "observedStatus": "blocked"
+        }
+      },
+      "fixture": {
+        "files": {
+          "package.json": {
+            "json": {
+              "name": "next-missing-scripts",
+              "version": "0.0.0",
+              "private": true,
+              "dependencies": {
+                "next": "^15.0.0",
+                "react": "^19.0.0",
+                "react-dom": "^19.0.0"
+              }
+            }
+          },
+          "app/page.tsx": "export default function Page() { return <main>hello</main>; }\n"
+        }
+      },
+      "expect": {
+        "status": "needs_setup",
+        "adapters": [
+          "node"
+        ],
+        "rootCauseTypes": [
+          "next_missing_scripts",
+          "dependencies.node.installed.package.json"
+        ],
+        "safeFixTitles": [
+          "Ignore local environment files"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-next-typescript-no-tsconfig",
+      "ecosystems": [
+        "next",
+        "node",
+        "typescript"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: TypeScript Next.js app without tsconfig",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-avase33--modelvault",
+          "project": "avase33/modelvault",
+          "url": "https://github.com/avase33/modelvault",
+          "observedRootCauseType": "missing_compose_env_file",
+          "observedStatus": "blocked"
+        }
+      },
+      "fixture": {
+        "files": {
+          "package.json": {
+            "json": {
+              "name": "next-typescript-no-tsconfig",
+              "version": "0.0.0",
+              "private": true,
+              "scripts": {
+                "dev": "next dev",
+                "build": "next build"
+              },
+              "dependencies": {
+                "next": "^15.0.0",
+                "react": "^19.0.0",
+                "react-dom": "^19.0.0"
+              },
+              "devDependencies": {
+                "typescript": "^5.0.0"
+              }
+            }
+          },
+          "app/page.tsx": "export default function Page() { return <main>{process.env.NEXT_PUBLIC_SITE_NAME}</main>; }\n"
+        }
+      },
+      "expect": {
+        "status": "needs_setup",
+        "adapters": [
+          "node"
+        ],
+        "rootCauseTypes": [
+          "typescript_missing_tsconfig",
+          "missing_env_reference",
+          "dependencies.node.installed.package.json"
+        ],
+        "safeFixTitles": [
+          "Create minimal tsconfig.json",
+          "Ignore local environment files"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-next-env-reference",
+      "ecosystems": [
+        "next",
+        "node"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: Next.js source references undocumented env",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-araldev--jobs-finder",
+          "project": "araldev/jobs-finder",
+          "url": "https://github.com/araldev/jobs-finder",
+          "observedRootCauseType": "missing_compose_env_file",
+          "observedStatus": "blocked"
+        }
+      },
+      "fixture": {
+        "files": {
+          "package.json": {
+            "json": {
+              "name": "next-env-reference",
+              "version": "0.0.0",
+              "private": true,
+              "scripts": {
+                "dev": "next dev"
+              },
+              "dependencies": {
+                "next": "^15.0.0",
+                "react": "^19.0.0",
+                "react-dom": "^19.0.0"
+              }
+            }
+          },
+          "app/page.tsx": "export default function Page() { return <main>{process.env.NEXT_PUBLIC_API_URL}</main>; }\n"
+        }
+      },
+      "expect": {
+        "status": "needs_setup",
+        "adapters": [
+          "node"
+        ],
+        "rootCauseTypes": [
+          "missing_env_reference",
+          "dependencies.node.installed.package.json"
+        ],
+        "safeFixTitles": [
+          "Ignore local environment files"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-next-prisma-postgres",
+      "ecosystems": [
+        "next",
+        "prisma",
+        "node"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: Next.js Prisma app missing env and migrations",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-araldev--jobs-finder",
+          "project": "araldev/jobs-finder",
+          "url": "https://github.com/araldev/jobs-finder",
+          "observedRootCauseType": "missing_compose_env_file",
+          "observedStatus": "blocked"
+        }
+      },
+      "fixture": {
+        "files": {
+          "package.json": {
+            "json": {
+              "name": "next-prisma-postgres",
+              "version": "0.0.0",
+              "private": true,
+              "scripts": {
+                "dev": "next dev",
+                "build": "next build"
+              },
+              "dependencies": {
+                "next": "^15.0.0",
+                "react": "^19.0.0",
+                "@prisma/client": "^6.0.0"
+              },
+              "devDependencies": {
+                "prisma": "^6.0.0",
+                "typescript": "^5.0.0"
+              }
+            }
+          },
+          "app/page.tsx": "export default function Page() { return <main>db</main>; }\n",
+          "prisma/schema.prisma": "generator client { provider = \"prisma-client-js\" }\ndatasource db { provider = \"postgresql\" url = env(\"DATABASE_URL\") }\n"
+        }
+      },
+      "expect": {
+        "status": "needs_setup",
+        "adapters": [
+          "node",
+          "prisma"
+        ],
+        "rootCauseTypes": [
+          "missing_prisma_env",
+          "typescript_missing_tsconfig",
+          "prisma_missing_migrations",
+          "dependencies.node.installed.package.json"
+        ],
+        "safeFixTitles": [
+          "Create minimal tsconfig.json",
+          "Ignore local environment files"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-vite-missing-index",
+      "ecosystems": [
+        "vite",
+        "node"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: Vite app without index.html",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-raghu427--filamentphp-boilerplate",
+          "project": "Raghu427/filamentphp-boilerplate",
+          "url": "https://github.com/Raghu427/filamentphp-boilerplate",
+          "observedRootCauseType": "paths.compose.compose.yaml",
+          "observedStatus": "blocked"
+        }
+      },
+      "fixture": {
+        "files": {
+          "package.json": {
+            "json": {
+              "name": "vite-missing-index",
+              "version": "0.0.0",
+              "private": true,
+              "scripts": {
+                "dev": "vite",
+                "build": "vite build"
+              },
+              "dependencies": {
+                "vite": "^7.0.0"
+              }
+            }
+          },
+          "src/main.ts": "console.log(\"missing html\");\n"
+        }
+      },
+      "expect": {
+        "status": "needs_setup",
+        "adapters": [
+          "node"
+        ],
+        "rootCauseTypes": [
+          "vite_missing_index_html",
+          "dependencies.node.installed.package.json"
+        ],
+        "safeFixTitles": [
+          "Create minimal Vite index.html",
+          "Ignore local environment files"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-vite-missing-scripts",
+      "ecosystems": [
+        "vite",
+        "node"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: Vite dependency without runnable scripts",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-araldev--jobs-finder",
+          "project": "araldev/jobs-finder",
+          "url": "https://github.com/araldev/jobs-finder",
+          "observedRootCauseType": "missing_compose_env_file",
+          "observedStatus": "blocked"
+        }
+      },
+      "fixture": {
+        "files": {
+          "package.json": {
+            "json": {
+              "name": "vite-missing-scripts",
+              "version": "0.0.0",
+              "private": true,
+              "dependencies": {
+                "vite": "^7.0.0"
+              }
+            }
+          },
+          "index.html": "<div id=\"app\"></div><script type=\"module\" src=\"/src/main.ts\"></script>\n",
+          "src/main.ts": "console.log(\"no scripts\");\n"
+        }
+      },
+      "expect": {
+        "status": "needs_setup",
+        "adapters": [
+          "node"
+        ],
+        "rootCauseTypes": [
+          "vite_missing_scripts",
+          "dependencies.node.installed.package.json"
+        ],
+        "safeFixTitles": [
+          "Ignore local environment files"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-vite-typescript-no-tsconfig",
+      "ecosystems": [
+        "vite",
+        "node",
+        "typescript"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: Vite TypeScript app without tsconfig",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-avase33--modelvault",
+          "project": "avase33/modelvault",
+          "url": "https://github.com/avase33/modelvault",
+          "observedRootCauseType": "missing_compose_env_file",
+          "observedStatus": "blocked"
+        }
+      },
+      "fixture": {
+        "files": {
+          "package.json": {
+            "json": {
+              "name": "vite-typescript-no-tsconfig",
+              "version": "0.0.0",
+              "private": true,
+              "scripts": {
+                "dev": "vite",
+                "build": "vite build"
+              },
+              "dependencies": {
+                "vite": "^7.0.0"
+              },
+              "devDependencies": {
+                "typescript": "^5.0.0"
+              }
+            }
+          },
+          "index.html": "<div id=\"app\"></div><script type=\"module\" src=\"/src/main.ts\"></script>\n",
+          "src/main.ts": "const root: HTMLElement | null = document.querySelector(\"#app\"); console.log(root);\n"
+        }
+      },
+      "expect": {
+        "status": "needs_setup",
+        "adapters": [
+          "node"
+        ],
+        "rootCauseTypes": [
+          "typescript_missing_tsconfig",
+          "dependencies.node.installed.package.json"
+        ],
+        "safeFixTitles": [
+          "Create minimal tsconfig.json",
+          "Ignore local environment files"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-vite-env-reference",
+      "ecosystems": [
+        "vite",
+        "node"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: Vite app with missing environment reference",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-araldev--jobs-finder",
+          "project": "araldev/jobs-finder",
+          "url": "https://github.com/araldev/jobs-finder",
+          "observedRootCauseType": "missing_compose_env_file",
+          "observedStatus": "blocked"
+        }
+      },
+      "fixture": {
+        "files": {
+          "package.json": {
+            "json": {
+              "name": "vite-env-reference",
+              "version": "0.0.0",
+              "private": true,
+              "scripts": {
+                "dev": "vite"
+              },
+              "dependencies": {
+                "vite": "^7.0.0"
+              }
+            }
+          },
+          "index.html": "<div id=\"app\"></div><script type=\"module\" src=\"/src/main.js\"></script>\n",
+          "src/main.js": "console.log(process.env.PUBLIC_API_BASE);\n"
+        }
+      },
+      "expect": {
+        "status": "needs_setup",
+        "adapters": [
+          "node"
+        ],
+        "rootCauseTypes": [
+          "missing_env_reference",
+          "dependencies.node.installed.package.json"
+        ],
+        "safeFixTitles": [
+          "Ignore local environment files"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-prisma-missing-env",
+      "ecosystems": [
+        "prisma",
+        "node"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: Prisma schema references missing env",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-araldev--jobs-finder",
+          "project": "araldev/jobs-finder",
+          "url": "https://github.com/araldev/jobs-finder",
+          "observedRootCauseType": "missing_compose_env_file",
+          "observedStatus": "blocked"
+        }
+      },
+      "fixture": {
+        "files": {
+          "package.json": {
+            "json": {
+              "name": "prisma-missing-env",
+              "version": "0.0.0",
+              "private": true,
+              "dependencies": {
+                "@prisma/client": "^6.0.0"
+              },
+              "devDependencies": {
+                "prisma": "^6.0.0"
+              }
+            }
+          },
+          "prisma/schema.prisma": "generator client { provider = \"prisma-client-js\" }\ndatasource db { provider = \"mysql\" url = env(\"DATABASE_URL\") }\n"
+        }
+      },
+      "expect": {
+        "status": "needs_setup",
+        "adapters": [
+          "node",
+          "prisma"
+        ],
+        "rootCauseTypes": [
+          "missing_prisma_env",
+          "prisma_missing_migrations",
+          "dependencies.node.installed.package.json"
+        ],
+        "safeFixTitles": [
+          "Ignore local environment files"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-prisma-missing-migrations",
+      "ecosystems": [
+        "prisma",
+        "node"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: Prisma non-sqlite datasource without migrations",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-hqzdev--slate",
+          "project": "Hqzdev/Slate",
+          "url": "https://github.com/Hqzdev/Slate",
+          "observedRootCauseType": "missing_env_reference",
+          "observedStatus": "needs_setup"
+        }
+      },
+      "fixture": {
+        "files": {
+          "package.json": {
+            "json": {
+              "name": "prisma-missing-migrations",
+              "version": "0.0.0",
+              "private": true,
+              "dependencies": {
+                "@prisma/client": "^6.0.0"
+              },
+              "devDependencies": {
+                "prisma": "^6.0.0"
+              }
+            }
+          },
+          ".env": "DATABASE_URL=postgresql://localhost:5432/app\n",
+          "prisma/schema.prisma": "generator client { provider = \"prisma-client-js\" }\ndatasource db { provider = \"postgresql\" url = env(\"DATABASE_URL\") }\n"
+        }
+      },
+      "expect": {
+        "status": "needs_setup",
+        "adapters": [
+          "node",
+          "prisma"
+        ],
+        "rootCauseTypes": [
+          "prisma_missing_migrations",
+          "dependencies.node.installed.package.json"
+        ],
+        "safeFixTitles": [
+          "Ignore local environment files"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-fastapi-requirements-no-uvicorn",
+      "ecosystems": [
+        "fastapi",
+        "python"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: FastAPI app without uvicorn dependency",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-araldev--jobs-finder",
+          "project": "araldev/jobs-finder",
+          "url": "https://github.com/araldev/jobs-finder",
+          "observedRootCauseType": "missing_compose_env_file",
+          "observedStatus": "blocked"
+        }
+      },
+      "fixture": {
+        "files": {
+          "requirements.txt": "fastapi==0.115.0\n",
+          "main.py": "from fastapi import FastAPI\napp = FastAPI()\n"
+        }
+      },
+      "expect": {
+        "status": "needs_setup",
+        "adapters": [
+          "python"
+        ],
+        "rootCauseTypes": [
+          "fastapi_missing_uvicorn",
+          "dependencies.python.venv"
+        ],
+        "safeFixTitles": [
+          "Ignore local environment files"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-fastapi-pyproject-no-uvicorn",
+      "ecosystems": [
+        "fastapi",
+        "python"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: pyproject FastAPI service without ASGI server",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-araldev--jobs-finder",
+          "project": "araldev/jobs-finder",
+          "url": "https://github.com/araldev/jobs-finder",
+          "observedRootCauseType": "missing_compose_env_file",
+          "observedStatus": "blocked"
+        }
+      },
+      "fixture": {
+        "files": {
+          "pyproject.toml": "[project]\nname = \"fastapi-pyproject-no-uvicorn\"\ndependencies = [\"fastapi\"]\n",
+          "app.py": "from fastapi import FastAPI\napp = FastAPI()\n"
+        }
+      },
+      "expect": {
+        "status": "needs_setup",
+        "adapters": [
+          "python"
+        ],
+        "rootCauseTypes": [
+          "dependencies.python.venv"
+        ],
+        "safeFixTitles": [
+          "Ignore local environment files"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-django-missing-settings",
+      "ecosystems": [
+        "django",
+        "python"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: Django manage.py without settings module",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-mozilla--pontoon",
+          "project": "mozilla/pontoon",
+          "url": "https://github.com/mozilla/pontoon",
+          "observedRootCauseType": "missing_compose_env_file",
+          "observedStatus": "blocked"
+        }
+      },
+      "fixture": {
+        "files": {
+          "requirements.txt": "django==5.0.0\n",
+          "manage.py": "import os\nfrom django.core.management import execute_from_command_line\nexecute_from_command_line()\n"
+        }
+      },
+      "expect": {
+        "status": "needs_setup",
+        "adapters": [
+          "python"
+        ],
+        "rootCauseTypes": [
+          "django_missing_settings",
+          "dependencies.python.venv"
+        ],
+        "safeFixTitles": [
+          "Ignore local environment files"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-django-nested-missing-settings",
+      "ecosystems": [
+        "django",
+        "python"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: nested Django app without settings module",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-mozilla--pontoon",
+          "project": "mozilla/pontoon",
+          "url": "https://github.com/mozilla/pontoon",
+          "observedRootCauseType": "missing_compose_env_file",
+          "observedStatus": "blocked"
+        }
+      },
+      "fixture": {
+        "files": {
+          "api/requirements.txt": "django==5.0.0\n",
+          "api/manage.py": "from django.core.management import execute_from_command_line\nexecute_from_command_line()\n"
+        }
+      },
+      "expect": {
+        "status": "needs_setup",
+        "adapters": [
+          "python"
+        ],
+        "rootCauseTypes": [
+          "django_missing_settings",
+          "dependencies.python.venv"
+        ],
+        "safeFixTitles": [
+          "Ignore local environment files"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-laravel-missing-env",
+      "ecosystems": [
+        "laravel",
+        "php"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: Laravel template exists but local .env is missing",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-raghu427--filamentphp-boilerplate",
+          "project": "Raghu427/filamentphp-boilerplate",
+          "url": "https://github.com/Raghu427/filamentphp-boilerplate",
+          "observedRootCauseType": "paths.compose.compose.yaml",
+          "observedStatus": "blocked"
+        }
+      },
+      "fixture": {
+        "files": {
+          "composer.json": {
+            "json": {
+              "require": {
+                "laravel/framework": "^11.0"
+              }
+            }
+          },
+          "artisan": "#!/usr/bin/env php\n<?php\n",
+          ".env.example": "APP_NAME=Laravel\nAPP_KEY=\n"
+        }
+      },
+      "expect": {
+        "status": "needs_setup",
+        "adapters": [
+          "php"
+        ],
+        "rootCauseTypes": [
+          "laravel_missing_env",
+          "configuration.env.missing..env.example"
+        ],
+        "safeFixTitles": [
+          "Create Laravel .env from template",
+          "Ignore local environment files"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-laravel-missing-app-key",
+      "ecosystems": [
+        "laravel",
+        "php"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: Laravel .env exists without APP_KEY",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-raghu427--filamentphp-boilerplate",
+          "project": "Raghu427/filamentphp-boilerplate",
+          "url": "https://github.com/Raghu427/filamentphp-boilerplate",
+          "observedRootCauseType": "paths.compose.compose.yaml",
+          "observedStatus": "blocked"
+        }
+      },
+      "fixture": {
+        "files": {
+          "composer.json": {
+            "json": {
+              "require": {
+                "laravel/framework": "^11.0"
+              }
+            }
+          },
+          "artisan": "#!/usr/bin/env php\n<?php\n",
+          ".env": "APP_NAME=Laravel\nAPP_KEY=\n"
+        }
+      },
+      "expect": {
+        "status": "needs_setup",
+        "adapters": [
+          "php"
+        ],
+        "rootCauseTypes": [
+          "laravel_missing_app_key"
+        ],
+        "safeFixTitles": [
+          "Ignore local environment files"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-laravel-nested-missing-env",
+      "ecosystems": [
+        "laravel",
+        "php"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: nested Laravel app missing .env",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-raghu427--filamentphp-boilerplate",
+          "project": "Raghu427/filamentphp-boilerplate",
+          "url": "https://github.com/Raghu427/filamentphp-boilerplate",
+          "observedRootCauseType": "paths.compose.compose.yaml",
+          "observedStatus": "blocked"
+        }
+      },
+      "fixture": {
+        "files": {
+          "backend/composer.json": {
+            "json": {
+              "require": {
+                "laravel/framework": "^11.0"
+              }
+            }
+          },
+          "backend/artisan": "#!/usr/bin/env php\n<?php\n",
+          "backend/.env.example": "APP_NAME=Backend\nAPP_KEY=\n"
+        }
+      },
+      "expect": {
+        "status": "needs_setup",
+        "adapters": [
+          "php"
+        ],
+        "rootCauseTypes": [
+          "laravel_missing_env",
+          "configuration.env.missing.backend/.env.example"
+        ],
+        "safeFixTitles": [
+          "Create Laravel .env from template",
+          "Ignore local environment files"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-rails-missing-master-key",
+      "ecosystems": [
+        "rails",
+        "ruby"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: Rails encrypted credentials without master key",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-mhenrixon--phlex-forms",
+          "project": "mhenrixon/phlex-forms",
+          "url": "https://github.com/mhenrixon/phlex-forms",
+          "observedRootCauseType": "rails_missing_master_key",
+          "observedStatus": "needs_setup"
+        }
+      },
+      "fixture": {
+        "files": {
+          "Gemfile": "source \"https://rubygems.org\"\ngem \"rails\"\n",
+          "bin/rails": "#!/usr/bin/env ruby\n",
+          "config/credentials.yml.enc": "encrypted\n",
+          "config/database.yml": "development:\n  adapter: sqlite3\n"
+        }
+      },
+      "expect": {
+        "status": "needs_setup",
+        "adapters": [
+          "ruby"
+        ],
+        "rootCauseTypes": [
+          "rails_missing_master_key"
+        ],
+        "safeFixTitles": [
+          "Ignore local environment files"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-rails-missing-database-yml",
+      "ecosystems": [
+        "rails",
+        "ruby"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: Rails app without database.yml",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-mhenrixon--phlex-forms",
+          "project": "mhenrixon/phlex-forms",
+          "url": "https://github.com/mhenrixon/phlex-forms",
+          "observedRootCauseType": "rails_missing_master_key",
+          "observedStatus": "needs_setup"
+        }
+      },
+      "fixture": {
+        "files": {
+          "Gemfile": "source \"https://rubygems.org\"\ngem \"rails\"\n",
+          "bin/rails": "#!/usr/bin/env ruby\n"
+        }
+      },
+      "expect": {
+        "status": "needs_setup",
+        "adapters": [
+          "ruby"
+        ],
+        "rootCauseTypes": [
+          "rails_missing_database_config"
+        ],
+        "safeFixTitles": [
+          "Ignore local environment files"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-rails-credentials-and-database",
+      "ecosystems": [
+        "rails",
+        "ruby"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: Rails credentials and database config gaps",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-mhenrixon--phlex-forms",
+          "project": "mhenrixon/phlex-forms",
+          "url": "https://github.com/mhenrixon/phlex-forms",
+          "observedRootCauseType": "rails_missing_master_key",
+          "observedStatus": "needs_setup"
+        }
+      },
+      "fixture": {
+        "files": {
+          "Gemfile": "source \"https://rubygems.org\"\ngem \"rails\"\n",
+          "bin/rails": "#!/usr/bin/env ruby\n",
+          "config/credentials.yml.enc": "encrypted\n"
+        }
+      },
+      "expect": {
+        "status": "needs_setup",
+        "adapters": [
+          "ruby"
+        ],
+        "rootCauseTypes": [
+          "rails_missing_master_key",
+          "rails_missing_database_config"
+        ],
+        "safeFixTitles": [
+          "Ignore local environment files"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-spring-maven-missing-config",
+      "ecosystems": [
+        "spring",
+        "java"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: Spring Boot Maven app without application config",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-graphif--project-graph",
+          "project": "graphif/project-graph",
+          "url": "https://github.com/graphif/project-graph",
+          "observedRootCauseType": "runtime.node",
+          "observedStatus": "blocked"
+        }
+      },
+      "fixture": {
+        "files": {
+          "pom.xml": "<project><dependencies><dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-web</artifactId></dependency></dependencies></project>\n",
+          "src/main/java/demo/App.java": "package demo; class App {}\n"
+        }
+      },
+      "expect": {
+        "status": "needs_setup",
+        "adapters": [
+          "java"
+        ],
+        "rootCauseTypes": [
+          "spring_missing_application_config"
+        ],
+        "safeFixTitles": [
+          "Ignore local environment files"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-spring-gradle-missing-config",
+      "ecosystems": [
+        "spring",
+        "java"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: Spring Boot Gradle app without application config",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-graphif--project-graph",
+          "project": "graphif/project-graph",
+          "url": "https://github.com/graphif/project-graph",
+          "observedRootCauseType": "runtime.node",
+          "observedStatus": "blocked"
+        }
+      },
+      "fixture": {
+        "files": {
+          "build.gradle": "plugins { id \"org.springframework.boot\" version \"3.3.0\" }\ndependencies { implementation \"org.springframework.boot:spring-boot-starter-web\" }\n",
+          "src/main/java/demo/App.java": "package demo; class App {}\n"
+        }
+      },
+      "expect": {
+        "status": "needs_setup",
+        "adapters": [
+          "java"
+        ],
+        "rootCauseTypes": [
+          "spring_missing_application_config"
+        ],
+        "safeFixTitles": [
+          "Ignore local environment files"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-dotnet-web-missing-appsettings",
+      "ecosystems": [
+        "dotnet"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: .NET Web SDK project without appsettings",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-0n1xx--spotifystatistics",
+          "project": "0n1xx/SpotifyStatistics",
+          "url": "https://github.com/0n1xx/SpotifyStatistics",
+          "observedRootCauseType": "dependencies.python.venv",
+          "observedStatus": "needs_setup"
+        }
+      },
+      "fixture": {
+        "files": {
+          "Web.csproj": "<Project Sdk=\"Microsoft.NET.Sdk.Web\"><PropertyGroup><TargetFramework>net8.0</TargetFramework></PropertyGroup></Project>\n",
+          "Program.cs": "var builder = WebApplication.CreateBuilder(args);\n"
+        }
+      },
+      "expect": {
+        "status": "needs_setup",
+        "adapters": [
+          "dotnet"
+        ],
+        "rootCauseTypes": [
+          "dotnet_missing_appsettings"
+        ],
+        "safeFixTitles": [
+          "Ignore local environment files"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-dotnet-nested-web-missing-appsettings",
+      "ecosystems": [
+        "dotnet"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: nested .NET web project without appsettings",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-0n1xx--spotifystatistics",
+          "project": "0n1xx/SpotifyStatistics",
+          "url": "https://github.com/0n1xx/SpotifyStatistics",
+          "observedRootCauseType": "dependencies.python.venv",
+          "observedStatus": "needs_setup"
+        }
+      },
+      "fixture": {
+        "files": {
+          "src/Web/Web.csproj": "<Project Sdk=\"Microsoft.NET.Sdk.Web\"><PropertyGroup><TargetFramework>net8.0</TargetFramework></PropertyGroup></Project>\n",
+          "src/Web/Program.cs": "var builder = WebApplication.CreateBuilder(args);\n"
+        }
+      },
+      "expect": {
+        "status": "needs_setup",
+        "adapters": [
+          "dotnet"
+        ],
+        "rootCauseTypes": [
+          "dotnet_missing_appsettings"
+        ],
+        "safeFixTitles": [
+          "Ignore local environment files"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-go-service-missing-cmd",
+      "ecosystems": [
+        "go"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: Go HTTP service without cmd entrypoint",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-inference-gateway--inference-gateway",
+          "project": "inference-gateway/inference-gateway",
+          "url": "https://github.com/inference-gateway/inference-gateway",
+          "observedRootCauseType": "missing_compose_env_file",
+          "observedStatus": "blocked"
+        }
+      },
+      "fixture": {
+        "files": {
+          "go.mod": "module example.com/service\n\ngo 1.22\n",
+          "internal/server/server.go": "package server\nimport \"net/http\"\nfunc Run() { _ = http.ListenAndServe(\":8080\", nil) }\n"
+        }
+      },
+      "expect": {
+        "status": "needs_setup",
+        "adapters": [
+          "go"
+        ],
+        "rootCauseTypes": [
+          "go_service_missing_cmd_entry"
+        ],
+        "safeFixTitles": [
+          "Ignore local environment files"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-go-service-env-no-cmd",
+      "ecosystems": [
+        "go"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: Go service env config without conventional command",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-inference-gateway--inference-gateway",
+          "project": "inference-gateway/inference-gateway",
+          "url": "https://github.com/inference-gateway/inference-gateway",
+          "observedRootCauseType": "missing_compose_env_file",
+          "observedStatus": "blocked"
+        }
+      },
+      "fixture": {
+        "files": {
+          "go.mod": "module example.com/envservice\n\ngo 1.22\n",
+          "server.go": "package envservice\nimport (\"net/http\"; \"os\")\nfunc Run() { _ = os.Getenv(\"DATABASE_URL\"); _ = http.ListenAndServe(\":8080\", nil) }\n"
+        }
+      },
+      "expect": {
+        "status": "needs_setup",
+        "adapters": [
+          "go"
+        ],
+        "rootCauseTypes": [
+          "go_service_missing_cmd_entry"
+        ],
+        "safeFixTitles": [
+          "Ignore local environment files"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-rust-main-env-service",
+      "ecosystems": [
+        "rust"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: Rust binary with runtime environment dependency",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-graphif--project-graph",
+          "project": "graphif/project-graph",
+          "url": "https://github.com/graphif/project-graph",
+          "observedRootCauseType": "runtime.node",
+          "observedStatus": "blocked"
+        }
+      },
+      "fixture": {
+        "files": {
+          "Cargo.toml": "[package]\nname = \"rust-main-env-service\"\nversion = \"0.1.0\"\nedition = \"2021\"\n",
+          "src/main.rs": "fn main() { let _ = std::env::var(\"DATABASE_URL\").unwrap(); }\n"
+        }
+      },
+      "expect": {
+        "status": "needs_probe",
+        "adapters": [
+          "rust"
+        ],
+        "rootCauseTypes": [],
+        "safeFixTitles": [
+          "Ignore local environment files"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-rust-bin-target",
+      "ecosystems": [
+        "rust"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: Rust project with explicit bin target",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-graphif--project-graph",
+          "project": "graphif/project-graph",
+          "url": "https://github.com/graphif/project-graph",
+          "observedRootCauseType": "runtime.node",
+          "observedStatus": "blocked"
+        }
+      },
+      "fixture": {
+        "files": {
+          "Cargo.toml": "[package]\nname = \"rust-bin-target\"\nversion = \"0.1.0\"\nedition = \"2021\"\n",
+          "src/bin/api.rs": "fn main() { println!(\"api\"); }\n"
+        }
+      },
+      "expect": {
+        "status": "needs_probe",
+        "adapters": [
+          "rust"
+        ],
+        "rootCauseTypes": [],
+        "safeFixTitles": [
+          "Ignore local environment files"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-compose-missing-env-file",
+      "ecosystems": [
+        "docker",
+        "services"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: Compose env_file missing",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-araldev--jobs-finder",
+          "project": "araldev/jobs-finder",
+          "url": "https://github.com/araldev/jobs-finder",
+          "observedRootCauseType": "missing_compose_env_file",
+          "observedStatus": "blocked"
+        }
+      },
+      "fixture": {
+        "files": {
+          "docker-compose.yml": "services:\n  db:\n    image: postgres:16\n    env_file:\n      - .env.db\n"
+        }
+      },
+      "expect": {
+        "status": "blocked",
+        "adapters": [
+          "docker",
+          "services",
+          "generic"
+        ],
+        "rootCauseTypes": [
+          "missing_compose_env_file"
+        ],
+        "safeFixTitles": [
+          "Create Compose env file .env.db",
+          "Ignore local environment files"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-compose-multiple-missing-env-files",
+      "ecosystems": [
+        "docker",
+        "services"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: Compose service group missing env files",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-araldev--jobs-finder",
+          "project": "araldev/jobs-finder",
+          "url": "https://github.com/araldev/jobs-finder",
+          "observedRootCauseType": "missing_compose_env_file",
+          "observedStatus": "blocked"
+        }
+      },
+      "fixture": {
+        "files": {
+          "compose.yml": "services:\n  api:\n    image: node:22\n    env_file: api.env\n  worker:\n    image: node:22\n    env_file:\n      - worker.env\n"
+        }
+      },
+      "expect": {
+        "status": "blocked",
+        "adapters": [
+          "docker",
+          "services",
+          "generic"
+        ],
+        "rootCauseTypes": [
+          "missing_compose_env_file"
+        ],
+        "safeFixTitles": [
+          "Create Compose env file api.env",
+          "Create Compose env file worker.env",
+          "Ignore local environment files"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-compose-broken-dockerfile-path",
+      "ecosystems": [
+        "docker"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: Compose build references missing Dockerfile",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-avase33--sentinel-ml",
+          "project": "avase33/sentinel-ml",
+          "url": "https://github.com/avase33/sentinel-ml",
+          "observedRootCauseType": "paths.compose.docker-compose.yml",
+          "observedStatus": "blocked"
+        }
+      },
+      "fixture": {
+        "files": {
+          "docker-compose.yml": "services:\n  api:\n    build:\n      context: .\n      dockerfile: infra/Dockerfile.api\n",
+          "src/index.js": "console.log(\"api\");\n"
+        }
+      },
+      "expect": {
+        "status": "blocked",
+        "adapters": [
+          "docker",
+          "services",
+          "generic"
+        ],
+        "rootCauseTypes": [
+          "paths.compose.docker-compose.yml"
+        ],
+        "safeFixTitles": [
+          "Ignore local environment files"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-compose-broken-volume-path",
+      "ecosystems": [
+        "docker"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: Compose volume references missing local file",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-avase33--sentinel-ml",
+          "project": "avase33/sentinel-ml",
+          "url": "https://github.com/avase33/sentinel-ml",
+          "observedRootCauseType": "paths.compose.docker-compose.yml",
+          "observedStatus": "blocked"
+        }
+      },
+      "fixture": {
+        "files": {
+          "docker-compose.yml": "services:\n  nginx:\n    image: nginx:alpine\n    volumes:\n      - ./infra/nginx.conf:/etc/nginx/nginx.conf:ro\n"
+        }
+      },
+      "expect": {
+        "status": "blocked",
+        "adapters": [
+          "docker",
+          "services",
+          "generic"
+        ],
+        "rootCauseTypes": [
+          "paths.compose.docker-compose.yml"
+        ],
+        "safeFixTitles": [
+          "Ignore local environment files"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-makefile-bad-npm-script",
+      "ecosystems": [
+        "node"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: Makefile references missing npm script",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-araldev--jobs-finder",
+          "project": "araldev/jobs-finder",
+          "url": "https://github.com/araldev/jobs-finder",
+          "observedRootCauseType": "missing_compose_env_file",
+          "observedStatus": "blocked"
+        }
+      },
+      "fixture": {
+        "files": {
+          "Makefile": "format:\n\tcd web && npm run format\n",
+          "web/package.json": {
+            "json": {
+              "name": "makefile-web",
+              "version": "0.0.0",
+              "private": true,
+              "scripts": {
+                "dev": "vite",
+                "build": "vite build"
+              },
+              "dependencies": {
+                "vite": "^7.0.0"
+              }
+            }
+          }
+        }
+      },
+      "expect": {
+        "status": "blocked",
+        "adapters": [
+          "node",
+          "generic"
+        ],
+        "rootCauseTypes": [
+          "paths.makefile.Makefile",
+          "vite_missing_index_html",
+          "dependencies.node.installed.web/package.json"
+        ],
+        "safeFixTitles": [
+          "Create minimal Vite index.html",
+          "Ignore local environment files"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-node-env-reference",
+      "ecosystems": [
+        "node"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: Node app references undocumented env",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-araldev--jobs-finder",
+          "project": "araldev/jobs-finder",
+          "url": "https://github.com/araldev/jobs-finder",
+          "observedRootCauseType": "missing_compose_env_file",
+          "observedStatus": "blocked"
+        }
+      },
+      "fixture": {
+        "files": {
+          "package.json": {
+            "json": {
+              "name": "node-env-reference",
+              "version": "0.0.0",
+              "private": true,
+              "scripts": {
+                "start": "node src/index.js"
+              }
+            }
+          },
+          "src/index.js": "console.log(process.env.API_SECRET);\n"
+        }
+      },
+      "expect": {
+        "status": "needs_setup",
+        "adapters": [
+          "node"
+        ],
+        "rootCauseTypes": [
+          "missing_env_reference"
+        ],
+        "safeFixTitles": [
+          "Ignore local environment files"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-node-env-template-missing-local",
+      "ecosystems": [
+        "node"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: Node env template exists but local env is missing",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-avase33--modelvault",
+          "project": "avase33/modelvault",
+          "url": "https://github.com/avase33/modelvault",
+          "observedRootCauseType": "missing_compose_env_file",
+          "observedStatus": "blocked"
+        }
+      },
+      "fixture": {
+        "files": {
+          "package.json": {
+            "json": {
+              "name": "node-env-template-missing-local",
+              "version": "0.0.0",
+              "private": true,
+              "scripts": {
+                "start": "node index.js"
+              }
+            }
+          },
+          ".env.example": "API_SECRET=\n",
+          "index.js": "console.log(process.env.API_SECRET);\n"
+        }
+      },
+      "expect": {
+        "status": "needs_setup",
+        "adapters": [
+          "node"
+        ],
+        "rootCauseTypes": [
+          "configuration.env.missing..env.example",
+          "missing_env_reference"
+        ],
+        "safeFixTitles": [
+          "Create local environment file from .env.example",
+          "Ignore local environment files"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-node-duplicate-package-copies",
+      "ecosystems": [
+        "node"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: duplicated package copies in one checkout",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-djordjeict--driver-scheduling-system",
+          "project": "DjordjeICT/driver-scheduling-system",
+          "url": "https://github.com/DjordjeICT/driver-scheduling-system",
+          "observedRootCauseType": "missing_env_reference",
+          "observedStatus": "needs_setup"
+        }
+      },
+      "fixture": {
+        "files": {
+          "package.json": {
+            "json": {
+              "name": "duplicated-app",
+              "version": "0.0.0",
+              "private": true,
+              "scripts": {
+                "start": "node index.js"
+              }
+            }
+          },
+          "index.js": "console.log(\"root\");\n",
+          "copy/package.json": {
+            "json": {
+              "name": "duplicated-app",
+              "version": "0.0.0",
+              "private": true,
+              "scripts": {
+                "start": "node index.js"
+              }
+            }
+          },
+          "copy/index.js": "console.log(\"copy\");\n"
+        }
+      },
+      "expect": {
+        "status": "needs_setup",
+        "adapters": [
+          "node"
+        ],
+        "rootCauseTypes": [
+          "duplicate_project_copies"
+        ],
+        "safeFixTitles": [
+          "Ignore local environment files"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-npm-workspace-missing-install",
+      "ecosystems": [
+        "node",
+        "monorepo"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: npm workspace missing root install",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-graphif--project-graph",
+          "project": "graphif/project-graph",
+          "url": "https://github.com/graphif/project-graph",
+          "observedRootCauseType": "runtime.node",
+          "observedStatus": "blocked"
+        }
+      },
+      "fixture": {
+        "files": {
+          "package.json": {
+            "json": {
+              "name": "workspace-root",
+              "version": "0.0.0",
+              "private": true,
+              "workspaces": [
+                "apps/*"
+              ],
+              "scripts": {
+                "build": "npm -w apps/web run build"
+              }
+            }
+          },
+          "apps/web/package.json": {
+            "json": {
+              "name": "workspace-web",
+              "version": "0.0.0",
+              "private": true,
+              "scripts": {
+                "build": "vite build"
+              },
+              "dependencies": {
+                "vite": "^7.0.0"
+              }
+            }
+          },
+          "apps/web/index.html": "<div id=\"app\"></div>\n"
+        }
+      },
+      "expect": {
+        "status": "needs_setup",
+        "adapters": [
+          "node",
+          "monorepo"
+        ],
+        "rootCauseTypes": [
+          "dependencies.node.workspace-installed"
+        ],
+        "safeFixTitles": [
+          "Ignore local environment files"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-turbo-workspace-missing-install",
+      "ecosystems": [
+        "turbo",
+        "monorepo",
+        "node"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: Turbo workspace missing install",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-graphif--project-graph",
+          "project": "graphif/project-graph",
+          "url": "https://github.com/graphif/project-graph",
+          "observedRootCauseType": "runtime.node",
+          "observedStatus": "blocked"
+        }
+      },
+      "fixture": {
+        "files": {
+          "package.json": {
+            "json": {
+              "name": "turbo-root",
+              "version": "0.0.0",
+              "private": true,
+              "workspaces": [
+                "apps/*"
+              ],
+              "scripts": {
+                "build": "turbo run build",
+                "dev": "turbo run dev"
+              },
+              "devDependencies": {
+                "turbo": "^2.0.0"
+              }
+            }
+          },
+          "turbo.json": {
+            "json": {
+              "tasks": {
+                "build": {
+                  "outputs": [
+                    "dist/**"
+                  ]
+                },
+                "dev": {
+                  "cache": false
+                }
+              }
+            }
+          },
+          "apps/web/package.json": {
+            "json": {
+              "name": "turbo-web",
+              "version": "0.0.0",
+              "private": true,
+              "scripts": {
+                "build": "vite build",
+                "dev": "vite"
+              },
+              "dependencies": {
+                "vite": "^7.0.0"
+              }
+            }
+          },
+          "apps/web/index.html": "<div id=\"app\"></div>\n"
+        }
+      },
+      "expect": {
+        "status": "needs_setup",
+        "adapters": [
+          "node",
+          "monorepo"
+        ],
+        "rootCauseTypes": [
+          "dependencies.node.workspace-installed"
+        ],
+        "safeFixTitles": [
+          "Ignore local environment files"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-nx-workspace-missing-install",
+      "ecosystems": [
+        "nx",
+        "monorepo",
+        "node"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: Nx workspace missing install",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-graphif--project-graph",
+          "project": "graphif/project-graph",
+          "url": "https://github.com/graphif/project-graph",
+          "observedRootCauseType": "runtime.node",
+          "observedStatus": "blocked"
+        }
+      },
+      "fixture": {
+        "files": {
+          "package.json": {
+            "json": {
+              "name": "nx-root",
+              "version": "0.0.0",
+              "private": true,
+              "workspaces": [
+                "apps/*"
+              ],
+              "scripts": {
+                "build": "nx run-many -t build"
+              },
+              "devDependencies": {
+                "nx": "^21.0.0"
+              }
+            }
+          },
+          "nx.json": {
+            "json": {
+              "targetDefaults": {
+                "build": {
+                  "cache": true
+                },
+                "test": {
+                  "cache": true
+                }
+              }
+            }
+          },
+          "apps/api/package.json": {
+            "json": {
+              "name": "nx-api",
+              "version": "0.0.0",
+              "private": true,
+              "scripts": {
+                "build": "node build.js"
+              }
+            }
+          },
+          "apps/api/build.js": "console.log(\"build\");\n"
+        }
+      },
+      "expect": {
+        "status": "needs_setup",
+        "adapters": [
+          "node",
+          "monorepo"
+        ],
+        "rootCauseTypes": [
+          "dependencies.node.workspace-installed"
+        ],
+        "safeFixTitles": [
+          "Ignore local environment files"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-compose-node-env-combo",
+      "ecosystems": [
+        "docker",
+        "services",
+        "node"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: Compose env file plus Node env reference",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-araldev--jobs-finder",
+          "project": "araldev/jobs-finder",
+          "url": "https://github.com/araldev/jobs-finder",
+          "observedRootCauseType": "missing_compose_env_file",
+          "observedStatus": "blocked"
+        }
+      },
+      "fixture": {
+        "files": {
+          "package.json": {
+            "json": {
+              "name": "compose-node-env-combo",
+              "version": "0.0.0",
+              "private": true,
+              "scripts": {
+                "start": "node src/index.js"
+              }
+            }
+          },
+          "src/index.js": "console.log(process.env.DATABASE_URL);\n",
+          "docker-compose.yml": "services:\n  api:\n    build: .\n    env_file:\n      - .env.local\n"
+        }
+      },
+      "expect": {
+        "status": "blocked",
+        "adapters": [
+          "node",
+          "docker",
+          "services",
+          "generic"
+        ],
+        "rootCauseTypes": [
+          "missing_compose_env_file",
+          "missing_env_reference"
+        ],
+        "safeFixTitles": [
+          "Create Compose env file .env.local",
+          "Ignore local environment files"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-vite-prisma-env-combo",
+      "ecosystems": [
+        "vite",
+        "prisma",
+        "node"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: Vite frontend with Prisma env gap",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-araldev--jobs-finder",
+          "project": "araldev/jobs-finder",
+          "url": "https://github.com/araldev/jobs-finder",
+          "observedRootCauseType": "missing_compose_env_file",
+          "observedStatus": "blocked"
+        }
+      },
+      "fixture": {
+        "files": {
+          "package.json": {
+            "json": {
+              "name": "vite-prisma-env-combo",
+              "version": "0.0.0",
+              "private": true,
+              "scripts": {
+                "dev": "vite",
+                "build": "vite build"
+              },
+              "dependencies": {
+                "vite": "^7.0.0",
+                "@prisma/client": "^6.0.0"
+              },
+              "devDependencies": {
+                "prisma": "^6.0.0"
+              }
+            }
+          },
+          "index.html": "<div id=\"app\"></div><script type=\"module\" src=\"/src/main.js\"></script>\n",
+          "src/main.js": "console.log(\"vite\");\n",
+          "prisma/schema.prisma": "generator client { provider = \"prisma-client-js\" }\ndatasource db { provider = \"postgresql\" url = env(\"DATABASE_URL\") }\n"
+        }
+      },
+      "expect": {
+        "status": "needs_setup",
+        "adapters": [
+          "node",
+          "prisma"
+        ],
+        "rootCauseTypes": [
+          "missing_prisma_env",
+          "prisma_missing_migrations",
+          "dependencies.node.installed.package.json"
+        ],
+        "safeFixTitles": [
+          "Ignore local environment files"
+        ]
+      }
+    },
+    {
+      "id": "public-alpha3-dotnet-solution-web-missing-appsettings",
+      "ecosystems": [
+        "dotnet"
+      ],
+      "source": {
+        "kind": "public_scan_distilled_pattern",
+        "label": "Distilled public scan pattern: .NET solution with web project missing appsettings",
+        "reference": "docs/failure-dataset/scan-review-2026-07-09.md",
+        "sanitized": true,
+        "provenance": {
+          "derivedFrom": "failure-dataset review and promotion candidates",
+          "sourceId": "github-0n1xx--spotifystatistics",
+          "project": "0n1xx/SpotifyStatistics",
+          "url": "https://github.com/0n1xx/SpotifyStatistics",
+          "observedRootCauseType": "dependencies.python.venv",
+          "observedStatus": "needs_setup"
+        }
+      },
+      "fixture": {
+        "files": {
+          "App.sln": "Microsoft Visual Studio Solution File, Format Version 12.00\n",
+          "src/App/App.csproj": "<Project Sdk=\"Microsoft.NET.Sdk.Web\"><PropertyGroup><TargetFramework>net8.0</TargetFramework></PropertyGroup></Project>\n"
+        }
+      },
+      "expect": {
+        "status": "needs_setup",
+        "adapters": [
+          "dotnet"
+        ],
+        "rootCauseTypes": [
+          "dotnet_missing_appsettings"
+        ],
+        "safeFixTitles": [
+          "Ignore local environment files"
+        ]
       }
     }
   ]

@@ -20,11 +20,12 @@ Source kinds currently used:
 
 - `private_real_project`: observed in a real local project, then sanitized and minimized.
 - `public_real_project`: observed in a public repository or issue, with a source link.
+- `public_scan_distilled_pattern`: distilled from public failure-dataset scan evidence into a synthetic minimal fixture without copying third-party source.
 - `seeded_failure_pattern`: a small seed fixture for a known failure family while real evidence is being collected.
 
 The corpus must always contain at least one real-project case. Seed cases are allowed, but they should be replaced or reinforced with real evidence over time.
 
-The current corpus includes 13 cases. Two CMMS-derived real-project boundaries are represented: broken Compose/Makefile references, and a nested-copy report that exposed missing local Node dependencies plus macOS `__MACOSX`/`._*` archive metadata being treated as Python source.
+The current corpus includes 56 cases. Two CMMS-derived real-project boundaries are represented: broken Compose/Makefile references, and a nested-copy report that exposed missing local Node dependencies plus macOS `__MACOSX`/`._*` archive metadata being treated as Python source. The alpha.3 public scan pass adds distilled minimal fixtures for Next.js, Vite, Prisma, Django, FastAPI, Laravel, Rails, Spring Boot, .NET, Go, Rust, Docker Compose, Turbo, Nx, and monorepo setup failures.
 
 ## How to Add a Real Failure
 
@@ -77,6 +78,13 @@ Run all cases as JSON:
 
 ```bash
 npm run corpus -- --format json
+```
+
+Promote public scan patterns into sanitized synthetic fixtures after reviewing
+`.setuplens/failure-dataset/review.json`:
+
+```bash
+npm run corpus:promote-public
 ```
 
 Run one case:

@@ -25,6 +25,8 @@
     "dataset:review": "node ./bin/setuplens.js failure-dataset review",
     "dataset:promote": "node ./bin/setuplens.js failure-dataset promote",
     "dataset:clean": "node ./bin/setuplens.js failure-dataset clean",
+    "corpus:promote-public": "node ./scripts/promote-public-scan-patterns.js",
+    "report:capability": "node ./scripts/generate-capability-report.js",
     "demo": "node ./bin/setuplens.js scan . --format html --output ./docs/demo-report.html"
   },
   "engines": {

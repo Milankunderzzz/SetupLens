@@ -4,7 +4,7 @@
 
 **Diagnose why unfamiliar repositories fail to install, configure, or start.**
 
-[中文](README.zh-CN.md) | [Roadmap](ROADMAP.md) | [Product direction](docs/PRODUCT_DIRECTION.md) | [Why I built it](ARCHITECTURE.md) | [Plugin API](docs/PLUGIN_API.md) | [Example report](docs/demo-report.html)
+[中文](README.zh-CN.md) | [Roadmap](ROADMAP.md) | [Product direction](docs/PRODUCT_DIRECTION.md) | [Why I built it](ARCHITECTURE.md) | [Plugin API](docs/PLUGIN_API.md) | [Example report](docs/demo-report.html) | [alpha.3 capability report](docs/failure-dataset/alpha3-capability-report.html)
 
 [![CI](https://github.com/Milankunderzzz/SetupLens/actions/workflows/ci.yml/badge.svg)](https://github.com/Milankunderzzz/SetupLens/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/Milankunderzzz/SetupLens?sort=semver)](https://github.com/Milankunderzzz/SetupLens/releases)
@@ -34,17 +34,19 @@ SetupLens is an early research prototype and usable MVP, not yet a product whose
 - `doctor` mode with adapters, planned probes, real command probing, failure-log classification, and next-action ranking;
 - Node/Prisma/README instruction signals such as framework packages, `process.env.*`, Prisma `env("...")`, and documented commands;
 - deep doctor rules for Next.js, Vite, Prisma, Django, FastAPI, Laravel, Rails, Spring Boot, .NET web apps, Go services, Rust binaries, Turbo, and Nx;
-- a failure corpus with 13 real-project and distilled fixtures that keeps doctor rules tied to reproducible setup failures;
+- a failure corpus with 56 real-project, seeded, and public-scan-distilled fixtures that keeps doctor rules tied to reproducible setup failures;
 - multi-ecosystem doctor adapters for PHP, Ruby, Java, .NET, Go, Rust, monorepos, and local service dependencies;
 - corpus metrics for diagnostic hit rate, first root-cause ranking, safe-fix generation, false blockers, and ecosystem coverage;
 - `failure-dataset collect/review` for pulling 50 public candidate repositories, preserving source provenance, scanning them, and turning the results into corpus and classifier feedback;
 - failure-dataset review scorecards with diagnostic hit rate, root-cause-first rate, safe-fix generation, false-blocker metrics, operational risk notes, and per-ecosystem coverage counts;
-- failure-dataset promotion drafts and local cache cleanup so public scan evidence can move toward curated corpus coverage without retaining cloned repositories forever;
+- failure-dataset promotion drafts, public-scan distilled corpus promotion, and local cache cleanup so public scan evidence can move toward curated corpus coverage without retaining cloned repositories forever;
 - safer probe execution that runs verify probes by default, records probe traces, and only runs startup commands with `--probe-startup`;
 - action-panel doctor reports in terminal, JSON, and HTML with readiness separated from diagnosis confidence;
 - fix-plan output plus `doctor --apply safe` for whitelisted local repairs and safe recipes that never overwrite existing files;
 - default terminal output that hides low-impact pass/hygiene noise unless `--show-all` is requested;
 - one documented CMMS validation case and one external C++ boundary pilot.
+
+The regenerated alpha.3 evidence pass collected 50 public GitHub sources, completed 47 static doctor scans, produced 39 corpus promotion candidates, and expanded the regression corpus to 56 passing cases. The visual summary is in [docs/failure-dataset/alpha3-capability-report.html](docs/failure-dataset/alpha3-capability-report.html), and the audit note is in [docs/failure-dataset/scan-review-2026-07-09.md](docs/failure-dataset/scan-review-2026-07-09.md).
 
 Precision, recall, F1, developer time savings, and low false-positive rates have not yet been established. Those claims remain gated on the independent pilot and holdout study in [SetupBench-Lens](https://github.com/Milankunderzzz/SetupBench-Lens).
 
@@ -141,6 +143,18 @@ setuplens failure-dataset promote --input .setuplens/failure-dataset/sources.jso
 setuplens failure-dataset promote --input .setuplens/failure-dataset/sources.json --format json --output .setuplens/failure-dataset/corpus-drafts.json
 ```
 
+Promote reviewed public scan patterns into sanitized local corpus fixtures:
+
+```bash
+npm run corpus:promote-public
+```
+
+Generate the alpha.3 capability comparison report:
+
+```bash
+npm run report:capability
+```
+
 Clean cloned public repositories when the evidence has been reviewed:
 
 ```bash
@@ -148,7 +162,7 @@ setuplens failure-dataset clean
 setuplens failure-dataset clean --include-reports
 ```
 
-The manifest records repository URL, clone URL, default branch, license, topics, GitHub Search query, collection timestamp, optional resolved commit, optional doctor report path, root-cause ranking, safe-fix counts, unclassified logs, and unknowns. Review output also includes a scorecard for diagnostic hit rate, first-root-cause ranking when labels exist, safe-fix generation, false-blocker risk, and ecosystem coverage. Promotion output keeps `fixture.files` empty until a human sanitizes and minimizes the public source evidence. The detailed workflow is in [docs/failure-dataset/README.md](docs/failure-dataset/README.md).
+The committed manifest records repository URL, clone URL, default branch, license, topics, GitHub Search query, collection timestamp, optional resolved commit, sanitized scan summaries, root-cause ranking, safe-fix counts, unclassified logs, and unknowns. Per-repository doctor reports and third-party source checkouts stay in the ignored `.setuplens` cache. Review output also includes a scorecard for diagnostic hit rate, first-root-cause ranking when labels exist, safe-fix generation, false-blocker risk, and ecosystem coverage. Promotion output keeps `fixture.files` empty until a human sanitizes and minimizes the public source evidence. The detailed workflow is in [docs/failure-dataset/README.md](docs/failure-dataset/README.md).
 
 The original CMMS benchmark still exists as one local validation example. It was measured on Windows 11 with an Intel i5-12500H and Node.js 24. The repository contains Node.js, Python, Docker, and 261 indexed files.
 
@@ -301,10 +315,12 @@ npm ci
 npm run check
 npm test
 npm run corpus
+npm run corpus:promote-public
 npm run dataset:collect -- --limit 50 --format json
 npm run dataset:review -- --input .setuplens/failure-dataset/sources.json
 npm run dataset:promote -- --input .setuplens/failure-dataset/sources.json
 npm run dataset:clean
+npm run report:capability
 node ./bin/setuplens.js scan .
 node ./bin/setuplens.js doctor . --probe
 node ./bin/setuplens.js doctor-suite ./repos --format json
