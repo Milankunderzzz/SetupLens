@@ -26,7 +26,7 @@ I am building it in public and still keeping the core deterministic and local-fi
 
 SetupLens is an early research prototype and usable MVP, not yet a product whose effectiveness has been established. The current `main` branch includes:
 
-- 77 automated tests, executed in CI on Windows, Linux, and macOS with Node.js 18 and 22;
+- 78 automated tests, executed in CI on Windows, Linux, and macOS with Node.js 18 and 22;
 - context-aware file classification, workspace-level dependency reporting, and primary-stack ranking;
 - `Unsupported / Not scored` results for empty repositories, unknown stacks, and unsupported primary stacks instead of misleading numeric grades;
 - startup diagnosis with `ready`, `needs_setup`, `blocked`, and `unsupported` verdicts;
@@ -39,6 +39,7 @@ SetupLens is an early research prototype and usable MVP, not yet a product whose
 - corpus metrics for diagnostic hit rate, first root-cause ranking, safe-fix generation, false blockers, and ecosystem coverage;
 - `failure-dataset collect/review` for pulling 50 public candidate repositories, preserving source provenance, scanning them, and turning the results into corpus and classifier feedback;
 - failure-dataset review scorecards with diagnostic hit rate, root-cause-first rate, safe-fix generation, false-blocker metrics, operational risk notes, and per-ecosystem coverage counts;
+- failure-dataset scorecard history snapshots so repeated real-project scans can show improved, regressed, unchanged, and not-comparable signals over time;
 - failure-dataset promotion drafts, public-scan distilled corpus promotion, and local cache cleanup so public scan evidence can move toward curated corpus coverage without retaining cloned repositories forever;
 - safer probe execution that runs verify probes by default, records probe traces, and only runs startup commands with `--probe-startup`;
 - action-panel doctor reports in terminal, JSON, and HTML with readiness separated from diagnosis confidence;
@@ -134,6 +135,7 @@ Review the scan results and turn them into a corpus/classifier backlog:
 ```bash
 setuplens failure-dataset review --input .setuplens/failure-dataset/sources.json
 setuplens failure-dataset review --input .setuplens/failure-dataset/sources.json --format json --output .setuplens/failure-dataset/review.json
+setuplens failure-dataset review --input .setuplens/failure-dataset/sources.json --history .setuplens/failure-dataset/scorecard-history.json
 ```
 
 Generate reviewable corpus drafts from the highest-value candidates:
@@ -194,6 +196,7 @@ setuplens doctor-suite ./repos --format json
 setuplens failure-dataset collect --limit 50 --format json
 setuplens failure-dataset collect --limit 50 --clone --scan
 setuplens failure-dataset review --input .setuplens/failure-dataset/sources.json
+setuplens failure-dataset review --input .setuplens/failure-dataset/sources.json --history .setuplens/failure-dataset/scorecard-history.json
 setuplens failure-dataset promote --input .setuplens/failure-dataset/sources.json
 setuplens failure-dataset clean
 
@@ -234,7 +237,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: Milankunderzzz/SetupLens@v0.2.0-alpha.3
+      - uses: Milankunderzzz/SetupLens@v0.2.0-alpha.4
         with:
           path: .
           threshold: 75
@@ -318,6 +321,7 @@ npm run corpus
 npm run corpus:promote-public
 npm run dataset:collect -- --limit 50 --format json
 npm run dataset:review -- --input .setuplens/failure-dataset/sources.json
+npm run dataset:history -- --input .setuplens/failure-dataset/sources.json
 npm run dataset:promote -- --input .setuplens/failure-dataset/sources.json
 npm run dataset:clean
 npm run report:capability

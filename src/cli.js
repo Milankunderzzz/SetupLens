@@ -38,6 +38,7 @@ Options:
   --clone                       Clone collected failure dataset candidates
   --scan                        Run doctor on cloned failure dataset candidates
   --input <file>                Read a failure dataset manifest for review or promotion
+  --history <file>              Append review scorecard snapshots to a history file
   --repos-dir <dir>             Directory for cloned dataset repositories
   --reports-dir <dir>           Directory for per-repository doctor reports
   --include-reports             Also clean per-repository doctor reports
@@ -55,6 +56,7 @@ Examples:
   setuplens failure-dataset collect --limit 50 --format json
   setuplens failure-dataset collect --limit 50 --clone --scan
   setuplens failure-dataset review --input .setuplens/failure-dataset/sources.json
+  setuplens failure-dataset review --input .setuplens/failure-dataset/sources.json --history .setuplens/failure-dataset/scorecard-history.json
   setuplens failure-dataset promote --input .setuplens/failure-dataset/sources.json
   setuplens failure-dataset clean
   setuplens scan .
@@ -151,6 +153,8 @@ function parseFailureDatasetArguments(args) {
     outputSet: false,
     input: null,
     inputSet: false,
+    history: null,
+    historySet: false,
     color: true,
     limit: 50,
     clone: false,
@@ -177,6 +181,7 @@ function parseFailureDatasetArguments(args) {
     if (arg === '--format') { options.format = valueAfter(args, index, arg); index += 1; continue; }
     if (arg === '-o' || arg === '--output') { options.output = valueAfter(args, index, arg); options.outputSet = true; index += 1; continue; }
     if (arg === '--input') { options.input = valueAfter(args, index, arg); options.inputSet = true; index += 1; continue; }
+    if (arg === '--history') { options.history = valueAfter(args, index, arg); options.historySet = true; index += 1; continue; }
     if (arg === '--limit') { options.limit = Number(valueAfter(args, index, arg)); index += 1; continue; }
     if (arg === '--timeout') { options.timeoutMs = Number(valueAfter(args, index, arg)); options.timeoutSet = true; index += 1; continue; }
     if (arg === '--repos-dir') { options.reposDir = valueAfter(args, index, arg); index += 1; continue; }
@@ -195,6 +200,7 @@ function parseFailureDatasetArguments(args) {
   if (action !== 'collect' && options.clone) throw new Error('--clone is only available with failure-dataset collect.');
   if (action !== 'clean' && options.includeReports) throw new Error('--include-reports is only available with failure-dataset clean.');
   if (action === 'collect' && options.inputSet) throw new Error('--input is only available with failure-dataset review or promote.');
+  if (action !== 'review' && options.historySet) throw new Error('--history is only available with failure-dataset review.');
   if (['review', 'promote'].includes(action) && !options.input) options.input = '.setuplens/failure-dataset/sources.json';
   if (action === 'clean' && options.inputSet) throw new Error('--input is not used with failure-dataset clean.');
   if (action === 'collect' && !options.outputSet && options.format === 'json') options.output = '.setuplens/failure-dataset/sources.json';
@@ -220,7 +226,7 @@ async function runCommand(options) {
     });
   }
   if (options.command === 'failure-dataset') {
-    if (options.action === 'review') return reviewFailureDataset({ input: options.input });
+    if (options.action === 'review') return reviewFailureDataset({ input: options.input, history: options.history });
     if (options.action === 'promote') return promoteFailureDataset({ input: options.input });
     if (options.action === 'clean') {
       return cleanFailureDataset({

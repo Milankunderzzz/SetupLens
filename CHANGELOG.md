@@ -7,8 +7,12 @@ and the project uses semantic versioning while it remains in the `0.x` stage.
 
 ## [Unreleased]
 
+## [0.2.0-alpha.4] - 2026-07-19
+
 ### Added
 
+- Added `setuplens failure-dataset review --history <file>` for appending compact scorecard snapshots and comparing each review against the previous dataset pass.
+- Added a `dataset:history` npm shortcut for maintaining `.setuplens/failure-dataset/scorecard-history.json`.
 - Regenerated the 50-source failure-dataset manifest with `0.2.0-alpha.3`, including sanitized clone and scan summaries without local absolute paths.
 - Added `npm run corpus:promote-public` to convert reviewed public scan patterns into sanitized synthetic corpus fixtures without copying third-party source.
 - Expanded the failure corpus from 13 to 56 passing cases across Next.js, Vite, Prisma, Django, FastAPI, Laravel, Rails, Spring Boot, .NET, Go, Rust, Docker Compose, Turbo, Nx, and monorepo setup failures.
@@ -17,6 +21,7 @@ and the project uses semantic versioning while it remains in the `0.x` stage.
 
 ### Changed
 
+- Package version advanced to `0.2.0-alpha.4`.
 - HTML report font stacks now include common CJK fonts so Chinese report text renders correctly on Windows and macOS.
 
 ## [0.2.0-alpha.3] - 2026-07-08
@@ -140,6 +145,7 @@ This is a maintenance release. It does not claim validated precision, recall, F1
 
 - Initial public MVP with local terminal, JSON, HTML, plugin, and GitHub Action interfaces for Node.js, Python, Docker, configuration, path, security, and repository checks.
 
+[0.2.0-alpha.4]: https://github.com/Milankunderzzz/SetupLens/compare/v0.2.0-alpha.3...v0.2.0-alpha.4
 [0.2.0-alpha.3]: https://github.com/Milankunderzzz/SetupLens/compare/v0.2.0-alpha.2...v0.2.0-alpha.3
 [0.2.0-alpha.2]: https://github.com/Milankunderzzz/SetupLens/compare/v0.2.0-alpha.1...v0.2.0-alpha.2
 [0.2.0-alpha.1]: https://github.com/Milankunderzzz/SetupLens/compare/v0.1.1...v0.2.0-alpha.1

@@ -1,6 +1,6 @@
 # SetupLens 版本路线
 
-最后更新：2026-07-04
+最后更新：2026-07-19
 
 SetupLens 正在从静态清单工具走向本地优先的仓库医生。目标不是宣称每个项目都能自动修好，而是让工具能更可靠地判断项目是什么、为什么大概率跑不起来、有哪些证据支持这个判断，以及哪些修复足够安全，可以建议或执行。
 
@@ -20,7 +20,7 @@ v0.2 线现在有两个用户入口：
 - `scan`：面向 CI 的确定性 readiness 与仓库规范检查。
 - `doctor`：基于 adapter 的仓库诊断，包含启动计划、可选 probe、失败分类、fix plan 和行动面板报告。
 
-当前 `0.2.0-alpha.3` 分支补上了把公开扫描证据沉淀为 corpus 草稿所需的 promotion 层，同时让第三方克隆仓库继续留在 git 外并可被安全清理。
+当前 `0.2.0-alpha.4` 分支补上了历史 scorecard snapshot，让连续的公开扫描审核可以显示诊断信号是 improved、regressed、unchanged，还是暂时 not comparable。
 
 ## 版本方向
 
@@ -47,11 +47,21 @@ v0.2 线现在有两个用户入口：
 
 进入下一阶段条件：promotion 草稿、本地缓存清理、语法检查、完整测试、corpus 回归和 failure-dataset review 都在 release 分支通过。
 
+### v0.2.0-alpha.4 - Scorecard 历史快照
+
+目标：让真实项目验证变成可累计的回归模型，而不是一堆彼此孤立的报告。
+
+- 增加 `failure-dataset review --history <file>`，每次审核后追加紧凑的 scorecard snapshot。
+- 对比当前审核与上一轮快照，覆盖诊断命中率、safe-fix 生成率、false-blocker risk、manual fix 数量、unclassified logs、rule gaps、来源数量和生态覆盖。
+- 历史文件默认保存在 `.setuplens/failure-dataset` 下，由使用者决定哪些聚合证据适合公开。
+- 为回归历史工作流补充测试和文档。
+
+进入下一阶段条件：历史快照、趋势对比、CLI help、terminal 输出、语法检查、完整测试、corpus 回归和 demo 生成都在 `main` 通过。
+
 ### v0.2.0-beta - 真实项目回归闭环
 
 目标：让 SetupLens 随着更多坏项目扫描而可见地变强。
 
-- 保存历史 scorecard snapshot，支持对比规则变更前后的回归。
 - 生成可视化回归报告，展示生态覆盖、失败类型分布、unknown log、safe-fix yield 和 false-blocker risk。
 - 只有当 corpus case 或公开扫描证明存在缺口时，才扩展框架专用 classifier。
 - 将 doctor HTML 报告升级成更清晰的行动面板：root cause、evidence、next command、safe fixes、manual fixes、probe trace、unknowns 和 confidence explanation。

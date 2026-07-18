@@ -1,4 +1,4 @@
-export const VERSION = '0.2.0-alpha.3';
+export const VERSION = '0.2.0-alpha.4';
 
 export const SKIPPED_DIRECTORIES = new Set([
   '.git',

@@ -1,6 +1,6 @@
 {
   "name": "setuplens",
-  "version": "0.2.0-alpha.3",
+  "version": "0.2.0-alpha.4",
   "description": "Diagnose why unfamiliar repositories fail to install, configure, or start.",
   "type": "module",
   "bin": {
@@ -23,6 +23,7 @@
     "corpus": "node ./scripts/evaluate-failure-corpus.js",
     "dataset:collect": "node ./bin/setuplens.js failure-dataset collect",
     "dataset:review": "node ./bin/setuplens.js failure-dataset review",
+    "dataset:history": "node ./bin/setuplens.js failure-dataset review --history .setuplens/failure-dataset/scorecard-history.json",
     "dataset:promote": "node ./bin/setuplens.js failure-dataset promote",
     "dataset:clean": "node ./bin/setuplens.js failure-dataset clean",
     "corpus:promote-public": "node ./scripts/promote-public-scan-patterns.js",

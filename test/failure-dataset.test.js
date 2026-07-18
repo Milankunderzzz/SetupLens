@@ -179,6 +179,69 @@ test('failure dataset review builds a corpus queue and classifier backlog', asyn
   assert.ok(review.ruleGaps.some((gap) => gap.type === 'windows_path_too_long'));
 });
 
+test('failure dataset review appends scorecard history snapshots and compares trends', async (t) => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'setuplens-history-'));
+  const historyPath = path.join(root, '.setuplens', 'failure-dataset', 'scorecard-history.json');
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+
+  const source = (id, status, manualFixCount = 1) => ({
+    id,
+    source: {
+      fullName: `example/${id}`,
+      htmlUrl: `https://github.com/example/${id}`,
+      cloneUrl: `https://github.com/example/${id}.git`,
+      license: 'MIT',
+      primaryLanguage: 'TypeScript',
+      discoveredBy: { ecosystem: 'next', query: 'topic:nextjs', page: 1, rank: 1 }
+    },
+    clone: { status: 'cloned', path: `repos/${id}`, commit: 'abc123' },
+    scan: {
+      status,
+      readiness: { score: status === 'blocked' ? 0 : 50 },
+      confidence: { score: 95 },
+      primaryStack: 'node',
+      ecosystems: ['node', 'next'],
+      topRootCause: { type: 'node_dependencies_missing', title: 'Node dependencies missing' },
+      rootCauseTypes: ['node_dependencies_missing'],
+      safeFixCount: 1,
+      manualFixCount,
+      unclassifiedProbes: [],
+      unknowns: [],
+      reportPath: `reports/${id}.doctor.json`
+    }
+  });
+
+  const first = await reviewFailureDataset({
+    dataset: {
+      schemaVersion: '1.0-failure-dataset',
+      generatedAt: '2026-07-09T00:00:00.000Z',
+      sources: [source('one', 'blocked', 3)]
+    },
+    history: historyPath,
+    now: '2026-07-09T01:00:00.000Z'
+  });
+  const second = await reviewFailureDataset({
+    dataset: {
+      schemaVersion: '1.0-failure-dataset',
+      generatedAt: '2026-07-10T00:00:00.000Z',
+      sources: [source('one', 'blocked', 1), source('two', 'needs_setup', 1)]
+    },
+    history: historyPath,
+    now: '2026-07-10T01:00:00.000Z'
+  });
+  const history = JSON.parse(await fs.readFile(historyPath, 'utf8'));
+
+  assert.equal(first.scorecardHistory.snapshotCount, 1);
+  assert.equal(first.scorecardHistory.previousSnapshot, null);
+  assert.equal(second.scorecardHistory.snapshotCount, 2);
+  assert.equal(second.scorecardHistory.previousSnapshot.generatedAt, '2026-07-09T01:00:00.000Z');
+  assert.equal(second.scorecardHistory.comparison.summary.sources.delta, 1);
+  assert.equal(second.scorecardHistory.comparison.summary.manualFixes.delta, -1);
+  assert.equal(second.scorecardHistory.comparison.summary.manualFixes.trend, 'improved');
+  assert.equal(history.schemaVersion, '1.0-scorecard-history');
+  assert.equal(history.snapshots.length, 2);
+});
+
 test('failure dataset classifies Windows path length clone failures', () => {
   const classification = classifyCloneFailure({
     status: 'failed',

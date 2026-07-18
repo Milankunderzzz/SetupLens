@@ -34,6 +34,13 @@ function renderMetric(item) {
   return `  ${item.label}: ${item.value} ${item.unit ?? ''}`.trimEnd();
 }
 
+function renderDelta(item) {
+  if (!item || item.delta === null) return null;
+  const marker = item.trend === 'improved' ? '+' : item.trend === 'regressed' ? '!' : '=';
+  const delta = item.delta > 0 ? `+${item.delta}` : String(item.delta);
+  return `  ${marker} ${item.label}: ${item.previous} -> ${item.current} (${delta})`;
+}
+
 function renderCollection(report, paint) {
   const lines = [];
   lines.push('');
@@ -99,6 +106,29 @@ function renderReview(report, paint) {
       if (rendered) lines.push(rendered);
     }
     for (const note of report.scorecard.notes.slice(0, 2)) lines.push(paint.dim(`  note: ${note}`));
+    lines.push('');
+  }
+  if (report.scorecardHistory) {
+    lines.push(paint.bold('History'));
+    lines.push(`  Snapshots: ${report.scorecardHistory.snapshotCount}`);
+    lines.push(`  File: ${report.scorecardHistory.path}`);
+    if (report.scorecardHistory.comparison) {
+      const comparison = report.scorecardHistory.comparison;
+      lines.push(`  Rollup: ${comparison.rollup.improved} improved, ${comparison.rollup.regressed} regressed, ${comparison.rollup.unchanged} unchanged`);
+      for (const item of [
+        comparison.metrics.diagnosticHitRate,
+        comparison.metrics.safeFixGenerationRate,
+        comparison.metrics.falseBlockerRiskRate,
+        comparison.summary.manualFixes,
+        comparison.summary.unclassifiedLogs,
+        comparison.summary.ruleGaps
+      ]) {
+        const rendered = renderDelta(item);
+        if (rendered) lines.push(rendered);
+      }
+    } else {
+      lines.push(paint.dim('  First snapshot saved; run review again after the next scan to compare trends.'));
+    }
     lines.push('');
   }
   countLines('Statuses', report.summary.statuses, lines, paint);

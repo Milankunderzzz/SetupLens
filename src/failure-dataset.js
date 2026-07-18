@@ -741,6 +741,178 @@ function buildScorecard(sources) {
   };
 }
 
+function compactMetric(item) {
+  if (!item) return null;
+  return {
+    label: item.label,
+    value: item.value ?? null,
+    numerator: item.numerator ?? null,
+    denominator: item.denominator ?? null,
+    mode: item.mode ?? null,
+    unit: item.unit ?? null
+  };
+}
+
+function compactInputPath(input) {
+  if (!input) return null;
+  const relative = path.relative(process.cwd(), input);
+  if (relative && !relative.startsWith('..') && !path.isAbsolute(relative)) return relative;
+  return path.basename(input);
+}
+
+function buildScorecardSnapshot(review, dataset) {
+  return {
+    schemaVersion: '1.0-scorecard-snapshot',
+    id: `${review.generatedAt}-${safeSlug(review.tool.version)}`,
+    generatedAt: review.generatedAt,
+    tool: review.tool,
+    input: compactInputPath(review.input),
+    datasetGeneratedAt: review.datasetGeneratedAt,
+    datasetToolVersion: dataset.tool?.version ?? null,
+    summary: {
+      sources: review.summary.sources,
+      scanned: review.summary.scanned,
+      corpusCandidates: review.summary.corpusCandidates,
+      safeFixes: review.summary.safeFixes,
+      manualFixes: review.summary.manualFixes,
+      unclassifiedLogs: review.summary.unclassifiedLogs,
+      ruleGaps: review.ruleGaps.length,
+      promotionCandidates: review.promotionCandidates.length
+    },
+    metrics: {
+      diagnosticHitRate: compactMetric(review.scorecard.metrics.diagnosticHitRate),
+      rootCauseFirstRate: compactMetric(review.scorecard.metrics.rootCauseFirstRate),
+      safeFixGenerationRate: compactMetric(review.scorecard.metrics.safeFixGenerationRate),
+      falseBlockerRate: compactMetric(review.scorecard.metrics.falseBlockerRate),
+      falseBlockerRiskRate: compactMetric(review.scorecard.metrics.falseBlockerRiskRate),
+      ecosystemCoverageCount: compactMetric(review.scorecard.metrics.ecosystemCoverageCount)
+    },
+    statusMix: review.summary.statuses,
+    topFailureTypes: review.summary.failureTypeDistribution.slice(0, 12),
+    ecosystemCoverage: review.scorecard.ecosystemCoverage
+  };
+}
+
+function readNumber(value) {
+  return Number.isFinite(value) ? value : null;
+}
+
+function compareNumeric(before, after, higherIsBetter = true) {
+  const previous = readNumber(before);
+  const current = readNumber(after);
+  if (previous === null || current === null) {
+    return { previous, current, delta: null, trend: 'not_comparable' };
+  }
+  const delta = Math.round((current - previous) * 10) / 10;
+  const improved = higherIsBetter ? delta > 0 : delta < 0;
+  const regressed = higherIsBetter ? delta < 0 : delta > 0;
+  return {
+    previous,
+    current,
+    delta,
+    trend: delta === 0 ? 'unchanged' : improved ? 'improved' : regressed ? 'regressed' : 'unchanged'
+  };
+}
+
+function metricComparison(previous, current, name, higherIsBetter = true) {
+  return {
+    label: current.metrics?.[name]?.label ?? previous.metrics?.[name]?.label ?? name,
+    ...compareNumeric(previous.metrics?.[name]?.value, current.metrics?.[name]?.value, higherIsBetter)
+  };
+}
+
+function summaryComparison(previous, current, name, higherIsBetter = true) {
+  return {
+    label: name,
+    ...compareNumeric(previous.summary?.[name], current.summary?.[name], higherIsBetter)
+  };
+}
+
+function compareScorecardSnapshots(previous, current) {
+  if (!previous) return null;
+  const metrics = {
+    diagnosticHitRate: metricComparison(previous, current, 'diagnosticHitRate'),
+    rootCauseFirstRate: metricComparison(previous, current, 'rootCauseFirstRate'),
+    safeFixGenerationRate: metricComparison(previous, current, 'safeFixGenerationRate'),
+    falseBlockerRate: metricComparison(previous, current, 'falseBlockerRate', false),
+    falseBlockerRiskRate: metricComparison(previous, current, 'falseBlockerRiskRate', false),
+    ecosystemCoverageCount: metricComparison(previous, current, 'ecosystemCoverageCount')
+  };
+  const summary = {
+    sources: summaryComparison(previous, current, 'sources'),
+    scanned: summaryComparison(previous, current, 'scanned'),
+    corpusCandidates: summaryComparison(previous, current, 'corpusCandidates'),
+    safeFixes: summaryComparison(previous, current, 'safeFixes'),
+    manualFixes: summaryComparison(previous, current, 'manualFixes', false),
+    unclassifiedLogs: summaryComparison(previous, current, 'unclassifiedLogs', false),
+    ruleGaps: summaryComparison(previous, current, 'ruleGaps', false),
+    promotionCandidates: summaryComparison(previous, current, 'promotionCandidates')
+  };
+  const all = [...Object.values(metrics), ...Object.values(summary)];
+  return {
+    schemaVersion: '1.0-scorecard-comparison',
+    previous: {
+      id: previous.id,
+      generatedAt: previous.generatedAt,
+      toolVersion: previous.tool?.version ?? null
+    },
+    current: {
+      id: current.id,
+      generatedAt: current.generatedAt,
+      toolVersion: current.tool?.version ?? null
+    },
+    metrics,
+    summary,
+    rollup: {
+      improved: all.filter((item) => item.trend === 'improved').length,
+      regressed: all.filter((item) => item.trend === 'regressed').length,
+      unchanged: all.filter((item) => item.trend === 'unchanged').length,
+      notComparable: all.filter((item) => item.trend === 'not_comparable').length
+    }
+  };
+}
+
+async function readScorecardHistory(historyPath) {
+  if (!await pathExists(historyPath)) {
+    return { schemaVersion: '1.0-scorecard-history', snapshots: [] };
+  }
+  const parsed = JSON.parse(await fs.readFile(historyPath, 'utf8'));
+  if (Array.isArray(parsed)) {
+    return { schemaVersion: '1.0-scorecard-history', snapshots: parsed };
+  }
+  return {
+    schemaVersion: parsed.schemaVersion ?? '1.0-scorecard-history',
+    snapshots: asArray(parsed.snapshots)
+  };
+}
+
+async function appendScorecardHistory(historyPath, snapshot, options = {}) {
+  const absolute = path.resolve(historyPath);
+  const limit = Math.max(1, Number(options.limit ?? 100));
+  const history = await readScorecardHistory(absolute);
+  const previous = history.snapshots.at(-1) ?? null;
+  const snapshots = [...history.snapshots, snapshot].slice(-limit);
+  const updated = {
+    schemaVersion: '1.0-scorecard-history',
+    tool: { name: 'SetupLens', version: VERSION },
+    updatedAt: snapshot.generatedAt,
+    snapshots
+  };
+  await fs.mkdir(path.dirname(absolute), { recursive: true });
+  await fs.writeFile(absolute, `${JSON.stringify(updated, null, 2)}\n`, 'utf8');
+  return {
+    path: absolute,
+    snapshot,
+    snapshotCount: snapshots.length,
+    previousSnapshot: previous ? {
+      id: previous.id,
+      generatedAt: previous.generatedAt,
+      toolVersion: previous.tool?.version ?? null
+    } : null,
+    comparison: compareScorecardSnapshots(previous, snapshot)
+  };
+}
+
 function promotionCandidate(source) {
   return {
     id: source.id,
@@ -933,8 +1105,7 @@ export async function reviewFailureDataset(options = {}) {
     });
   const ruleGaps = buildRuleGaps(sources);
   const scorecard = buildScorecard(sources);
-
-  return {
+  const review = {
     schemaVersion: '1.0-failure-dataset-review',
     tool: { name: 'SetupLens', version: VERSION },
     generatedAt: options.now ?? new Date().toISOString(),
@@ -963,6 +1134,14 @@ export async function reviewFailureDataset(options = {}) {
       'Keep third-party repository contents outside git unless a license review explicitly allows inclusion.'
     ]
   };
+  if (options.history) {
+    review.scorecardHistory = await appendScorecardHistory(
+      options.history,
+      buildScorecardSnapshot(review, dataset),
+      { limit: options.historyLimit }
+    );
+  }
+  return review;
 }
 
 export async function promoteFailureDataset(options = {}) {

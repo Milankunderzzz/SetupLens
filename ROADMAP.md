@@ -1,6 +1,6 @@
 # SetupLens Roadmap
 
-Last updated: 2026-07-04
+Last updated: 2026-07-19
 
 SetupLens is moving toward a broad, local-first repository doctor. The goal is
 not to claim that every project can be fixed automatically. The goal is to make
@@ -25,9 +25,9 @@ The v0.2 line has two user-facing layers:
 - `doctor`: adapter-driven diagnosis with startup plans, optional probes,
   failure classification, fix plans, and action-panel reports.
 
-The current `0.2.0-alpha.3` branch adds the promotion layer needed to turn
-public scan evidence into reviewable corpus drafts while keeping cloned
-third-party repositories out of git and easy to clean up locally.
+The current `0.2.0-alpha.4` branch adds historical scorecard snapshots so
+repeated public scan reviews can show whether diagnostic signals improved,
+regressed, stayed unchanged, or are not comparable yet.
 
 ## Version Direction
 
@@ -63,11 +63,28 @@ letting them remain one-off observations.
 Exit condition: promotion drafts, cache cleanup, syntax checks, full tests,
 corpus regression, and failure-dataset review all pass on the release branch.
 
+### v0.2.0-alpha.4 - Scorecard history
+
+Purpose: make real-project validation cumulative instead of a sequence of
+isolated reports.
+
+- Add `failure-dataset review --history <file>` to append compact scorecard
+  snapshots after each reviewed dataset pass.
+- Compare the current review with the previous snapshot across diagnostic hit
+  rate, safe-fix generation, false-blocker risk, manual-fix volume,
+  unclassified logs, rule gaps, source counts, and ecosystem coverage.
+- Keep the history file local by default under `.setuplens/failure-dataset` so
+  teams can decide which aggregate snapshots are safe to publish.
+- Add tests and documentation for the regression-history workflow.
+
+Exit condition: history snapshots, trend comparisons, CLI help, terminal output,
+syntax checks, full tests, corpus regression, and demo regeneration pass on
+`main`.
+
 ### v0.2.0-beta - Real-project regression loop
 
 Purpose: make SetupLens visibly stronger as more broken projects are scanned.
 
-- Save historical scorecard snapshots so regressions can be compared over time.
 - Add a visual regression report for ecosystem coverage, failure-type mix,
   unknown logs, safe-fix yield, and false-blocker risk.
 - Expand framework-specific classifiers only when a corpus case or public scan

@@ -67,6 +67,14 @@ Turn public scan evidence into a repeatable corpus promotion loop.
 - Keep draft fixture files empty until a maintainer sanitizes and minimizes public source evidence.
 - Add `setuplens failure-dataset clean` so cloned public repositories can be removed after review while manifests and reports remain reproducible.
 
+### v0.2.0-alpha.4
+
+Turn repeated public scan reviews into a measurable regression history.
+
+- Add `setuplens failure-dataset review --history <file>` for scorecard snapshots.
+- Compare each review against the previous snapshot so diagnostic metrics, safe-fix yield, false-blocker risk, unclassified logs, rule gaps, and manual-fix volume show as improved, regressed, unchanged, or not comparable.
+- Keep history local by default under `.setuplens/failure-dataset` until aggregate evidence is intentionally published.
+
 ### v0.2.0-beta
 
 Make doctor mode more trustworthy across real repositories.

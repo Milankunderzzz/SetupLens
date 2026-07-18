@@ -60,6 +60,8 @@ After scanning, generate the audit feedback:
 setuplens failure-dataset review --input .setuplens/failure-dataset/sources.json
 setuplens failure-dataset review --input .setuplens/failure-dataset/sources.json \
   --format json --output .setuplens/failure-dataset/review.json
+setuplens failure-dataset review --input .setuplens/failure-dataset/sources.json \
+  --history .setuplens/failure-dataset/scorecard-history.json
 ```
 
 The review separates:
@@ -75,6 +77,12 @@ The review separates:
 - diagnostic unknowns.
 
 For public repository scans, most sources do not have human ground-truth labels yet. In that mode the scorecard reports operational proxy metrics and explicitly marks label-dependent metrics such as `rootCauseFirstRate` and `falseBlockerRate` as `n/a`. Once a source is promoted into the curated corpus with expected root causes, the same scorecard can report labeled diagnostic accuracy.
+
+When `--history` is provided, review appends a compact scorecard snapshot to the
+given JSON file and compares the current pass with the previous snapshot. The
+comparison marks each tracked signal as `improved`, `regressed`, `unchanged`, or
+`not_comparable`, which makes repeated real-project scans usable as a regression
+model instead of isolated reports.
 
 ## Promote Corpus Drafts
 
